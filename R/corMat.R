@@ -71,7 +71,10 @@ corMat <- function(Compare1, Compare2){
   # Add the trait comparisons for each treatment group.
   for (i in 1:4){
     df1 <- cbind(df1, meanData[meanData$treatment == Compare1, traitlist[i]],
-                 meanData[meanData$treatment == Compare2, traitlist[i]]) ## how can I rename these to differentiate G from I
+                 meanData[meanData$treatment == Compare2, traitlist[i]])
+  }
+    #colnames(df1) <- c("geno", "nboutLg","nboutLi","nboutDg","nboutDi",
+    #                   "boutlLg","boutlLi","boutlDg","boutlDi")
 
   # Calculate the loss in the number of bouts and bout length for both treatments.
   df$P.boutsloss_L <- (df1[3] - df1[2]) / df1[2]
