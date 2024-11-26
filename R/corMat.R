@@ -3,12 +3,12 @@
 #' Computes the relative sleep changes between two treatments and generates a correlation matrix plot with significance annotations.
 #'
 #' @param combined_data A data frame containing combined data from all batches, including variables such as `temp`, `sex`, `treatment`, `genotype`, and sleep-related metrics.
-#' @param Compare1 A character string representing the first treatment to compare.
-#' @param Compare2 A character string representing the second treatment to compare.
+#' @param Compare1 A character string representing the first treatment to compare. This should be the control.
+#' @param Compare2 A character string representing the second treatment to compare. This will be compared to the control.
 #'
-#' @return A `ggplot` object containing the correlation matrix plot with significance annotations.
-#'         The plot is saved as a PDF file named `RelativeBouts<Compare1>.pdf`.
-#'         A CSV file with correlation p-values is saved as `statcor<Compare1>.csv`.
+#' @return Two `ggplot` objects containing the correlation matrix plot with significance annotations for percentage of sleep lost and raw number of minutes lost.
+#'         The plots are saved as PDF files named `Relative<Compare1>.pdf` and `Unadjusted<Compare1>.pdf`.
+#'         A CSV file with correlation p-values is saved as `statcorRelative<Compare1>.csv` and `statcorUnadjusted<Compare1>.csv`.
 #'
 #' @export
 corMat <- function(Compare1, Compare2){
@@ -51,46 +51,54 @@ corMat <- function(Compare1, Compare2){
   genotypes <- unique(combined_data$genotype)[order(unique(combined_data$genotype))]
 
   # Initialize an empty data frame for the genotypes.
-  df <- data.frame(genotypes)
+  abs.df <- df <- df1 <- data.frame(genotypes)
 
   # Generate a data frame with relative sleep loss (p.sleeploss) for each sleep time variable.
   for(i in 1:2){
     gsleep <- meanData[meanData$treatment == Compare1, names[i]]
     isleep <- meanData[meanData$treatment == Compare2, names[i]]
     p.sleeploss <- (gsleep - isleep) / gsleep
+    sleeploss <- (gsleep - isleep)
     df <- cbind(df, p.sleeploss)
+    abs.df <- cbind(abs.df, sleeploss)
   }
 
   # Define additional trait variables to compare.
   traitlist <- c("mean_n_bouts_L", "mean_n_bouts_D", "mean_mean_bout_length_L",
                  "mean_mean_bout_length_D")
 
-  # Initialize an empty data frame for trait comparisons.
-  df1 <- data.frame(genotypes)
-
   # Add the trait comparisons for each treatment group.
   for (i in 1:4){
     df1 <- cbind(df1, meanData[meanData$treatment == Compare1, traitlist[i]],
                  meanData[meanData$treatment == Compare2, traitlist[i]])
   }
-    #colnames(df1) <- c("geno", "nboutLg","nboutLi","nboutDg","nboutDi",
-    #                   "boutlLg","boutlLi","boutlDg","boutlDi")
+
+  abs.df <- cbind(abs.df, (df1[3] - df1[2]))
+  abs.df <- cbind(abs.df, (df1[5] - df1[4]))
+  abs.df <- cbind(abs.df, (df1[7] - df1[6]))
+  abs.df <- cbind(abs.df, (df1[9] - df1[8]))
 
   # Calculate the loss in the number of bouts and bout length for both treatments.
-  df$P.boutsloss_L <- (df1[3] - df1[2]) / df1[2]
-  df$P.boutsloss_D <- (df1[5] - df1[4]) / df1[4]
-  df$P.boutlenloss_L <- (df1[7] - df1[6]) / df1[6]
-  df$P.boutlenloss_D <- (df1[9] - df1[8]) / df1[8]
+  df <- cbind(df, ((df1[3] - df1[2]) / df1[2]))
+  df <- cbind(df, ((df1[5] - df1[4]) / df1[4]))
+  df <- cbind(df, ((df1[7] - df1[6]) / df1[6]))
+  df <- cbind(df, ((df1[9] - df1[8]) / df1[8]))
 
   # Rename the columns for better clarity.
   colnames(df) <- c("Genotypes", "P.sleeploss_L", "P.sleeploss_D", "P.nboutsloss_L",
                     "P.nboutsloss_D", "P.boutlenloss_L", "P.boutlenloss_D")
+  colnames(abs.df) <- c("Genotypes", "Sleeploss_L", "Sleeploss_D", "Nboutsloss_L",
+                    "Nboutsloss_D", "Boutlenloss_L", "Boutlenloss_D")
 
+  dat <- c("df", "abs.df")
+  plotnames <- c("Relative", "Unadjusted")
+
+  for (i in 1:2){
   # Compute the correlation matrix for the data.
-  corr <- round(cor(df[, 2:7]), 1)
+  corr <- round(cor(get(dat[i])[, 2:7]), 2)
 
   # Generate the p-value matrix for the correlation.
-  p.df <- as.data.frame(ggcorrplot::cor_pmat(df[, 2:7]))
+  p.df <- as.data.frame(ggcorrplot::cor_pmat(get(dat[i])[, 2:7]))
 
   # Save the p-value matrix as a CSV file.
   data.table::fwrite(p.df, paste0("statcor", Compare1, ".csv"))
@@ -113,8 +121,8 @@ corMat <- function(Compare1, Compare2){
   p.labs <- reshape2::melt(p.labs, id.vars = "Var1", variable.name = "Var2", value.name = "lab")
 
   # Initial ggcorrplot
-  cor.plot <- ggcorrplot::ggcorrplot(corr, hc.order = TRUE, type = "lower", lab = TRUE) +     # color = c("indianred3", "white", "steelblue")
-    ggplot2::labs(y = NULL, x = NULL, title = "Relative Sleep Changes by Bouts") +
+  cor.plot <- ggcorrplot::ggcorrplot(corr, type = "lower", lab = TRUE) +
+    ggplot2::labs(y = NULL, x = NULL, title = paste(plotnames[i], "Sleep Changes by Bouts")) +
     ggprism::theme_prism(base_fontface = "plain", base_line_size = 0.7) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust = 1))
 
@@ -134,8 +142,9 @@ corMat <- function(Compare1, Compare2){
 
 
   # Save the plot as a PDF file.
-  ggplot2::ggsave(paste0("RelativeBouts", Compare1, ".pdf"), cor.plot.labs)
+  ggplot2::ggsave(paste0(plotnames[i], Compare1, ".pdf"), cor.plot.labs, height = 7, width = 7)
 
+  }
   # Return the correlation plot with labels.
   return(cor.plot.labs)
 }
