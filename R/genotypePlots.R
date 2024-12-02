@@ -44,7 +44,7 @@ genotypePlots <- function(dt_curated_final, summary_dt_final) {
             ggplot2::scale_color_manual(values = c("blue", "red", "purple", "pink")) +
             ggplot2::scale_fill_manual(values = c("blue", "red", "purple", "pink")) +
             ggprism::theme_prism(base_fontface = "plain", base_line_size = 0.7) +
-            ggplot2::theme(legend.position = c(0.80, 0.15))+
+            ggplot2::theme(legend.position.inside = c(0.80, 0.15))+
             ggplot2::labs(title = glist[g], y= "Percentage of flies sleeping") +
             ggplot2::scale_y_continuous(limits = c(0,1), labels = scales::percent)
 
@@ -66,7 +66,7 @@ genotypePlots <- function(dt_curated_final, summary_dt_final) {
                                         dodge.width = 0.9, shape = 21, cex = 3.5) +
               ggplot2::scale_color_manual(values = scales::alpha(c("blue", "red", "purple", "pink"), alpha = .7)) +
               ggplot2::scale_fill_manual(values = scales::alpha(c("blue", "red", "purple", "pink"), alpha = .6)) +
-              ggplot2::geom_errorbar(stat = "summary", fun.data = mean_cl_boot, width = 0.2,
+              ggplot2::geom_errorbar(stat = "summary", fun.data = ggplot2::mean_cl_boot, width = 0.2,
                                      color = "black") +
               ggplot2::geom_point(size = 1.5, stat = "summary", fun = mean, shape = 3,
                                   color = "black") +
@@ -87,11 +87,12 @@ genotypePlots <- function(dt_curated_final, summary_dt_final) {
 
         # Combine plots
         u <- length(unique(summary_dt_final$treatment)) # Dynamic width adjustment
-        combined_plot <- cowplot::plot_grid(p1, p2, p3, p4, p5, p6, ncol = 6, align = "h", axis = "b",
-                                   rel_widths = c(6, u, u, u, u, u))
+        suppressWarnings(
+          combined_plot <- cowplot::plot_grid(p1, p2, p3, p4, p5, p6, ncol = 6, align = "h", axis = "b",
+                                   rel_widths = c(6, u, u, u, u, u)))
 
         # Save combined plot
-        ggsave(paste("CombinedPlots", glist[g], llist[l], elist[e], ".pdf", sep = "_"),
+        ggplot2::ggsave(paste("CombinedPlots", glist[g], llist[l], elist[e], ".pdf", sep = "_"),
                combined_plot, width = (6 + u * 5 + 1.45), height = 4)
       }
     }

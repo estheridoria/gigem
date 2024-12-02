@@ -47,8 +47,8 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
   pdf(paste0(ExperimentData@Batch, '_population_sleep_bout_wrap', '.pdf'),
       width = 5*length(unique(info[[divisions[3]]]))+2,
       height = 3*length(unique(info[[divisions[2]]]))+2)
-  print(
-    ggetho::ggetho(bout_dt, ggplot2::aes(y = duration / 60, colour = treatment), time_wrap = behavr::hours(24)) +
+    suppressWarnings(print(
+      ggetho::ggetho(bout_dt, ggplot2::aes(y = duration / 60, colour = treatment), time_wrap = behavr::hours(24)) +
       ggplot2::theme(panel.background = ggplot2::element_rect(fill = "white", colour = "white"),
                      strip.background = ggplot2::element_rect(fill="white"),
                      plot.margin = ggplot2::margin(1,1,1,1,"inches"))+
@@ -57,6 +57,7 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
       ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[2])),
                           cols = ggplot2::vars(!!rlang::sym(divisions[3]))) +
       ggplot2::scale_y_continuous(name = "Bout length (min)")
+  )
   )
   dev.off()
 }

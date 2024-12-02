@@ -19,7 +19,7 @@
 #' @importFrom cluster silhouette clusGap
 #' @importFrom cowplot plot_grid
 #' @importFrom damr load_dam link_dam_metadata
-#' @importFrom data.table fwrite set setDT 
+#' @importFrom data.table fwrite set setDT
 #' @importFrom dplyr group_by summarise case_when mutate_all filter select pull rename mutate all_of
 #' @importFrom ggbeeswarm geom_beeswarm
 #' @importFrom ggcorrplot cor_pmat ggcorrplot
@@ -44,8 +44,6 @@
 #' 4. The final CSV files, \code{all_batches_norm_summary.csv} and \code{all_batches_summary.csv},
 #'    are saved in the parent directory, containing combined results for all batches.
 runAllBatches <- function(controlgeno, controltreat) {
-  suppressWarnings(
-    {
 
   #ask user which plots they want
   pref <- plotPreferences()
@@ -116,6 +114,5 @@ runAllBatches <- function(controlgeno, controltreat) {
   # Save the combined data frame to a CSV file in the parent directory
   output_file <- file.path(parent_dir, "all_batches_summary.csv")
   data.table::fwrite(combined_data, output_file, row.names = FALSE)
-    }
-  )
+
 }

@@ -41,8 +41,9 @@ aliveVsDead <- function(ExperimentData, dt) {
     }
 
     # Plot sleep data before and after removing dead IDs
-    create_sleep_plot(dt, paste0(ExperimentData@Batch, '_sleep_before_deadcheck.pdf'))
-    create_sleep_plot(dt_curated_1, paste0(ExperimentData@Batch, '_sleep_after_deadcheck.pdf'))
-
+    suppressWarnings(
+      create_sleep_plot(dt, paste0(ExperimentData@Batch, '_sleep_before_deadcheck.pdf')))
+    suppressWarnings(
+      create_sleep_plot(dt_curated_1, paste0(ExperimentData@Batch, '_sleep_after_deadcheck.pdf')))
     return(dt_curated_1)
     }

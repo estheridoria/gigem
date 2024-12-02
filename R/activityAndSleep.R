@@ -34,10 +34,10 @@ activityAndSleep <- function(ExperimentData, loadinginfo_linked, pref) {
       activity_by_monitor <-ggetho::ggetho(dt[behavr::xmv(monitor) == i ], ggplot2::aes(z=activity)) +
         ggplot2::theme(panel.background = ggplot2::element_rect(fill = "white", colour = "white"),
                        strip.background = ggplot2::element_rect(fill="white")) +
-        ggetho::stat_bar_tile_etho() +
-        ggetho::scale_x_days()
+        ggetho::stat_bar_tile_etho()
       # Print plot to PDF
-      print(activity_by_monitor)
+      suppressWarnings(
+        print(activity_by_monitor))
       dev.off() # Close the PDF device
     }
   }
@@ -52,15 +52,15 @@ activityAndSleep <- function(ExperimentData, loadinginfo_linked, pref) {
       pdf_file <- paste0(ExperimentData@Batch,'_sleep_by_monitor',i,'.pdf')
       pdf(pdf_file)
       # Create plot
-      sleep_by_monitor <- ggetho::ggetho(dt[behavr::xmv(monitor) == i], ggplot2::aes(z=asleep)) +
+        sleep_by_monitor <- ggetho::ggetho(dt[behavr::xmv(monitor) == i], ggplot2::aes(z=asleep)) +
         ggplot2::theme(panel.background = ggplot2::element_rect(fill = "white", colour = "white"),
                        strip.background = ggplot2::element_rect(fill="white")) +
-        ggetho::stat_bar_tile_etho() +
-        ggetho::scale_x_days()
+        ggetho::stat_bar_tile_etho()
 
       # Print plot to PDF
-      print(sleep_by_monitor)
-      dev.off() # Close the PDF device
+      suppressWarnings(
+        print(sleep_by_monitor))
+      dev.off()
     }
   }
   return(dt)
