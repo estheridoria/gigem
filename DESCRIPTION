@@ -10,7 +10,7 @@ Author: Esther Doria [aut, cre],
 Maintainer: Esther Doria <esther.i.doria@gmail.com>
 Depends: R(>= 4.3.0)
 Imports: behavr, cluster, cowplot, damr, data.table, dplyr, ggbeeswarm,
-        ggcorrplot, ggetho, ggplot2, ggprism, Hmisc, methods, plyr, reshape2,
+        ggcorrplot, ggetho, ggplot2, ggprism, methods, plyr, reshape2,
         rlang, scales, sleepr, stats
 Description: This package analyzes and displays drosophila activity monitor (DAM) information according to differing treatment, genotype, sex, lighting and/or environmental conditions. Sleep plots, sleep quantifications, and bout quantifications are produced in quality format for users to immediately use in scientific communications. Though the title indicates it only works for group and isolation treatments, this package is versatile to accommodate the specific conditions of your Drosophila experiments.
 License: MIT + file LICENSE
