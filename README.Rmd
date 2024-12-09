@@ -2,7 +2,7 @@
 title: "README"
 output: 
   github_document: default
-date: "2024-12-02"
+date: "2024-12-09"
 ---
 
 ```{r setup, include=FALSE, cache=FALSE}
@@ -143,8 +143,12 @@ Therefore, the number of entries in each variable should be the same (excepting 
 Specify any experimental treatments for each population such as social isolation, change in diet, sexual deprivation, etc..
 
 ```{Main echo = TRUE}
-  # Temperature during monitoring
-  temp = "21.5C",
+# Temperature during monitoring
+```
+
+
+```{Main echo = TRUE}
+temp = "21.5C",
 
 # Treatment applied during monitoring period
   treatment = rep(c("Iso_2D","Grp_2D",
@@ -159,7 +163,7 @@ Specify any experimental treatments for each population such as social isolation
   light = "12.12"
 )
 
-```         
+```
 
 ### 1.6 Manually Excluding `notOK` flies.
 
