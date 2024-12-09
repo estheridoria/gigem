@@ -71,7 +71,7 @@ runAllBatches <- function(controlgeno, controltreat) {
   batch_dirs <- grep("Batch[0-9_a-zA-Z]*", all_dirs, value = TRUE)
 
   if(length(batch_dirs) ==0)
-    stop("The folder(s) inside the parent directory containing each Batch's data is either not present or is not formatted correctly. Please add or rename the folder and R file within to follow the format: 'Batch' followed by any or no combination of letters and underscores.")
+    stop("The folder(s) inside the parent directory containing each Batch's data is either not present or is not formatted correctly. Please add or rename the folder and R file within to follow the format: 'Batch' followed by any combination of letters, numbers and/or underscores.")
 
   # Iterate over each batch directory and run the R files
   for (batch_dir in batch_dirs)
