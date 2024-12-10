@@ -249,6 +249,8 @@ Do you want to generate each monitor's sleep and activity profile?
 
 ![Sleep Profile](images/sleepProfile.jpg)
 ![Sleep Profile](images/sleepProfile.pdf)
+![Sleep Profile](images/activityProfile.jpg)
+![Sleep Profile](images/activityProfile.pdf)
 
 ##### 2.4.2 Population Plots (full-length and 24-hour summary)
 
@@ -259,8 +261,8 @@ Do you want to generate population plots? (i.e. Each unique condition)
 
 ![Population Sleep Plots](images/popSleep.jpg)
 ![Population Sleep Plots](images/popSleep.pdf)
-![Population Sleep Plots](images/popSleep2.jpg)
-![Population Sleep Plots](images/popSleep2.pdf)
+![Summary Sleep Plots](images/popSleep2.jpg)
+![Summary Sleep Plots](images/popSleep2.pdf)
 
 ##### 2.4.3 Population Overlay (full-length and 24-hour summary)
 
@@ -271,6 +273,8 @@ Do you want to generate population plot overlays? (i.e. Each condition overlayed
 
 ![Population Overlay Plots](images/popOverlay.jpg)
 ![Population Overlay Plots](images/popOverlay.pdf)
+![Summary Overlay Plots](images/popOverlay2.jpg)
+![Summary Overlay Plots](images/popOverlay2.pdf)
 
 ##### 2.4.4 Batch-Grouped Sleep Bouts
 
@@ -289,8 +293,10 @@ Do you want to generate quantitative sleep plots grouped by batch?
 1: Yes
 2: No
 
-![Quantitative Point Plots](images/pointPlots.jpg)
-![Quantitative Point Plots](images/pointPlots.pdf)
+![Total minutes of sleep](images/pointPlots.jpg)
+![Total minutes of sleep](images/pointPlots.pdf)
+![Number of bouts](images/pointPlots2.jpg)
+![Number of bouts](images/pointPlots2.pdf)
 
 ##### 2.4.6 Genotype-Grouped All-of-the-Above
 
@@ -299,8 +305,8 @@ Do you want to generate all plots grouped by genotype?
 1: Yes
 2: No
 
-![All Plots by Genotype](images/byGeno.jpg)
-![byGenotype](images/byGeno.pdf)
+![All Plots compiled by Genotype](images/byGeno.jpg)
+![All Plots compiled by Genotype](images/byGeno.pdf)
 
 
 
