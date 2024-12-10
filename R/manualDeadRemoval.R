@@ -69,12 +69,12 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref) {
 
   if(pref[3]==1){
   # Generate overlay plots
-  create_overlay_plot <- function(filename, plot_data, divisions, numb_days = num_days, wrap_time = NULL) { ##might work without this "divisions"
+  create_overlay_plot <- function(filename, plot_data, divisions, numb_days = num_days, wrap_time = NULL) {
     pdf(filename,width = 5*numb_days*length(unique(info[[divisions[3]]]))+2,
         height = 3*length(unique(info[[divisions[2]]]))+2)
     pop_sleep_plot <- ggetho::ggetho(plot_data, ggplot2::aes(y = asleep, colour = .data[[divisions[1]]]), time_wrap = wrap_time) +
       ggetho::stat_pop_etho() +
-      ggetho::stat_ld_annotations()+
+      ggetho::stat_ld_annotations() +
       ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
       ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
       ggprism::theme_prism(base_fontface = "plain", base_line_size = 0.7) +

@@ -23,9 +23,7 @@ plotPreferences <- function(){
   r2 <- menu(c("Yes", "No"), title="Do you want to generate population plots? (i.e. Each unique condition)")
 
   # manualDeadRemoval.R #68
-  r3 <- menu(c("Yes", "No"), title="Do you want to generate population
-             plot overlays? (i.e. Each condition overlayed according to
-             your first entry in 'Divisions')")
+  r3 <- menu(c("Yes", "No"), title="Do you want to generate population plot overlays? (i.e. Each condition overlayed according to your first entry in 'Divisions')")
 
   # cleanSummary.R #45
   r6 <- menu(c("Yes", "No"), title="Do you want to generate sleep bout plots grouped by batch?")
