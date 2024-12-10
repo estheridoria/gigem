@@ -258,8 +258,11 @@ Do you want to generate population plots? (i.e. Each unique condition)
 2: No
 
 ![Population Sleep Plots](images/popSleep.jpg)
+![Population Sleep Plots](images/popSleep.pdf)
+![Population Sleep Plots](images/popSleep2.jpg)
+![Population Sleep Plots](images/popSleep2.pdf)
 
-##### 2.4.3 Population Overlay
+##### 2.4.3 Population Overlay (full-length and 24-hour summary)
 
 Do you want to generate population plot overlays? (i.e. Each condition overlayed according to your first entry in 'Divisions') 
 
@@ -267,6 +270,7 @@ Do you want to generate population plot overlays? (i.e. Each condition overlayed
 2: No
 
 ![Population Overlay Plots](images/popOverlay.jpg)
+![Population Overlay Plots](images/popOverlay.pdf)
 
 ##### 2.4.4 Batch-Grouped Sleep Bouts
 
@@ -276,6 +280,7 @@ Do you want to generate sleep bout plots grouped by batch?
 2: No
 
 ![Sleep Bout Plots](images/sleepBouts.jpg)
+![Sleep Bout Plots](images/sleepBouts.pdf)
 
 ##### 2.4.5 Batch-Grouped Quantitative Point Plots
 
@@ -285,6 +290,7 @@ Do you want to generate quantitative sleep plots grouped by batch?
 2: No
 
 ![Quantitative Point Plots](images/pointPlots.jpg)
+![Quantitative Point Plots](images/pointPlots.pdf)
 
 ##### 2.4.6 Genotype-Grouped All-of-the-Above
 
