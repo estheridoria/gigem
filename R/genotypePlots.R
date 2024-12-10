@@ -41,10 +41,10 @@ genotypePlots <- function(dt_curated_final, summary_dt_final) {
           p1 <- ggetho::ggetho(plot_subdata, ggplot2::aes(y = asleep, colour = treatment), time_wrap = behavr::hours(24)) +
             ggetho::stat_pop_etho(show.legend = T) +
             ggetho::stat_ld_annotations() +
-            ggplot2::scale_color_manual(values = c("blue", "red", "purple", "pink")) +
-            ggplot2::scale_fill_manual(values = c("blue", "red", "purple", "pink")) +
+            ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
+            ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
             ggprism::theme_prism(base_fontface = "plain", base_line_size = 0.7) +
-            ggplot2::theme(legend.position.inside = c(0.80, 0.15))+
+            ggplot2::theme(legend.position = c(0.80, 0.15))+
             ggplot2::labs(title = glist[g], y= "Percentage of flies sleeping") +
             ggplot2::scale_y_continuous(limits = c(0,1), labels = scales::percent)
 
@@ -64,8 +64,8 @@ genotypePlots <- function(dt_curated_final, summary_dt_final) {
             pointplot <- pointplot +
               ggbeeswarm::geom_beeswarm(ggplot2::aes(fill = treatment, color = treatment),
                                         dodge.width = 0.9, shape = 21, cex = 3.5) +
-              ggplot2::scale_color_manual(values = scales::alpha(c("blue", "red", "purple", "pink"), alpha = .7)) +
-              ggplot2::scale_fill_manual(values = scales::alpha(c("blue", "red", "purple", "pink"), alpha = .6)) +
+              ggplot2::scale_color_manual(values = scales::alpha(c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6"), alpha = .7)) +
+              ggplot2::scale_fill_manual(values = scales::alpha(c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6"), alpha = .6)) +
               ggplot2::geom_errorbar(stat = "summary", fun.data = ggplot2::mean_cl_boot, width = 0.2,
                                      color = "black") +
               ggplot2::geom_point(size = 1.5, stat = "summary", fun = mean, shape = 3,

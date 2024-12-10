@@ -19,21 +19,21 @@ plotPreferences <- function(){
   # activityAndSleep.R #17-34 & #40-57
   r1 <- menu(c("Yes", "No"), title="Do you want to generate each monitor's sleep and activity profile?")
 
-  # manualDeadRemoval.R #31-53
+  # manualDeadRemoval.R #42
   r2 <- menu(c("Yes", "No"), title="Do you want to generate population plots? (i.e. Each unique condition)")
 
-  # manualDeadRemoval.R #55-76
+  # manualDeadRemoval.R #68
   r3 <- menu(c("Yes", "No"), title="Do you want to generate population
              plot overlays? (i.e. Each condition overlayed according to
              your first entry in 'Divisions')")
 
-  # cleanSummary.R #34-51
+  # cleanSummary.R #45
   r6 <- menu(c("Yes", "No"), title="Do you want to generate sleep bout plots grouped by batch?")
 
-  # cleanSummary.R #80-104
+  # cleanSummary.R #92
   r4 <- menu(c("Yes", "No"), title="Do you want to generate quantitative sleep plots grouped by batch?")
 
-  # runOneBatch.R #39-42 (run genotypePlots())
+  # runOneBatch.R #53 (run genotypePlots())
   r5 <- menu(c("Yes", "No"), title="Do you want to generate all plots grouped by genotype?")
 
   results <- rbind(r1, r2, r3, r4, r5, r6)

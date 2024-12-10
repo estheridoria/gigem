@@ -46,17 +46,20 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref) {
         height = 3*prod(sapply(divisions[1:3], function(col) length(unique(info[[col]]))))+2)
     pop_sleep_plot <- ggetho::ggetho(plot_data, ggplot2::aes(y = asleep, colour = .data[[divisions[1]]]), time_wrap = wrap_time) +
       ggetho::stat_pop_etho() +
-      ggetho::stat_ld_annotations()+
-      ggplot2::theme(panel.background = ggplot2::element_rect(fill = "white", colour = "white"),
-                     strip.background = ggplot2::element_rect(fill="white"),
-                     plot.margin = ggplot2::margin(1,1,1,1,"inches"))+
+      ggetho::stat_ld_annotations() +
+      ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
+      ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
+
+      ggprism::theme_prism(base_fontface = "plain", base_line_size = 0.7) +
       ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[1]),
                                                !!rlang::sym(divisions[2]),
                                                !!rlang::sym(divisions[3])))+
-      ggplot2::scale_y_continuous(name = "Percentage of flies sleeping", labels = scales::percent)
+      ggplot2::labs(y = "Percentage of flies sleeping") +
+      ggplot2::scale_y_continuous(limits = c(0,1), labels = scales::percent)
     print(pop_sleep_plot)
     dev.off()
   }
+
   suppressWarnings(
   create_population_plot(paste0(ExperimentData@Batch, '_population_sleep.pdf'), dt_curated_final, divisions))
   suppressWarnings(
@@ -72,12 +75,13 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref) {
     pop_sleep_plot <- ggetho::ggetho(plot_data, ggplot2::aes(y = asleep, colour = .data[[divisions[1]]]), time_wrap = wrap_time) +
       ggetho::stat_pop_etho() +
       ggetho::stat_ld_annotations()+
-      ggplot2::theme(panel.background = ggplot2::element_rect(fill = "white", colour = "white"),
-                     strip.background = ggplot2::element_rect(fill="white"),
-                     plot.margin = ggplot2::margin(1,1,1,1,"inches"))+
+      ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
+      ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
+      ggprism::theme_prism(base_fontface = "plain", base_line_size = 0.7) +
       ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[2])),
                           cols = ggplot2::vars(!!rlang::sym(divisions[3])))+
-      ggplot2::scale_y_continuous(name = "Percentage of flies sleeping", labels = scales::percent)
+      ggplot2::labs(y = "Percentage of flies sleeping") +
+      ggplot2::scale_y_continuous(limits = c(0,1), labels = scales::percent)
     print(pop_sleep_plot)
     dev.off()
   }

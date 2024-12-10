@@ -49,11 +49,11 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
       height = 3*length(unique(info[[divisions[2]]]))+2)
     suppressWarnings(print(
       ggetho::ggetho(bout_dt, ggplot2::aes(y = duration / 60, colour = treatment), time_wrap = behavr::hours(24)) +
-      ggplot2::theme(panel.background = ggplot2::element_rect(fill = "white", colour = "white"),
-                     strip.background = ggplot2::element_rect(fill="white"),
-                     plot.margin = ggplot2::margin(1,1,1,1,"inches"))+
       ggetho::stat_pop_etho() +
       ggetho::stat_ld_annotations() +
+      ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
+      ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
+      ggprism::theme_prism(base_fontface = "plain", base_line_size = 0.7) +
       ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[2])),
                           cols = ggplot2::vars(!!rlang::sym(divisions[3]))) +
       ggplot2::scale_y_continuous(name = "Bout length (min)")
@@ -92,36 +92,49 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
 
   if(pref[4] ==1){
   # Helper function to create sleep plots for specified metrics
-  create_sleeptime_plot <- function(filename, plot_data, yParam, Yname, divisions) {
-    pdf(filename, width = (prod(sapply(divisions[c(4,6)], function(col) length(unique(info[[col]]))))*1.5+2), ## swapped 6 and 5 between this line and the next
+  create_sleeptime_plot <- function(plot_data, yParam, Yname, divisions, limits, geom) {
+    pdf(paste0(ExperimentData@Batch, '_', yParam, '.pdf'), width = (prod(sapply(divisions[c(4,6)], function(col) length(unique(info[[col]]))))*1.5+2), ## swapped 6 and 5 between this line and the next
         height = length(unique(info[[divisions[5]]]))*3.7 +2)
     sleeptime_plot <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data[[divisions[4]]],
                                                      y = .data[[yParam]]))+
       ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[5])),
-                          cols = ggplot2::vars(!!rlang::sym(divisions[6])))+
+                          cols = ggplot2::vars(!!rlang::sym(divisions[6])))
+
+
+      if(geom == "bar"){
+        sleeptime_plot <- sleeptime_plot +
+          ggplot2::stat_summary(fun = "mean", geom = geom, width = .5, fill="grey90")
+      }
+    if(geom == "violin"){
+      sleeptime_plot <- sleeptime_plot +
+        ggplot2::geom_violin(fill="grey90")
+    }
+
+    sleeptime_plot <- sleeptime_plot +
+      ggbeeswarm::geom_beeswarm(ggplot2::aes(fill = .data[[divisions[1]]], color = .data[[divisions[1]]]),
+                                dodge.width = 0.9, shape = 21, cex = 3.5) +
+      ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
+      ggplot2::scale_fill_manual(values = scales::alpha(c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6"), alpha = .6)) +
       ggplot2::geom_errorbar(stat = "summary", fun.data = ggplot2::mean_cl_boot, width = 0.2,
                              color = "black") +
-      ggplot2::geom_point(size = 4, stat = "summary", fun = mean, shape = 3,
+      ggplot2::geom_point(size = 1.5, stat = "summary", fun = mean, shape = 3,
                           color = "black") +
-      ggbeeswarm::geom_beeswarm(ggplot2::aes(fill = .data[[divisions[1]]]), color = "black",
-                                dodge.width = 0.9, shape = 21, cex = 3.5, alpha = 2/3) +
-      ggplot2::scale_fill_viridis_d() +
-      ggprism::theme_prism(base_fontface = "plain", base_line_size = 0.7)+
-      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, vjust = 0, hjust=1),
-                     plot.margin = ggplot2::margin(1,1,1,1,"inches"))+
-      ggplot2::ggtitle(yParam) +                                                          #this was added by me
+      ggprism::theme_prism(base_fontface = "plain", base_line_size = 0.7)  +
+      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust= 1), legend.position = "right") +
+      ggplot2::labs(title = "", x = NULL, y = Yname)
+      ggplot2::ggtitle(yParam) +
       ggplot2::scale_x_discrete(name = " ")+
-      ggplot2::scale_y_continuous(name = Yname)
+      ggplot2::scale_y_continuous(name = Yname, limits = c(0,limits))
     print(sleeptime_plot)
     dev.off()
   }
 
   # Generate sleep time and bout plots for light and dark phases
-  create_sleeptime_plot(paste0(ExperimentData@Batch, '_sleeptime_all.pdf'), summary_dt_final, "sleep_time_all", "Time sleeping (min)", divisions)
-  create_sleeptime_plot(paste0(ExperimentData@Batch, '_sleeptime_l.pdf'), summary_dt_final, "sleep_time_l", "Time sleeping (min)", divisions)
-  create_sleeptime_plot(paste0(ExperimentData@Batch, '_sleeptime_d.pdf'), summary_dt_final, "sleep_time_d", "Time sleeping (min)", divisions)
-  create_sleeptime_plot(paste0(ExperimentData@Batch, '_n_bouts_L.pdf'), summary_dt_final, "n_bouts_L", "Number of sleep bouts", divisions)
-  create_sleeptime_plot(paste0(ExperimentData@Batch, '_n_bouts_D.pdf'), summary_dt_final, "n_bouts_D", "Number of sleep bouts", divisions)
+  create_sleeptime_plot(summary_dt_final, "sleep_time_all", "Time sleeping (min)", divisions, 1500, "bar")
+  create_sleeptime_plot(summary_dt_final, "sleep_time_l", "Time sleeping (min)", divisions, 1000, "bar")
+  create_sleeptime_plot(summary_dt_final, "sleep_time_d", "Time sleeping (min)", divisions, 1000, "bar")
+  create_sleeptime_plot(summary_dt_final, "n_bouts_L", "Number of sleep bouts", divisions, 80, "violin")
+  create_sleeptime_plot(summary_dt_final, "n_bouts_D", "Number of sleep bouts", divisions, 80, "violin")
 
 }
   # Return the final summary table
