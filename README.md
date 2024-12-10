@@ -1,6 +1,6 @@
 README
 ================
-2024-12-02
+2024-12-09
 
 [Github Page](https://github.com/WanheLiLab/gigem)
 
@@ -28,10 +28,15 @@ install_github('Wanhelilab/gigem')
 library(gigem)
 ```
 
-Install the example data to use as a template (or copy the information
-from this file into a new script).
+See section 3 for the complete templates to the files in sections 1 and
+2.
+
+Download the example data into your working directory under
+“ExampleAnalysis” if desired (optional).
 
 ``` main
+dest_dir <- paste0(getwd(),"/ExampleAnalysis")
+system(paste("git clone", "https://github.com/WanheLiLab/gigemExample.git", dest_dir))
 ```
 
 ## 1. Experimental Parameters: Creating a ‘Main.R’ File
@@ -318,6 +323,131 @@ the same Batch, so the subsequent plot contains these attributes as
 well.
 
 ``` main
+# Plot normalized sleep loss for the variable desired (optional)
+normDisplay(treat = "Iso_5D", treat2 = "Iso_2D", column_name = "genotype", Control = "CS")
+```
+
+## 3. Templates
+
+### 3.1 “Main.R” template
+
+``` main
+# Set a title for the data analysis
+Title = "Batch9_2Days"
+
+# ----------------------------------------------------------------------------
+# Create a data table 'info' to store details of the monitoring setup
+
+info <- data.table::data.table(
+  
+  # Filename associated with each monitor's data
+  # "each" reflects the number of sensors per monitor in the array used;
+  # In this case, there are 32 sensors per DAM monitor, each holding data for 32 flies
+  file = rep(c("Monitor22.txt", "Monitor7.txt",
+               "Monitor14.txt", "Monitor3.txt",
+               "Monitor15.txt", "Monitor39.txt",
+               "Monitor53.txt", "Monitor27.txt",
+               "Monitor52.txt", "Monitor17.txt",
+               "Monitor21.txt", "Monitor50.txt"), each = 32),
+  
+  # Monitor identifier (this is a shorthand for each monitor in the experiment)
+  monitor = rep(c("M22", "M7",
+                  "M14", "M3",
+                  "M15", "M39",
+                  "M53", "M27",
+                  "M52", "M17",
+                  "M21", "M50"), each = 32),
+  
+  # Unique identifier for each sensor region (range from 1 to 32)
+  region_id = 1:32,
+  
+  # Data status (e.g., whether the data collection was successful, marked "OK")
+  status = "OK",
+  
+  # Start date and time of the monitoring period
+  start_datetime = "2019-08-17 10:05:00",
+  
+  # Stop date and time of the monitoring period
+  stop_datetime = "2019-08-19 10:20:00",
+  
+  # Temperature during the monitoring period
+  temp = "21.5C",
+  
+  # Sex of the subjects being monitored (M = Male, F = Female)
+  sex = "M",
+  
+  # Genotype of the subjects being monitored (this is replicated for each group of flies)
+  genotype = rep(c("SIP-L2-2", "SIP-L2-2",
+                   "SIP-S2-8", "SIP-S2-8",
+                   "SIP-S2-1", "SIP-S2-1",
+                   "CS", "CS",
+                   "SIP-S2-10", "SIP-S2-10",
+                   "SIP-L2-1", "SIP-L2-1"), each = 32),
+  
+  # Treatment applied during the monitoring period (e.g., Isolation or Group treatment)
+  treatment = rep(c("Iso_2D", "Grp_2D",
+                    "Iso_2D", "Grp_2D",
+                    "Iso_2D", "Grp_2D",
+                    "Iso_2D", "Grp_2D",
+                    "Iso_2D", "Grp_2D",
+                    "Iso_2D", "Grp_2D"), each = 32),
+  
+  # Environment condition during the experiment (e.g., NA if not applicable)
+  environment = rep(c("NA", "NA",
+                      "NA", "NA",
+                      "NA", "NA",
+                      "NA", "NA",
+                      "NA", "NA",
+                      "NA", "NA"), each = 32),
+  
+  # Light cycle during monitoring (e.g., light-dark cycle in hours)
+  light = rep(c("12.12", "12.12",
+                "12.12", "12.12",
+                "12.12", "12.12",
+                "12.12", "12.12",
+                "12.12", "12.12",
+                "12.12", "12.12"), each = 32)
+)
+# ----------------------------------------------------------------------------
+
+# Change status manually to exclude cuvettes from analysis,
+# info <- SetStatus(info, regionID=4, monitor="M33")
+```
+
+### 3.2 “HitRun.R” template
+
+``` main
+library(gigem)
+
+parent_dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(parent_dir)
+
+# Determine which variables to divide the plots by:
+  # (e.g. temp, sex, genotype, treatment, environment, or light)
+divisions<- c("treatment",            # 1: Sleep plot, overlay and color
+              "sex",                  # 2: Sleep plot, rows
+              "genotype",             # 3: Sleep plot, columns
+              "treatment",            # 4: Point plot, x-axis and color
+              "sex",                  # 3: Point plot, rows
+              "genotype")             # 6: Point plot, columns
+
+# Set the number of days you wish to analyze
+num_days = 2
+
+# Run the Analysis
+runAllBatches(controlgeno = "CS", controltreat = "Grp")
+
+# Plot correlation matrix (optional)
+corMat(Compare1 = "Grp_2D", Compare2 = "Iso_2D")
+corMat(Compare1 = "Grp_5D", Compare2 = "Iso_5D")
+
+
+# Plot cluster groups for 2 days and 5 days (optional)
+kmeansCluster(Compare1 = "Grp_5D", Compare2 = "Iso_5D", 
+              groupings = c("L1", "L2", "S1", "S2", "CS"), column_name = "genotype")
+kmeansCluster(Compare1 = "Grp_2D", Compare2 = "Iso_2D", 
+              groupings = c("L1", "L2", "S1", "S2", "CS"), column_name = "genotype")
+
 # Plot normalized sleep loss for the variable desired (optional)
 normDisplay(treat = "Iso_5D", treat2 = "Iso_2D", column_name = "genotype", Control = "CS")
 ```

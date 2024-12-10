@@ -1,6 +1,6 @@
 # Run this code to use gigem
 
-#library(gigem)
+library(gigem)
 
 parent_dir <- dirname(rstudioapi::getSourceEditorContext()$path)
 setwd(parent_dir)
@@ -26,9 +26,9 @@ corMat(Compare1 = "Grp_5D", Compare2 = "Iso_5D")
 
 
 # Plot cluster groups for 2 days and 5 days (optional)
-kmeansCluster(Compare1 = "Grp_5D", Compare2 = "Iso_5D", 
+kmeansCluster(Compare1 = "Grp_5D", Compare2 = "Iso_5D",
               groupings = c("L1", "L2", "S1", "S2", "CS"), column_name = "genotype")
-kmeansCluster(Compare1 = "Grp_2D", Compare2 = "Iso_2D", 
+kmeansCluster(Compare1 = "Grp_2D", Compare2 = "Iso_2D",
               groupings = c("L1", "L2", "S1", "S2", "CS"), column_name = "genotype")
 
 # Plot normalized sleep loss for the variable desired (optional)
