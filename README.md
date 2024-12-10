@@ -12,27 +12,41 @@ Copyright (C) year-range Full Names
 
 Contact: <estheridoria@gmail.com>
 
-## 0. Installation
+## 0. Installation and Setup
+
+### 0.1 Install gigem
 
 Install and attach devtools which can install gigem
 
 ``` main
 install.packages("devtools")
 library(devtools)
-```
-
-Install and attach gigem
-
-``` main
 install_github('Wanhelilab/gigem')
 library(gigem)
 ```
 
-See section 3 for the complete templates to the files in sections 1 and
-2.
+### 0.2 Download the template files
+
+Run the code below to copy the template files into your working
+directory.
+
+Alternatively, manually copy and paste the code from section 3 into two
+separate files.
+
+``` main
+# Download "HitRun.R"
+auth_url <- paste0("https://raw.githubusercontent.com/WanheLiLab/gigem/main/HitRun.R")
+download.file(auth_url, destfile = "HitRun.R", method = "libcurl")
+
+# Download "Main.R"
+auth_url <- paste0("https://raw.githubusercontent.com/WanheLiLab/gigem/main/Main.R")
+download.file(auth_url, destfile = "Main.R", method = "libcurl")
+```
+
+### 0.3
 
 Download the example data into your working directory under
-“ExampleAnalysis” if desired (optional).
+“ExampleAnalysis” (optional).
 
 ``` main
 dest_dir <- paste0(getwd(),"/ExampleAnalysis")
@@ -84,7 +98,6 @@ info <- data.table::data.table(
                "Monitor39.txt","Monitor35.txt",
                "Monitor55.txt", "Monitor57.txt",
                "Monitor13.txt","Monitor52.txt"), each = 32),
-  
 ```
 
 Add the corresponding monitor numbers to the `monitor` variable in the
@@ -160,7 +173,6 @@ as formatted in `start_datetime` or `sex`)
                    "SIP-L2-3", "SIP-L2-3",
                    "SIP-L2-4", "SIP-L2-4", 
                    "SIP-L2-5", "SIP-L2-5"), each = 32),
-  
 ```
 
 ### 1.5 Experimental Treatments
@@ -170,9 +182,6 @@ isolation, change in diet, sexual deprivation, etc..
 
 ``` main
 # Temperature during monitoring
-```
-
-``` main
 temp = "21.5C",
 
 # Treatment applied during monitoring period
@@ -246,7 +255,7 @@ divisions<- c("treatment",            # 1: Sleep plot, overlay and color
               "genotype")             # 6: Point plot, columns
 ```
 
-### 2.3
+### 2.3 Truncated Length of Analysis
 
 Decide the number of days you wish to analyze from the experiment. This
 should be less than the number of days between `start_datetime` and
@@ -267,6 +276,76 @@ List a `genotype` and `treatment` which will serve as your controls.
 # Run the Analysis
 runAllBatches(controlgeno = "CS", controltreat = "Grp")
 ```
+
+#### 2.4.0 Select Plot Preferences
+
+In the console, 6 prompts will appear sequentially to which you will
+type and enter ‘1’ or ‘2’ back into the console. Responding with ‘2’
+will prevent the specified type of plot from generating. Below are
+example plots for each of the questions.
+
+##### 2.4.1 Sleep/Activity Profile
+
+Do you want to generate each monitor’s sleep and activity profile?
+
+1: Yes 2: No
+
+![Sleep Profile](images/sleepProfile.jpg) ![Sleep
+Profile](images/sleepProfile.pdf)
+
+##### 2.4.2 Population Plots (full-length and 24-hour summary)
+
+Do you want to generate population plots? (i.e. Each unique condition)
+
+1: Yes 2: No
+
+<figure>
+<img src="images/popSleep.jpg" alt="Population Sleep Plots" />
+<figcaption aria-hidden="true">Population Sleep Plots</figcaption>
+</figure>
+
+##### 2.4.3 Population Overlay
+
+Do you want to generate population plot overlays? (i.e. Each condition
+overlayed according to your first entry in ‘Divisions’)
+
+1: Yes 2: No
+
+<figure>
+<img src="images/popOverlay.jpg" alt="Population Overlay Plots" />
+<figcaption aria-hidden="true">Population Overlay Plots</figcaption>
+</figure>
+
+##### 2.4.4 Batch-Grouped Sleep Bouts
+
+Do you want to generate sleep bout plots grouped by batch?
+
+1: Yes 2: No
+
+<figure>
+<img src="images/sleepBouts.jpg" alt="Sleep Bout Plots" />
+<figcaption aria-hidden="true">Sleep Bout Plots</figcaption>
+</figure>
+
+##### 2.4.5 Batch-Grouped Quantitative Point Plots
+
+Do you want to generate quantitative sleep plots grouped by batch?
+
+1: Yes 2: No
+
+<figure>
+<img src="images/pointPlots.jpg" alt="Quantitative Point Plots" />
+<figcaption aria-hidden="true">Quantitative Point Plots</figcaption>
+</figure>
+
+##### 2.4.6 Genotype-Grouped All-of-the-Above
+
+Do you want to generate all plots grouped by genotype?
+
+1: Yes 2: No
+
+![All Plots by Genotype](images/byGeno.jpg)
+![byGenotype](images/byGeno.pdf)
 
 ### 2.5 Plot a correlation matrix (optional)
 
