@@ -291,8 +291,8 @@ Do you want to generate each monitor’s sleep and activity profile?
 1: Yes 2: No
 
 ![Sleep Profile](images/sleepProfile.jpg) ![Sleep
-Profile](images/sleepProfile.pdf) ![Sleep
-Profile](images/activityProfile.jpg) ![Sleep
+Profile](images/sleepProfile.pdf) ![Activity
+Profile](images/activityProfile.jpg) ![Activity
 Profile](images/activityProfile.pdf)
 
 ##### 2.4.2 Population Plots (full-length and 24-hour summary)
