@@ -145,10 +145,10 @@ the functions that deal with time are hindered (see section 2.3).
 
 ``` main
 # Start datetime for monitoring period
-  start_datetime = "2019-06-22 10:05:00",
+  start_datetime = "2019-06-22 10:00:00",
   
   # Stop datetime for monitoring period
-  stop_datetime = "2019-06-24 10:20:00",
+  stop_datetime = "2019-06-24 10:05:00",
 ```
 
 ### 1.4 Organism Specifications
@@ -442,10 +442,10 @@ info <- data.table::data.table(
   status = "OK",
   
   # Start date and time of the monitoring period
-  start_datetime = "2019-08-17 10:05:00",
+  start_datetime = "2019-08-17 10:00:00",
   
   # Stop date and time of the monitoring period
-  stop_datetime = "2019-08-19 10:20:00",
+  stop_datetime = "2019-08-19 10:05:00",
   
   # Temperature during the monitoring period
   temp = "21.5C",
