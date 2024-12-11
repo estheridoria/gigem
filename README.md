@@ -94,10 +94,12 @@ to replace the example ones below.
 info <- data.table::data.table(
   
   # Filename associated with each monitor data
-  file = rep(c("Monitor33.txt", "Monitor17.txt",
-               "Monitor39.txt","Monitor35.txt",
-               "Monitor55.txt", "Monitor57.txt",
-               "Monitor13.txt","Monitor52.txt"), each = 32),
+  file = rep(c("Monitor22.txt", "Monitor7.txt",
+               "Monitor14.txt", "Monitor3.txt",
+               "Monitor15.txt", "Monitor39.txt",
+               "Monitor53.txt", "Monitor27.txt",
+               "Monitor52.txt", "Monitor17.txt",
+               "Monitor21.txt", "Monitor50.txt"), each = 32),
 ```
 
 Add the corresponding monitor numbers to the `monitor` variable in the
@@ -105,10 +107,12 @@ same order, preceded by ‘M’.
 
 ``` main
   # Monitor identifier
-  monitor = rep(c("M33","M17",
-                  "M39","M35",
-                  "M55","M57",
-                  "M13","M52"), each = 32 ),
+  monitor = rep(c("M22", "M7",
+                  "M14", "M3",
+                  "M15", "M39",
+                  "M53", "M27",
+                  "M52", "M17",
+                  "M21", "M50"), each = 32),
 ```
 
 Throughout this file, both `region_id` and the term `each = 32`
@@ -144,11 +148,11 @@ is a few minutes past the light-on time point; this will ensure none of
 the functions that deal with time are hindered (see section 2.3).
 
 ``` main
-# Start datetime for monitoring period
-  start_datetime = "2019-06-22 10:00:00",
+  # Start date and time of the monitoring period
+  start_datetime = "2019-08-17 10:00:00",
   
-  # Stop datetime for monitoring period
-  stop_datetime = "2019-06-24 10:05:00",
+  # Stop date and time of the monitoring period
+  stop_datetime = "2019-08-19 10:05:00",
 ```
 
 ### 1.4 Organism Specifications
@@ -169,10 +173,12 @@ as formatted in `start_datetime` or `sex`)
   sex = "M",
   
   # Genotypes
-  genotype = rep(c("CS", "CS", 
-                   "SIP-L2-3", "SIP-L2-3",
-                   "SIP-L2-4", "SIP-L2-4", 
-                   "SIP-L2-5", "SIP-L2-5"), each = 32),
+  genotype = rep(c("SIP-L2-2", "SIP-L2-2",
+                   "SIP-S2-8", "SIP-S2-8",
+                   "SIP-S2-1", "SIP-S2-1",
+                   "CS", "CS",
+                   "SIP-S2-10", "SIP-S2-10",
+                   "SIP-L2-1", "SIP-L2-1"), each = 32),
 ```
 
 ### 1.5 Experimental Treatments
@@ -185,10 +191,12 @@ isolation, change in diet, sexual deprivation, etc..
 temp = "21.5C",
 
 # Treatment applied during monitoring period
-  treatment = rep(c("Iso_2D","Grp_2D",
-                    "Iso_2D","Grp_2D",
-                    "Iso_2D","Grp_2D",
-                    "Iso_2D","Grp_2D"),each = 32),
+treatment = rep(c("Iso_2D", "Grp_2D",
+                    "Iso_2D", "Grp_2D",
+                    "Iso_2D", "Grp_2D",
+                    "Iso_2D", "Grp_2D",
+                    "Iso_2D", "Grp_2D",
+                    "Iso_2D", "Grp_2D"), each = 32),
 
 # Environmental factors
   environment = "NA",
@@ -447,9 +455,6 @@ info <- data.table::data.table(
   # Stop date and time of the monitoring period
   stop_datetime = "2019-08-19 10:05:00",
   
-  # Temperature during the monitoring period
-  temp = "21.5C",
-  
   # Sex of the subjects being monitored (M = Male, F = Female)
   sex = "M",
   
@@ -460,6 +465,9 @@ info <- data.table::data.table(
                    "CS", "CS",
                    "SIP-S2-10", "SIP-S2-10",
                    "SIP-L2-1", "SIP-L2-1"), each = 32),
+  
+  # Temperature during the monitoring period
+  temp = "21.5C",
   
   # Treatment applied during the monitoring period (e.g., Isolation or Group treatment)
   treatment = rep(c("Iso_2D", "Grp_2D",
@@ -513,6 +521,9 @@ num_days = 2
 
 # Run the Analysis
 runAllBatches(controlgeno = "CS", controltreat = "Grp")
+
+
+# Optional functions -----------------------------------------------------------
 
 # Plot correlation matrix (optional)
 corMat(Compare1 = "Grp_2D", Compare2 = "Iso_2D")
