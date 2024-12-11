@@ -50,12 +50,18 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref) {
       ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
       ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
 
-      ggprism::theme_prism(base_fontface = "plain", base_line_size = 0.7) +
+      ggprism::theme_prism(base_fontface = "bold") +
       ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[1]),
                                                !!rlang::sym(divisions[2]),
                                                !!rlang::sym(divisions[3])))+
-      ggplot2::labs(y = "Percentage of flies sleeping") +
-      ggplot2::scale_y_continuous(limits = c(0,1), labels = scales::percent)
+      ggplot2::labs(y = "% Flies Sleeping") +
+      ggplot2::scale_y_continuous(limits = c(0,1), labels = scales::percent) +
+      ggplot2::theme(axis.title.x = ggplot2::element_text(size = 20),
+                     axis.title.y = ggplot2::element_text(size = 20),
+                     axis.text.x = ggplot2::element_text(size = 16),
+                     axis.text.y = ggplot2::element_text(size = 16),
+                     legend.text = ggplot2::element_text(size = 16, face = "bold"),
+                     strip.text = ggplot2::element_text(size = 20))
     print(pop_sleep_plot)
     dev.off()
   }
@@ -77,11 +83,17 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref) {
       ggetho::stat_ld_annotations() +
       ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
       ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
-      ggprism::theme_prism(base_fontface = "plain", base_line_size = 0.7) +
+      ggprism::theme_prism(base_fontface = "bold", base_line_size = 0.7) +
       ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[2])),
                           cols = ggplot2::vars(!!rlang::sym(divisions[3])))+
-      ggplot2::labs(y = "Percentage of flies sleeping") +
-      ggplot2::scale_y_continuous(limits = c(0,1), labels = scales::percent)
+      ggplot2::labs(y = "% Flies Sleeping") +
+      ggplot2::scale_y_continuous(limits = c(0,1), labels = scales::percent) +
+      ggplot2::theme(axis.title.x = ggplot2::element_text(size = 20),
+                     axis.title.y = ggplot2::element_text(size = 20),
+                     axis.text.x = ggplot2::element_text(size = 16),
+                     axis.text.y = ggplot2::element_text(size = 16),
+                     legend.text = ggplot2::element_text(size = 16, face = "bold"),
+                     strip.text = ggplot2::element_text(size = 20))
     print(pop_sleep_plot)
     dev.off()
   }

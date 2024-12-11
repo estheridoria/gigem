@@ -43,10 +43,15 @@ genotypePlots <- function(dt_curated_final, summary_dt_final) {
             ggetho::stat_ld_annotations() +
             ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
             ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
-            ggprism::theme_prism(base_fontface = "plain", base_line_size = 0.7) +
-            ggplot2::theme(legend.position = c(0.80, 0.15))+
-            ggplot2::labs(title = glist[g], y= "Percentage of flies sleeping") +
-            ggplot2::scale_y_continuous(limits = c(0,1), labels = scales::percent)
+            ggplot2::labs(title = glist[g], y= "% Flies Sleeping") +
+            ggplot2::scale_y_continuous(limits = c(0,1), labels = scales::percent)+
+            ggprism::theme_prism(base_fontface = "bold") +
+            ggplot2::theme(axis.title.x = ggplot2::element_text(size = 20),
+                           axis.title.y = ggplot2::element_text(size = 20),
+                           axis.text.x = ggplot2::element_text(size = 16),
+                           axis.text.y = ggplot2::element_text(size = 16),
+                           legend.text = ggplot2::element_text(size = 16, face = "bold"),
+                           legend.position = c(0.8,0.15))
 
         # Function to create sleep duration plots
           create_sleeptime_plot <- function(plot_data, yParam, Yname, limits, geom) {
@@ -54,13 +59,10 @@ genotypePlots <- function(dt_curated_final, summary_dt_final) {
                                         ggplot2::aes(x = treatment, y = .data[[yParam]]))
             if(geom == "bar"){
               pointplot <- pointplot +
-                ggplot2::stat_summary(fun = "mean", geom = geom, width = .5, fill="grey90")
-            }
+                ggplot2::stat_summary(fun = "mean", geom = geom, width = .5, fill="grey90")}
             if(geom == "violin"){
               pointplot <- pointplot +
-                ggplot2::geom_violin(fill="grey90")
-            }
-
+                ggplot2::geom_violin(fill="grey90")}
             pointplot <- pointplot +
               ggbeeswarm::geom_beeswarm(ggplot2::aes(fill = treatment, color = treatment),
                                         dodge.width = 0.9, shape = 21, cex = 3.5) +
@@ -70,11 +72,13 @@ genotypePlots <- function(dt_curated_final, summary_dt_final) {
                                      color = "black") +
               ggplot2::geom_point(size = 1.5, stat = "summary", fun = mean, shape = 3,
                                   color = "black") +
-              ggprism::theme_prism(base_fontface = "plain", base_line_size = 0.7)  +
-              ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust= 1),
-                             plot.margin = ggplot2::margin(0,0,0,0,"inches"), legend.position = "none") +
-              ggplot2::ylim(0,limits) +
-              ggplot2::labs(title = "", x = NULL, y = Yname)
+              ggplot2::scale_y_continuous(name = Yname, limits = c(0,limits)) +
+              ggplot2::scale_x_discrete(name = NULL)+
+              ggprism::theme_prism(base_fontface = "bold")  +
+              ggplot2::theme(axis.title.y = ggplot2::element_text(size = 20),
+                             axis.text.x = ggplot2::element_text(size = 16, angle = 45, vjust = 1, hjust= 1),
+                             axis.text.y = ggplot2::element_text(size = 16),
+                             legend.position = "none")
             return(pointplot)
           }
 
@@ -84,6 +88,7 @@ genotypePlots <- function(dt_curated_final, summary_dt_final) {
         p4 <- create_sleeptime_plot(summary_dt_final, "sleep_time_d", "Nighttime Sleep (min)", 1000, "bar")
         p5 <- create_sleeptime_plot(summary_dt_final, "n_bouts_L", "Daytime Sleep Bouts", 80, "violin")
         p6 <- create_sleeptime_plot(summary_dt_final, "n_bouts_D", "Nighttime Sleep Bouts", 80, "violin")
+
 
         # Combine plots
         u <- length(unique(summary_dt_final$treatment)) # Dynamic width adjustment
