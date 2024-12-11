@@ -138,7 +138,7 @@ kmeansCluster <- function(Compare1, Compare2, groupings, column_name) {
 
     # Creating a correlation plot colored by clusters and pregrouping
       ggplot2::ggplot(df, ggplot2::aes(x = gsleep, y = P.sleeploss, fill = pregrouping)) +
-        ggplot2::geom_smooth(method = "lm", color = "grey31", se = TRUE) +
+        #ggplot2::geom_smooth(method = "lm", color = "grey31", se = TRUE) +
         ggplot2::geom_point(size = 2, stroke = 0.5, alpha = 2/3, color = "black",
                             ggplot2::aes(shape = cluster)) +
         ggplot2::labs(
