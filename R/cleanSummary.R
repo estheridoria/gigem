@@ -48,7 +48,7 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
       width = 5*length(unique(info[[divisions[3]]]))+2,
       height = 3*length(unique(info[[divisions[2]]]))+2)
     suppressWarnings(print(
-      ggetho::ggetho(bout_dt, ggplot2::aes(y = duration / 60, colour = treatment), time_wrap = behavr::hours(24)) +
+      ggetho::ggetho(bout_dt, ggplot2::aes(y = duration / 60, colour = .data[[divisions[1]]]), time_wrap = behavr::hours(24)) +
       ggetho::stat_pop_etho() +
       ggetho::stat_ld_annotations() +
       ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
