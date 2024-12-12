@@ -121,10 +121,15 @@ corMat <- function(Compare1, Compare2){
   p.labs <- reshape2::melt(p.labs, id.vars = "Var1", variable.name = "Var2", value.name = "lab")
 
   # Initial ggcorrplot
-  cor.plot <- ggcorrplot::ggcorrplot(corr, type = "lower", lab = TRUE, show.diag = TRUE) +
+  cor.plot <- ggcorrplot::ggcorrplot(corr, type = "lower", lab = TRUE, show.diag = TRUE, lab_size = 5) +
     ggplot2::labs(y = NULL, x = NULL, title = paste(plotnames[i], "Sleep Changes by Bouts")) +
-    ggprism::theme_prism(base_fontface = "plain", base_line_size = 0.7) +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust = 1))
+    ggprism::theme_prism(base_fontface = "bold") +
+    ggplot2::theme(
+      title = ggplot2::element_text(size = 14),
+      axis.text.y = ggplot2::element_text(size = 14),
+      axis.text.x = ggplot2::element_text(size = 14, angle = 45, vjust = 1, hjust = 1),
+      legend.text = ggplot2::element_text(size = 14, face = "bold")
+      )
 
   # Subset the significance labels to match the correlation plot's data.
   p.labs$in.df <- ifelse(is.na(match(paste0(p.labs$Var1, p.labs$Var2),
