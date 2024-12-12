@@ -65,26 +65,31 @@ normDisplay <- function(treat, treat2 = NULL, column_name, Control) {
   for (i in 1:length(names)){
 
     # Create a function to iterate through each plot
-    plot_fun <- function(plot_data, title, xdef, xtitle = NULL) {
+    plot_fun <- function(plot_data, title, xdef) {
       p <-ggplot2::ggplot(plot_data, ggplot2::aes (x = get(xdef), y = get(names[i]))) +
         ggplot2::coord_cartesian(ylim = c(-.7, 0.2)) +
-        ggplot2::stat_summary(fun = "mean", geom = "bar", width = .9, fill="grey40") +
+        ggplot2::stat_summary(fun = "mean", geom = "bar", width = .85, fill="grey50") +
         ggplot2::labs(title = paste(title, names[i]),
-                      x = xtitle,
+                      x = "",
                       y = "Change in Sleep") +
-        ggprism::theme_prism(base_fontface = "plain", base_line_size = 0.7) +
-        ggplot2::theme(axis.text.x = ggplot2::element_text(hjust = 1, vjust = 1, angle = 45),
-            legend.position="none")
+        ggplot2::scale_y_continuous(labels = scales::percent) +
+        ggprism::theme_prism(base_fontface = "plain") +
+        ggplot2::theme(
+          title = ggplot2::element_text(size = 16),
+          axis.text.x = ggplot2::element_text(hjust = 1, vjust = 1, angle = 90, size = 9),
+          axis.text.y = ggplot2::element_text(size = 9),
+          axis.title.y = ggplot2::element_text(size = 16),
+          legend.position="none")
       return(p)
     }
 
-    # Plot the 2 conditions as well as the wildtypes
-    p1 <- plot_fun(dataset_delta_Iso_treat, treat, column_name, column_name)
-    p2<- plot_fun(dataset_delta_Iso_treat_Control, paste(treat, Control), column_name, "Control")
+    # Plot the 2 conditions as well as the controls
+    p1 <- plot_fun(dataset_delta_Iso_treat, treat, column_name)
+    p2<- plot_fun(dataset_delta_Iso_treat_Control, paste(treat, Control), "batch_name")
 
     if (treat2 != "NULL"){
-    p3 <- plot_fun(dataset_delta_Iso_treat2_Control, paste(treat2, Control), column_name, "Control")
-    p4 <- plot_fun(dataset_delta_Iso_treat2, treat2, column_name, column_name)
+    p3 <- plot_fun(dataset_delta_Iso_treat2, treat2, column_name)
+    p4 <- plot_fun(dataset_delta_Iso_treat2_Control, paste(treat2, Control), "batch_name")
     }
 
 
