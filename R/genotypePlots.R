@@ -67,7 +67,8 @@ genotypePlots <- function(dt_curated_final, summary_dt_final) {
             ggplot2::labs(title = glist[g], y= "% Flies Sleeping") +
             ggplot2::scale_y_continuous(limits = c(0,1), labels = scales::percent)+
             ggprism::theme_prism(base_fontface = "bold") +
-            ggplot2::theme(axis.title.x = ggplot2::element_text(size = 20),
+            ggplot2::theme(title = ggplot2::element_text(size = 22),
+                           axis.title.x = ggplot2::element_text(size = 20),
                            axis.title.y = ggplot2::element_text(size = 20),
                            axis.text.x = ggplot2::element_text(size = 16),
                            axis.text.y = ggplot2::element_text(size = 16),
