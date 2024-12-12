@@ -121,7 +121,7 @@ corMat <- function(Compare1, Compare2){
   p.labs <- reshape2::melt(p.labs, id.vars = "Var1", variable.name = "Var2", value.name = "lab")
 
   # Initial ggcorrplot
-  cor.plot <- ggcorrplot::ggcorrplot(corr, type = "lower", lab = TRUE) +
+  cor.plot <- ggcorrplot::ggcorrplot(corr, type = "lower", lab = TRUE, show.diag = TRUE) +
     ggplot2::labs(y = NULL, x = NULL, title = paste(plotnames[i], "Sleep Changes by Bouts")) +
     ggprism::theme_prism(base_fontface = "plain", base_line_size = 0.7) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust = 1))
