@@ -137,16 +137,16 @@ kmeansCluster <- function(Compare1, Compare2, groupings, column_name) {
     }
 
     # Creating a correlation plot colored by clusters and pregrouping
-      ggplot2::ggplot(df, ggplot2::aes(x = gsleep, y = P.sleeploss, fill = pregrouping)) +
+      ggplot2::ggplot(df, ggplot2::aes(x = gsleep, y = P.sleeploss, fill = cluster)) +
         #ggplot2::geom_smooth(method = "lm", color = "grey31", se = TRUE) +
         ggplot2::geom_point(size = 2, stroke = 0.5, alpha = 2/3, color = "black",
-                            ggplot2::aes(shape = cluster)) +
+                            ggplot2::aes(shape = pregrouping)) +
         ggplot2::labs(
           title = paste0("Sleep Trend with Clustering - ", lighting[i]),
           x = "Group Sleep", y = "Percent Sleep Loss After Isolation") +
-        ggplot2::geom_text(ggplot2::aes(x = min(gsleep) + u * 1:nrow(df), y = 1,
-                               label = column_name2, color = pregrouping),
-                           angle = 90, vjust = 1.5, hjust = 1, size = 3) +
+        # ggplot2::geom_text(ggplot2::aes(x = min(gsleep) + u * 1:nrow(df), y = 1,
+        #                        label = column_name2, color = pregrouping),
+        #                    angle = 90, vjust = 1.5, hjust = 1, size = 3) +
         ggprism::theme_prism(base_fontface = "plain", base_line_size = 0.7) +
         ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1),
                        legend.title = ggplot2::element_text(size = 12)) +
