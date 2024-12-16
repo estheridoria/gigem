@@ -37,7 +37,7 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref) {
   # Trim data to the desired time range
   dt_curated_final <- dt_curated_2[dt_curated_2$t >= behavr::days(0) &
                                      dt_curated_2$t <= behavr::days(num_days)]
-
+  data.table::fwrite(dt_curated_final, paste0("sleepdata_",ExperimentData@Batch, ".csv"))
 
   if(pref[2]==1){
   # Generate population plots
