@@ -2,7 +2,6 @@
 #'
 #' Computes the relative sleep changes between two treatments and generates a correlation matrix plot with significance annotations.
 #'
-#' @param combined_data A data frame containing combined data from all batches, including variables such as `temp`, `sex`, `treatment`, `genotype`, and sleep-related metrics.
 #' @param Compare1 A character string representing the first treatment to compare. This should be the control.
 #' @param Compare2 A character string representing the second treatment to compare. This will be compared to the control.
 #'
@@ -26,6 +25,12 @@ corMat <- function(Compare1, Compare2){
   # Validate that Compare1 is provided and is a valid string.
   if(missing(Compare2) || !rlang::is_string(Compare2)){
     stop("Compare2 is missing or invalid")}
+  if (controlColumn %in% colnames(meanData)) {
+    # Proceed with filtering
+  } else {
+    stop("Column does not exist!")
+  }
+
 
   # Read in the combined data from the CSV file.
   combined_data <- read.csv("all_batches_summary.csv")
@@ -48,7 +53,7 @@ corMat <- function(Compare1, Compare2){
   names <- c("mean_sleep_time_l", "mean_sleep_time_d")
 
   # Extract and order the genotypes.
-  genotypes <- unique(combined_data$genotype)[order(unique(combined_data$genotype))]
+  genotypes <- unique(meanData$genotype)[order(unique(meanData$genotype))]
 
   # Initialize an empty data frame for the genotypes.
   abs.df <- df <- df1 <- data.frame(genotypes)

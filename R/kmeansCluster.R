@@ -7,7 +7,7 @@
 #' @param Compare1 A string specifying the first comparison treatment group (e.g., "Control").
 #' @param Compare2 A string specifying the second comparison treatment group (e.g., "Treatment").
 #' @param aPriori A character vector of group names (e.g., c("L1", "L2", "S1", "S2", "CS")) to match against the specified column (default is `genotype`).
-#' @param column_name A string specifying the column name for grouping in the data (default is `genotype`).
+#' @param aPrioriColumn A string specifying the column name for grouping in the data (default is `genotype`).
 #'
 #' @details
 #' This function performs K-means clustering on sleep data for two comparison treatment groups (`Compare1` and `Compare2`). It automatically determines the optimal number of clusters using three methods:
@@ -19,7 +19,7 @@
 #'
 #' @return None. Saves the plots as PDF files and outputs a CSV file with cluster assignments.
 #' @export
-kmeansCluster <- function(Compare1, Compare2, aPriori, column_name) {
+kmeansCluster <- function(Compare1, Compare2, aPriori, aPrioriColumn) {
 
   # Check if 'all_batches_summary.csv' exists in the current directory, and if not, stop execution.
   if (!file.exists("all_batches_summary.csv")) {
@@ -54,7 +54,7 @@ kmeansCluster <- function(Compare1, Compare2, aPriori, column_name) {
   )
 
   # Dynamically select the column to be used for grouping based on user input
-  group_column <- dplyr::pull(meanData, dplyr::all_of(column_name)) # Extract the specified column
+  group_column <- dplyr::pull(meanData, dplyr::all_of(aPrioriColumn)) # Extract the specified column
 
   # Initialize the aPriori column
   data.table::setDT(meanData)
@@ -66,7 +66,7 @@ kmeansCluster <- function(Compare1, Compare2, aPriori, column_name) {
   }
 
   # Further processing
-  columnnames <- c("column_name2", "gsleep", "isleep", "P.sleeploss", "aPriori")
+  columnnames <- c("aPrioriColumn2", "gsleep", "isleep", "P.sleeploss", "aPriori")
   names <- c("mean_sleep_time_all", "mean_sleep_time_l", "mean_sleep_time_d")
   lighting <- c("ZT0_24", "ZT0_12", "ZT12_24")
 
@@ -76,7 +76,7 @@ kmeansCluster <- function(Compare1, Compare2, aPriori, column_name) {
   for (i in 1:3) {
     gsleep <- meanData[meanData$treatment == Compare1, get(names[i])]
     isleep <- meanData[meanData$treatment == Compare2, get(names[i])]
-    name <-   meanData[meanData$treatment == Compare1, get(column_name)]
+    name <-   meanData[meanData$treatment == Compare1, get(aPrioriColumn)]
 
     aPriori.grp <- meanData[meanData$treatment == Compare1, "aPriori"]
     p.sleeploss <- (gsleep - isleep) / gsleep
@@ -130,8 +130,8 @@ kmeansCluster <- function(Compare1, Compare2, aPriori, column_name) {
     if (N_clus) {
       clusterfile[,i + 2] <- df[,6]
     } else {
-      clusterfile <- cbind(df[, c(1, 5, 6, 6, 6)])  # binds column_names, aPriori, and cluster number
-      colnames(clusterfile) <- c(column_name, "aPriori", paste0("Cluster",
+      clusterfile <- cbind(df[, c(1, 5, 6, 6, 6)])  # binds aPrioriColumns, aPriori, and cluster number
+      colnames(clusterfile) <- c(aPrioriColumn, "aPriori", paste0("Cluster",
               lighting[1]), paste0("Cluster", lighting[2]), paste0("Cluster", lighting[3]))
       N_clus <- TRUE
     }
@@ -147,7 +147,7 @@ kmeansCluster <- function(Compare1, Compare2, aPriori, column_name) {
           title = paste0("Sleep Trend with Clustering - ", lighting[i]),
           x = "Group Sleep", y = "% Sleep Loss After Isolation") +
         # ggplot2::geom_text(ggplot2::aes(x = min(gsleep) + u * 1:nrow(df), y = 1,
-        #                        label = column_name2, color = aPriori),
+        #                        label = aPrioriColumn2, color = aPriori),
         #                    angle = 90, vjust = 1.5, hjust = 1, size = 3) +
         ggprism::theme_prism(base_fontface = "bold") +
         ggplot2::theme(title = ggplot2::element_text(size = 24),
@@ -167,7 +167,7 @@ kmeansCluster <- function(Compare1, Compare2, aPriori, column_name) {
   }
 
   # Write the file which labels the cluster each genotype is in
-  colnames(clusterfile) <- c(column_name, "aPriori", paste0("Cluster", lighting[1]), paste0("Cluster", lighting[2]), paste0("Cluster", lighting[3]))
+  colnames(clusterfile) <- c(aPrioriColumn, "aPriori", paste0("Cluster", lighting[1]), paste0("Cluster", lighting[2]), paste0("Cluster", lighting[3]))
   data.table::fwrite(clusterfile, paste0("clustered", Compare1, ".csv"))
 #
 #   summary(lm(data = df, P.sleeploss ~ gsleep + aPriori)) # some significant // when controlling for related-ness, group sleep is typically negatively correlated with % sleep loss BUT NOT A LOT
