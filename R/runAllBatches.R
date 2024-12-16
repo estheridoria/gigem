@@ -114,4 +114,35 @@ runAllBatches <- function(controlgeno, controltreat) {
   output_file <- file.path(parent_dir, "all_batches_summary.csv")
   data.table::fwrite(combined_data, output_file, row.names = FALSE)
 
+if (perf[7] == 1){
+  #concatenate all behavr data tables
+  all_tables <- list()
+
+  # Iterate over each batch directory and read the summary files
+  for (batch_dir in batch_dirs) {
+    all_tables <- concatenate(batch_dir, all_tables, "^sleepdata_Batch[0-9_a-zA-Z]*\\.csv$")}
+
+  # Concatenate all data frames into one large data frame
+  combined_sleepdata <- do.call(rbind, all_tables)
+
+  # Save the combined data frame to a CSV file in the parent directory
+  output_file <- file.path(parent_dir, "all_sleepdata.csv")
+  data.table::fwrite(combined_sleepdata, output_file, row.names = FALSE)
+
+
+  #concatenate all behavr meta data
+  all_tables <- list()
+
+  # Iterate over each batch directory and read the summary files
+  for (batch_dir in batch_dirs) {
+    all_tables <- concatenate(batch_dir, all_tables, "^sleepmeta_Batch[0-9_a-zA-Z]*\\.csv$")}
+
+  # Concatenate all data frames into one large data frame
+  combined_sleepmeta <- do.call(rbind, all_tables)
+
+  # Save the combined data frame to a CSV file in the parent directory
+  output_file <- file.path(parent_dir, "all_sleepdata.csv")
+  data.table::fwrite(combined_sleepmeta, output_file, row.names = FALSE)
+
+  concatGenotypePlots(combined_sleepdata, combined_sleepmeta, combined_data)}
 }
