@@ -18,7 +18,7 @@
 #'
 #' @return A `data.table` of the curated data (`dt`) limited to animals meeting the lifespan threshold.
 #' @keywords internal
-manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref) {
+manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref, font) {
 
   # Remove animals dying too early
   lifespan_dt <- dt[, .(lifespan = max(t)), by=id]
@@ -37,8 +37,19 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref) {
   # Trim data to the desired time range
   dt_curated_final <- dt_curated_2[dt_curated_2$t >= behavr::days(0) &
                                      dt_curated_2$t <= behavr::days(num_days)]
+
+
+  #save behavr and metadata into csv files (with light quoted) for concatGenotypePlots
+  if (pref[7] == 1) {
   data.table::fwrite(dt_curated_final, paste0("sleepdata_",ExperimentData@Batch, ".csv"))
-  data.table::fwrite(dt_curated_final@metadata, paste0("sleepmeta_",ExperimentData@Batch, ".csv"))
+  meta_data <- behavr::meta(dt_curated_final)
+  meta_data <- meta_data[, !sapply(meta_data, is.list), with = FALSE]
+  meta_data[, light := paste0('"', light, '"')]
+  data.table::fwrite(meta_data,
+                     paste0("sleepmeta_",ExperimentData@Batch, ".csv"),
+                     quote = TRUE)
+  }
+
 
   if(pref[2]==1){
   # Generate population plots
@@ -51,7 +62,7 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref) {
       ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
       ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
 
-      ggprism::theme_prism(base_fontface = "bold") +
+      ggprism::theme_prism(base_fontface = font) +
       ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[1]),
                                                !!rlang::sym(divisions[2]),
                                                !!rlang::sym(divisions[3])))+
@@ -61,7 +72,7 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref) {
                      axis.title.y = ggplot2::element_text(size = 20),
                      axis.text.x = ggplot2::element_text(size = 16),
                      axis.text.y = ggplot2::element_text(size = 16),
-                     legend.text = ggplot2::element_text(size = 16, face = "bold"),
+                     legend.text = ggplot2::element_text(size = 16, face = font),
                      strip.text = ggplot2::element_text(size = 20))
     print(pop_sleep_plot)
     dev.off()
@@ -84,7 +95,7 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref) {
       ggetho::stat_ld_annotations() +
       ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
       ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
-      ggprism::theme_prism(base_fontface = "bold", base_line_size = 0.7) +
+      ggprism::theme_prism(base_fontface = font, base_line_size = 0.7) +
       ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[2])),
                           cols = ggplot2::vars(!!rlang::sym(divisions[3])))+
       ggplot2::labs(y = "% Flies Sleeping") +
@@ -93,7 +104,7 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref) {
                      axis.title.y = ggplot2::element_text(size = 20),
                      axis.text.x = ggplot2::element_text(size = 16),
                      axis.text.y = ggplot2::element_text(size = 16),
-                     legend.text = ggplot2::element_text(size = 16, face = "bold"),
+                     legend.text = ggplot2::element_text(size = 16, face = font),
                      strip.text = ggplot2::element_text(size = 20))
     print(pop_sleep_plot)
     dev.off()

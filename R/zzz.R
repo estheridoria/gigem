@@ -40,7 +40,6 @@
 # source("normSummary.R")
 # source("generateSE.R")
 # source("summarySE.R")
-# source("generateNorms.R")
 # source("concatenate.R")
 # source("corMat.R")
 # source("kmeansCluster.R")
@@ -48,7 +47,7 @@
 # source("plotPreferences.R")
 # source("processDays.R")
 # source("runAllBatches.R")
-
+# source("concatGenotypePlots.R")
 
 
 

@@ -17,7 +17,7 @@ generateSE <- function(dt, groups, Batch, norm = FALSE) {
   # Loop through each group to compute summary statistics
   for (group in groups) {
     # Compute summary statistics for the current group
-    summary_group <- summarySE(dt,
+    summary_group <- summarySE(data = dt,
                                 measurevar = paste0(group),
                                 groupvars = c("sex", "genotype", "treatment", "environment", "light"))
 

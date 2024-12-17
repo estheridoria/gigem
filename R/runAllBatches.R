@@ -42,7 +42,8 @@
 #' 3. It concatenates the normalized and general summary statistics for each batch into separate CSV files.
 #' 4. The final CSV files, \code{all_batches_norm_summary.csv} and \code{all_batches_summary.csv},
 #'    are saved in the parent directory, containing combined results for all batches.
-runAllBatches <- function(controlgeno, controltreat) {
+runAllBatches <- function(controlgeno, controltreat,
+                          controllight, controlenviro, font = "plain") {
 
   #ask user which plots they want
   pref <- plotPreferences()
@@ -74,10 +75,10 @@ runAllBatches <- function(controlgeno, controltreat) {
     stop("The folder(s) inside the parent directory containing each Batch's data is either not present or is not formatted correctly. Please add or rename the folder and R file within to follow the format: 'Batch' followed by any combination of letters, numbers and/or underscores.")
 
   # Iterate over each batch directory and run the R files
-  for (batch_dir in batch_dirs)
-  {
+  for (batch_dir in batch_dirs){
     run_r_files_in_dir(batch_dir)
-    runOneBatch(info, divisions, num_days, pref, controlgeno, controltreat)
+    runOneBatch(info, divisions, num_days, pref, controlgeno, controltreat,
+                controllight, controlenviro, font)
   }
 
   # Restore the original working directory
@@ -109,21 +110,24 @@ runAllBatches <- function(controlgeno, controltreat) {
 
   # Concatenate all data frames into one large data frame
   combined_data <- do.call(rbind, all_tables)
+  data.table::setDT(combined_data)
 
   # Save the combined data frame to a CSV file in the parent directory
   output_file <- file.path(parent_dir, "all_batches_summary.csv")
   data.table::fwrite(combined_data, output_file, row.names = FALSE)
 
-if (perf[7] == 1){
+if (pref[7] == 1){
   #concatenate all behavr data tables
   all_tables <- list()
 
   # Iterate over each batch directory and read the summary files
   for (batch_dir in batch_dirs) {
-    all_tables <- concatenate(batch_dir, all_tables, "^sleepdata_Batch[0-9_a-zA-Z]*\\.csv$")}
+    all_tables <- concatenate(batch_dir, all_tables, "^sleepdata_Batch[0-9_a-zA-Z]*\\.csv$")
+    }
 
   # Concatenate all data frames into one large data frame
   combined_sleepdata <- do.call(rbind, all_tables)
+  data.table::setDT(combined_sleepdata)
 
   # Save the combined data frame to a CSV file in the parent directory
   output_file <- file.path(parent_dir, "all_sleepdata.csv")
@@ -135,14 +139,17 @@ if (perf[7] == 1){
 
   # Iterate over each batch directory and read the summary files
   for (batch_dir in batch_dirs) {
-    all_tables <- concatenate(batch_dir, all_tables, "^sleepmeta_Batch[0-9_a-zA-Z]*\\.csv$")}
+    all_tables <- concatenate(batch_dir, all_tables, "^sleepmeta_Batch[0-9_a-zA-Z]*\\.csv$")
+    }
 
   # Concatenate all data frames into one large data frame
   combined_sleepmeta <- do.call(rbind, all_tables)
+  data.table::setDT(combined_sleepmeta)
 
   # Save the combined data frame to a CSV file in the parent directory
-  output_file <- file.path(parent_dir, "all_sleepdata.csv")
+  output_file <- file.path(parent_dir, "all_sleepmeta.csv")
   data.table::fwrite(combined_sleepmeta, output_file, row.names = FALSE)
 
-  concatGenotypePlots(combined_sleepdata, combined_sleepmeta, combined_data)}
+  concatGenotypePlots(combined_sleepdata, combined_sleepmeta, summary_dt_final = combined_data, font)
+  }
 }

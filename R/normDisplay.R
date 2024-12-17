@@ -16,7 +16,7 @@
 #' @export
 #'
 #' @keywords internal
-normDisplay <- function(treat, treat2 = NULL, column_name, Control) {
+normDisplay <- function(treat, treat2 = NULL, column_name, Control, font = "plain") {
   # Read the normalized data from CSV file
   dataset <- read.csv("all_batches_norm_summary.csv")
   dataset <- data.table::setDT(dataset)
@@ -65,7 +65,7 @@ normDisplay <- function(treat, treat2 = NULL, column_name, Control) {
   for (i in 1:length(names)){
 
     # Create a function to iterate through each plot
-    plot_fun <- function(plot_data, title, xdef) {
+    plot_fun <- function(plot_data, title, xdef, font) {
       p <-ggplot2::ggplot(plot_data, ggplot2::aes (x = get(xdef), y = get(names[i]))) +
         ggplot2::coord_cartesian(ylim = c(-.7, 0.2)) +
         ggplot2::stat_summary(fun = "mean", geom = "bar", width = .85, fill="grey50") +
@@ -73,7 +73,7 @@ normDisplay <- function(treat, treat2 = NULL, column_name, Control) {
                       x = "",
                       y = "Change in Sleep") +
         ggplot2::scale_y_continuous(labels = scales::percent) +
-        ggprism::theme_prism(base_fontface = "plain") +
+        ggprism::theme_prism(base_fontface = font) +
         ggplot2::theme(
           title = ggplot2::element_text(size = 16),
           axis.text.x = ggplot2::element_text(hjust = 1, vjust = 1, angle = 90, size = 9),
@@ -84,12 +84,12 @@ normDisplay <- function(treat, treat2 = NULL, column_name, Control) {
     }
 
     # Plot the 2 conditions as well as the controls
-    p1 <- plot_fun(dataset_delta_Iso_treat, treat, column_name)
-    p2<- plot_fun(dataset_delta_Iso_treat_Control, paste(treat, Control), "batch_name")
+    p1 <- plot_fun(dataset_delta_Iso_treat, treat, column_name, font = font)
+    p2<- plot_fun(dataset_delta_Iso_treat_Control, paste(treat, Control), "batch_name", font = font)
 
     if (treat2 != "NULL"){
-    p3 <- plot_fun(dataset_delta_Iso_treat2, treat2, column_name)
-    p4 <- plot_fun(dataset_delta_Iso_treat2_Control, paste(treat2, Control), "batch_name")
+    p3 <- plot_fun(dataset_delta_Iso_treat2, treat2, column_name, font = font)
+    p4 <- plot_fun(dataset_delta_Iso_treat2_Control, paste(treat2, Control), "batch_name", font = font)
     }
 
 

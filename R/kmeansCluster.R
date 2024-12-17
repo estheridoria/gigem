@@ -149,13 +149,13 @@ kmeansCluster <- function(Compare1, Compare2, aPriori, aPrioriColumn) {
         # ggplot2::geom_text(ggplot2::aes(x = min(gsleep) + u * 1:nrow(df), y = 1,
         #                        label = aPrioriColumn2, color = aPriori),
         #                    angle = 90, vjust = 1.5, hjust = 1, size = 3) +
-        ggprism::theme_prism(base_fontface = "bold") +
+        ggprism::theme_prism(base_fontface = font) +
         ggplot2::theme(title = ggplot2::element_text(size = 24),
           axis.title.y = ggplot2::element_text(size = 26),
                        axis.title.x = ggplot2::element_text(size = 26),
                        axis.text.x = ggplot2::element_text(size = 20),
                        axis.text.y = ggplot2::element_text(size = 20),
-                       legend.text = ggplot2::element_text(size = 20, face = "bold"),
+                       legend.text = ggplot2::element_text(size = 20, face = font),
                        legend.title = ggplot2::element_text(size = 20)) +
         ggplot2::scale_shape_manual(name = "A Priori", values = c(0,1,4,2,3,14,9,10,11)) +
         ggplot2::scale_fill_viridis_d(name = "Cluster", option = "D", begin = 0, end = 0.8) +

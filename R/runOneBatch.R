@@ -10,7 +10,7 @@
 #' @param pref A vector of preferences for generating specific plots (e.g., whether to generate concatenated plots).
 #' @param controltreat A character string specifying the control treatment.
 #' @param controlgeno A character string specifying the control genotype.
-#' 
+#'
 #' @return This function does not return a value but performs a series of steps to process the data,
 #' generate plots, and calculate statistics.
 #'
@@ -26,7 +26,8 @@
 #' 8. Writes relevant output files, including the final summary and normalized statistics.
 #'
 #' @keywords internal
-runOneBatch <- function(info, divisions, num_days, pref, controlgeno, controltreat) {
+runOneBatch <- function(info, divisions, num_days, pref, controlgeno, controltreat,
+                        controllight, controlenviro, font) {
 
   # Create an object that contains all of your inputs
   ExperimentData <- new("ExperimentData",
@@ -45,14 +46,14 @@ runOneBatch <- function(info, divisions, num_days, pref, controlgeno, controltre
   dt_curated <- aliveVsDead(ExperimentData, dt_activity)
 
   # Further removal and trimming of animals that died before specified time, providing list of IDs removed
-  dt_final <- manualDeadRemoval(ExperimentData, dt_curated, num_days, divisions, pref)
+  dt_final <- manualDeadRemoval(ExperimentData, dt_curated, num_days, divisions, pref, font)
 
   # Write bout length pdf, and calculate bout and latency stats
-  dt_finalSummary <- cleanSummary(ExperimentData, dt_final, num_days, loading_metadata, divisions, pref)
+  dt_finalSummary <- cleanSummary(ExperimentData, dt_final, num_days, loading_metadata, divisions, pref, font)
 
   if (pref[5] == 1){
   # Generate concatenated plots
-  genotypePlots(dt_final, dt_finalSummary)
+  genotypePlots(dt_final, dt_finalSummary, font)
   }
 
   # Define input column names for normalized statistics
@@ -66,13 +67,14 @@ runOneBatch <- function(info, divisions, num_days, pref, controlgeno, controltre
 
   # Calculate the normalization factor for statistics
   norm_factor <- dt_finalSummary[, lapply(.SD, mean),
-                                 by = .(genotype, treatment),
+                                 by = .(genotype, treatment,light,environment),
                                  .SDcols = groups]
 
   # Summary of statistics for sleep time for all groups
   stat_summary <- statsSummary(ExperimentData, dt_finalSummary, groups, norm_factor)
 
   # Calculate normalized statistics of sleep time for all groups
-  norm_summary <- normSummary(ExperimentData, dt_finalSummary, groups, norm_factor, controlgeno, controltreat)
-
+  norm_summary <- normSummary(ExperimentData, readin_summary_dt_final = dt_finalSummary, groups,
+                              norm_factor, controlgeno, controltreat,
+                              controllight, controlenviro)
 }

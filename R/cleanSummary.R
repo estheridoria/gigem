@@ -17,7 +17,7 @@
 #' - Outputs a CSV file named `summary_<Batch>.csv` with summarized data.
 #'
 #' @keywords internal
-cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divisions, pref) {
+cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divisions, pref, font) {
 
   # # Add linked information and prepare data
   # dt <- behavr::behavr(dt, loadinginfo_linked)
@@ -53,7 +53,7 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
       ggetho::stat_ld_annotations() +
       ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
       ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
-      ggprism::theme_prism(base_fontface = "bold") +
+      ggprism::theme_prism(base_fontface = font) +
       ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[2])),
                           cols = ggplot2::vars(!!rlang::sym(divisions[3]))) +
       ggplot2::scale_y_continuous(name = "Sleep Bout Length (min)") +
@@ -62,7 +62,7 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
                        axis.text.x = ggplot2::element_text(size = 16),
                        axis.text.y = ggplot2::element_text(size = 16),
                        strip.text = ggplot2::element_text(size = 20),
-                       legend.text = ggplot2::element_text(size = 16, face = "bold"),
+                       legend.text = ggplot2::element_text(size = 16, face = font),
                        legend.position = "right")
   )
   )
@@ -92,10 +92,16 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
   summary_dt_final <- merge(summary_dt_final, summary_bout_L, by = "id")
   summary_dt_final <- merge(summary_dt_final, summary_bout_D, by = "id")
 
-  summary_dt_final <- summary_dt_final[, c(-2,-3)]
+  lightCol <- summary_dt_final[,light]
+  summary_dt_final[, light := paste0('"', light, '"')]
 
-  # Save summary data to CSV
-  data.table::fwrite(summary_dt_final, paste("summary_", ExperimentData@Batch, ".csv", sep = ""))
+  # Now write to the file
+  data.table::fwrite(
+    summary_dt_final,
+    paste0("summary_", ExperimentData@Batch, ".csv"),
+    quote = TRUE
+  )
+  summary_dt_final[, light := lightCol]
 
   if(pref[4] ==1){
   # Helper function to create sleep plots for specified metrics
@@ -121,14 +127,14 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
                              color = "black") +
       ggplot2::geom_point(size = 1.5, stat = "summary", fun = mean, shape = 3,
                           color = "black") +
-      ggprism::theme_prism(base_fontface = "bold")  +
+      ggprism::theme_prism(base_fontface = font)  +
       ggplot2::scale_y_continuous(name = Yname, limits = c(0,limits)) +
       ggplot2::scale_x_discrete(name = NULL)+
         ggplot2::theme(axis.title.y = ggplot2::element_text(size = 20),
                        axis.text.x = ggplot2::element_text(size = 16, angle = 45, vjust = 1, hjust= 1),
                        axis.text.y = ggplot2::element_text(size = 16),
                        strip.text = ggplot2::element_text(size = 20),
-                       legend.text = ggplot2::element_text(size = 16, face = "bold"),
+                       legend.text = ggplot2::element_text(size = 16, face = font),
                        legend.position = "right")
     print(sleeptime_plot)
     dev.off()

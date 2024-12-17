@@ -10,7 +10,7 @@
 #'         A CSV file with correlation p-values is saved as `statcorRelative<Compare1>.csv` and `statcorUnadjusted<Compare1>.csv`.
 #'
 #' @export
-corMat <- function(Compare1, Compare2){
+corMat <- function(Compare1, Compare2, font = "plain"){
 
   # Check if 'all_batches_summary.csv' exists in the current directory, and if not, stop execution.
   if (!file.exists("all_batches_summary.csv")) {
@@ -128,12 +128,12 @@ corMat <- function(Compare1, Compare2){
   # Initial ggcorrplot
   cor.plot <- ggcorrplot::ggcorrplot(corr, type = "lower", lab = TRUE, show.diag = TRUE, lab_size = 5) +
     ggplot2::labs(y = NULL, x = NULL, title = paste(plotnames[i], "Sleep Changes by Bouts")) +
-    ggprism::theme_prism(base_fontface = "bold") +
+    ggprism::theme_prism(base_fontface = font) +
     ggplot2::theme(
       title = ggplot2::element_text(size = 14),
       axis.text.y = ggplot2::element_text(size = 14),
       axis.text.x = ggplot2::element_text(size = 14, angle = 45, vjust = 1, hjust = 1),
-      legend.text = ggplot2::element_text(size = 14, face = "bold")
+      legend.text = ggplot2::element_text(size = 14, face = font)
       )
 
   # Subset the significance labels to match the correlation plot's data.

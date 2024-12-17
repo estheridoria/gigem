@@ -22,7 +22,7 @@
 #' @return None. Plots are saved as PDF files.
 #' @keywords internal
 
-genotypePlots <- function(dt_curated_final, summary_dt_final) {
+genotypePlots <- function(dt_curated_final, summary_dt_final, font) {
 
   # Get unique values for light, environment, and genotype
   llist <- unique(summary_dt_final$light)
@@ -66,18 +66,18 @@ genotypePlots <- function(dt_curated_final, summary_dt_final) {
             ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
             ggplot2::labs(title = glist[g], y= "% Flies Sleeping") +
             ggplot2::scale_y_continuous(limits = c(0,1), labels = scales::percent)+
-            ggprism::theme_prism(base_fontface = "bold") +
+            ggprism::theme_prism(base_fontface = font) +
             ggplot2::theme(title = ggplot2::element_text(size = 22),
                            axis.title.x = ggplot2::element_text(size = 20),
                            axis.title.y = ggplot2::element_text(size = 20),
                            axis.text.x = ggplot2::element_text(size = 16),
                            axis.text.y = ggplot2::element_text(size = 16),
-                           legend.text = ggplot2::element_text(size = 16, face = "bold"))
+                           legend.text = ggplot2::element_text(size = 16, face = font))
             if(length(unique(plot_subdata2[[divisions[1]]])) <= 2){
               p1 <- p1 + ggplot2::theme(legend.position = c(0.8,0.15))}
 
         # Function to create sleep duration plots
-          create_sleeptime_plot <- function(plot_data, yParam, Yname, limits, geom) {
+          create_sleeptime_plot <- function(plot_data, yParam, Yname, limits, geom, font) {
             pointplot<- ggplot2::ggplot(plot_data,
                                         ggplot2::aes(x = .data[[divisions[1]]], y = .data[[yParam]]))
             if(geom == "bar"){
@@ -97,7 +97,7 @@ genotypePlots <- function(dt_curated_final, summary_dt_final) {
                                   color = "black") +
               ggplot2::scale_y_continuous(name = Yname, limits = c(0,limits)) +
               ggplot2::scale_x_discrete(name = NULL)+
-              ggprism::theme_prism(base_fontface = "bold")  +
+              ggprism::theme_prism(base_fontface = font)  +
               ggplot2::theme(axis.title.y = ggplot2::element_text(size = 20),
                              axis.text.x = ggplot2::element_text(size = 16, angle = 45, vjust = 1, hjust= 1),
                              axis.text.y = ggplot2::element_text(size = 16),
@@ -106,11 +106,11 @@ genotypePlots <- function(dt_curated_final, summary_dt_final) {
           }
 
         # Generate sleep duration plots
-        p2 <- create_sleeptime_plot(plot_subdata2, "sleep_time_all", "Total Sleep (min)", 1500, "bar")
-        p3 <- create_sleeptime_plot(plot_subdata2, "sleep_time_l", "Daytime Sleep (min)", 1000, "bar")
-        p4 <- create_sleeptime_plot(plot_subdata2, "sleep_time_d", "Nighttime Sleep (min)", 1000, "bar")
-        p5 <- create_sleeptime_plot(plot_subdata2, "n_bouts_L", "Daytime Sleep Bouts", 80, "violin")
-        p6 <- create_sleeptime_plot(plot_subdata2, "n_bouts_D", "Nighttime Sleep Bouts", 80, "violin")
+        p2 <- create_sleeptime_plot(plot_subdata2, "sleep_time_all", "Total Sleep (min)", 1500, "bar", font)
+        p3 <- create_sleeptime_plot(plot_subdata2, "sleep_time_l", "Daytime Sleep (min)", 1000, "bar", font)
+        p4 <- create_sleeptime_plot(plot_subdata2, "sleep_time_d", "Nighttime Sleep (min)", 1000, "bar", font)
+        p5 <- create_sleeptime_plot(plot_subdata2, "n_bouts_L", "Daytime Sleep Bouts", 80, "violin", font)
+        p6 <- create_sleeptime_plot(plot_subdata2, "n_bouts_D", "Nighttime Sleep Bouts", 80, "violin", font)
 
 
         # Combine plots

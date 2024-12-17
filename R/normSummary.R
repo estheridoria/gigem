@@ -23,35 +23,36 @@
 #' last columns corresponding to the normalized groups. The resulting data table is then written to a CSV file.
 #' Additionally, the function runs statistical analyses on the normalized data and writes the results to a
 #' separate CSV file.
-normSummary <- function(ExperimentData, readin_summary_dt_final, groups, normalized_factor, controlgeno, controltreat) {
+normSummary <- function(ExperimentData, readin_summary_dt_final, groups,
+                        normalized_factor, controlgeno, controltreat,
+                        controllight, controlenviro) {
 
-  # Generate a list of data tables, one for each group, with normalized values
-  DT.list <- generateNorms(ExperimentData,
-                           readin_summary_dt_final,
-                           normalized_factor,
-                           groups,
-                           apply_genotype_filter = FALSE,
-                           controlgeno,
-                           controltreat)
-  # Combine tables by keeping the first table entirely and only the last column from each subsequent table
-  norm_keep <- do.call(cbind, c(DT.list[1],
-                                lapply(DT.list[2:length(DT.list)],
-                                       function(x) x[, .SD, .SDcols = ncol(x)]
-                                )
-  )
-  )
-
-  # Select the initial 10 columns and the last columns corresponding to each norm group
-  last_cols <- (ncol(norm_keep) - length(groups) + 1):ncol(norm_keep)
-  norm_keep <- norm_keep[, c(1:12, last_cols), with = FALSE]
+  # Generate a data table with only the metadata
+  norm_keep <- data.table::data.table(readin_summary_dt_final[,1:13])
   norm_keep$batch_name <- ExperimentData@Batch
+
+  for (group in groups) {
+
+    # Calculate normalization factor for use in generating normalized values (everything is normalized to the controls)
+    a <- normalized_factor[
+      genotype == controlgeno &
+        light == controllight &
+        environment == controlenviro &
+        treatment == controltreat, ..group]
+
+    factor <- as.numeric(a[[1]])
+
+    # Calculate normalized values for the group and assign to new column
+    new_col_name <- paste0("norm_", group)
+    norm_keep[,new_col_name] <- readin_summary_dt_final[,get(group)] / factor
+  }
 
   # Write the normalized summary data table to a CSV file
   data.table::fwrite(norm_keep, paste("norm_summary_", ExperimentData@Batch, ".csv", sep = ""))
 
   norm_groups <- paste0("norm_", groups)
   # Run statistical analyses for the normalized data
-  summary_norm <- generateSE(norm_keep, norm_groups, ExperimentData@Batch, norm=TRUE)
+  summary_norm <- generateSE(dt = norm_keep, groups = norm_groups, Batch = ExperimentData@Batch, norm=TRUE)
   data.table::fwrite(summary_norm,paste("stat_norm_",ExperimentData@Batch,".csv",sep = ""))
 
   return(norm_keep)

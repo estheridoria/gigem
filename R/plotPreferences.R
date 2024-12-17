@@ -32,8 +32,11 @@ plotPreferences <- function(){
   r4 <- menu(c("Yes", "No"), title="Do you want to generate quantitative sleep plots grouped by batch?")
 
   # runOneBatch.R #53 (run genotypePlots())
-  r5 <- menu(c("Yes", "No"), title="Do you want to generate all plots grouped by genotype?")
+  r5 <- menu(c("Yes", "No"), title="Do you want to generate all plots grouped by genotype, within batches?")
 
-  results <- rbind(r1, r2, r3, r4, r5, r6)
+  # runAllBatches.R #117 (run concatGenotypePlots())
+  r7 <- menu(c("Yes", "No"), title="Do you want to generate all plots grouped by genotype, summarized accross batches?")
+
+  results <- rbind(r1, r2, r3, r4, r5, r6, r7)
   return(results)
 }
