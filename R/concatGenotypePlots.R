@@ -83,7 +83,7 @@ concatGenotypePlots <- function(combined_sleepdata, combined_sleepmeta, summary_
                            axis.text.y = ggplot2::element_text(size = 16),
                            legend.text = ggplot2::element_text(size = 16, face = font))
           if(length(unique(plot_subdata2[[divisions[1]]])) <= 2){
-            p1 <- p1 + ggplot2::theme(legend.position = c(0.8,0.15))}
+            p1 <- p1 + ggplot2::theme(legend.position.inside = c(0.8,0.15))}
 
           # Function to create sleep duration plots
           create_sleeptime_plot <- function(plot_data, yParam, Yname, limits, geom, font) {

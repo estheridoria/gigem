@@ -19,7 +19,7 @@
 #'
 #' @return None. Saves the plots as PDF files and outputs a CSV file with cluster assignments.
 #' @export
-kmeansCluster <- function(Compare1, Compare2, aPriori, aPrioriColumn) {
+kmeansCluster <- function(Compare1, Compare2, aPriori, aPrioriColumn, font = "plain") {
 
   # Check if 'all_batches_summary.csv' exists in the current directory, and if not, stop execution.
   if (!file.exists("all_batches_summary.csv")) {
@@ -38,12 +38,13 @@ kmeansCluster <- function(Compare1, Compare2, aPriori, aPrioriColumn) {
 
   # Read the data
   combined_data <- read.csv("all_batches_summary.csv")
+  combined_data$light <- gsub("\"", "", combined_data$light)
 
   # Summarize data by required columns
   meanData <- dplyr::summarise(
     dplyr::group_by(
       combined_data,
-      temp, sex, treatment, genotype, environment, light
+      temp, sex, treatment, genotype, environment, light, Batch
     ),
     dplyr::across(
       sleep_fraction:mean_bout_length_D,
@@ -77,13 +78,13 @@ kmeansCluster <- function(Compare1, Compare2, aPriori, aPrioriColumn) {
     gsleep <- meanData[meanData$treatment == Compare1, get(names[i])]
     isleep <- meanData[meanData$treatment == Compare2, get(names[i])]
     name <-   meanData[meanData$treatment == Compare1, get(aPrioriColumn)]
-
     aPriori.grp <- meanData[meanData$treatment == Compare1, "aPriori"]
+    aPriori.grp[is.na(aPriori)] <- "Other"
     p.sleeploss <- (gsleep - isleep) / gsleep
     df <- cbind(name, gsleep, isleep, p.sleeploss, aPriori.grp)
     colnames(df) <- columnnames
     df <- df[order(df$gsleep), ]
-    u <- (max(df$gsleep) - min(df$gsleep)) / nrow(df)  # create a multiplier for even spacing
+    # u <- (max(df$gsleep) - min(df$gsleep)) / nrow(df)  # create a multiplier for even spacing
 
     data <- df[, c(2, 4)]  # Selecting only relevant columns for clustering
 

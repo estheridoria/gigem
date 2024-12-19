@@ -95,6 +95,8 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
   lightCol <- summary_dt_final[,light]
   summary_dt_final[, light := paste0('"', light, '"')]
 
+  summary_dt_final<- data.table::data.table(summary_dt_final[,1:13], Batch = ExperimentData@Batch, summary_dt_final[,14:ncol(summary_dt_final)])
+
   # Now write to the file
   data.table::fwrite(
     summary_dt_final,

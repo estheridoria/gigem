@@ -47,16 +47,25 @@ genotypePlots <- function(dt_curated_final, summary_dt_final, font) {
           #   sub_data <- merge(subdata, summary_dt_final[genotype == glist[g]], all = T) }
           # if (divisions[1] != "treatment"){
           #   sub_data <- merge(subdata, summary_dt_final[treatment == tlist[t]], all = T)}
-
           sub_data <- summary_dt_final[
             (divisions[1] == "light" | light == llist[l]) &
-              (divisions[1] == "environment" | environment == elist[e]) &
+              (divisions[1] == "environment" |
+                 (is.na(elist[e]) & is.na(environment)) |
+                 (!is.na(elist[e]) & environment == elist[e])) &
               (divisions[1] == "genotype" | genotype == glist[g]) &
-              (divisions[1] == "treatment" | treatment == tlist[t])
+              (divisions[1] == "treatment" |
+                 (is.na(tlist[t]) & is.na(treatment)) |
+                 (!is.na(tlist[t]) & treatment == tlist[t])),
           ]
 
         plot_subdata <- dt_curated_final[id %in% sub_data$id]
         plot_subdata2 <- summary_dt_final[id %in% sub_data$id]
+
+        p1title <- trimws(paste(
+          if (divisions[1] != "light") {llist[l]},
+          if (divisions[1] != "genotype") {glist[g]},
+          if (divisions[1] != "environment" && !is.na(elist[e])) {elist[e]},
+          if (divisions[1] != "treatment"&& !is.na(tlist[t])) {tlist[t]}))
 
         # Create overlay sleep plot
           p1 <- ggetho::ggetho(plot_subdata, ggplot2::aes(y = asleep, colour = .data[[divisions[1]]]), time_wrap = behavr::hours(24)) +
@@ -64,7 +73,7 @@ genotypePlots <- function(dt_curated_final, summary_dt_final, font) {
             ggetho::stat_ld_annotations() +
             ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
             ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
-            ggplot2::labs(title = glist[g], y= "% Flies Sleeping") +
+            ggplot2::labs(title = p1title, y= "% Flies Sleeping") +
             ggplot2::scale_y_continuous(limits = c(0,1), labels = scales::percent)+
             ggprism::theme_prism(base_fontface = font) +
             ggplot2::theme(title = ggplot2::element_text(size = 22),
@@ -74,7 +83,7 @@ genotypePlots <- function(dt_curated_final, summary_dt_final, font) {
                            axis.text.y = ggplot2::element_text(size = 16),
                            legend.text = ggplot2::element_text(size = 16, face = font))
             if(length(unique(plot_subdata2[[divisions[1]]])) <= 2){
-              p1 <- p1 + ggplot2::theme(legend.position = c(0.8,0.15))}
+              p1 <- p1 + ggplot2::theme(legend.position.inside = c(0.8,0.15))}
 
         # Function to create sleep duration plots
           create_sleeptime_plot <- function(plot_data, yParam, Yname, limits, geom, font) {
@@ -121,11 +130,11 @@ genotypePlots <- function(dt_curated_final, summary_dt_final, font) {
 
         # Save combined plot
         ggplot2::ggsave(paste0("CombinedPlots",
-                              ifelse(divisions[1] != "genotype", glist[g], ""),
-                              ifelse(divisions[1] != "light", glist[g], ""),
-                              ifelse(divisions[1] != "environment", elist[e], ""),
-                              ifelse(divisions[1] != "treatment", tlist[t], ""),
-                              ".pdf"), combined_plot, width = (6 + u * 5 + 1.45), height = 4)
+                               if (divisions[1] != "light") {llist[l]},
+                               if (divisions[1] != "genotype") {glist[g]},
+                               if (divisions[1] != "environment" && !is.na(elist[e])) {elist[e]},
+                               if (divisions[1] != "treatment"&& !is.na(tlist[t])) {tlist[t]},
+                               ".pdf"), combined_plot, width = (6 + u * 5 + 1.45), height = 4)
         }
       }
     }

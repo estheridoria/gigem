@@ -4,21 +4,32 @@
 #' It reads a CSV file containing normalized sleep data, calculates the changes in sleep, and then creates plots
 #' for each of the sleep-related metrics (`TotalSleepChange`, `DayTimeSleepChange`, `NightTimeSleepChange`).
 #' Two plots are made showing the normalized sleeploss for the treatment of interest (`treat`).
-#' One plot contains only the `Control` entry in `column_name` while the other plot contains every entry except `Control`.
+#' One plot contains only the `Control` entry in `x` while the other plot contains every entry except `Control`.
 #' The plots are saved as PDFs labeled, "NormalizedSleepLoss...".
 #'
 #' @param treat A string specifying a treatment group.
 #' @param treat2 A string specifying a treatment group (optional).
-#' @param column_name The name of a column (variable) in "all_batches_norm_summary.csv" that will be used for comparison in the data.
-#' @param Control A string specifying the control group within the variable `column_name`.
+#' @param x The name of a column (variable) in "all_batches_norm_summary.csv" that will be used for comparison in the data.
+#' @param Control A string specifying the control group within the variable `x`.
 #'
 #' @return None. Saves the plots as PDF files labeled 'NormalizedSleepLoss...'.
 #' @export
 #'
 #' @keywords internal
-normDisplay <- function(treat, treat2 = NULL, column_name, Control, font = "plain") {
+normDisplay <- function(treat = "Iso", treat2 = NULL, enviro = NULL, lights = NULL, geno = NULL, x, Control, font = "plain") {
   # Read the normalized data from CSV file
   dataset <- read.csv("all_batches_norm_summary.csv")
+  dataset$light <- gsub("\"", "", dataset$light)
+  if(!is.null(enviro)){
+  dataset <- dataset[dataset$environment == enviro]
+  }
+  if(!is.null(lights)){
+    dataset <- dataset[dataset$light == lights]
+  }
+  if(!is.null(geno)){
+    dataset <- dataset[dataset$genotype == geno]
+  }
+
   dataset <- data.table::setDT(dataset)
 
   # Calculate the change in sleep
@@ -26,37 +37,37 @@ normDisplay <- function(treat, treat2 = NULL, column_name, Control, font = "plai
   dataset_delta <- dplyr::mutate(dataset_delta, DayTimeSleepChange = norm_sleep_time_l - 1)
   dataset_delta <- dplyr::mutate(dataset_delta, NightTimeSleepChange = norm_sleep_time_d - 1)
 
-  # Filter data based on treatment and column_name
-  dataset_delta_Iso_treat <- dplyr::filter(dataset_delta, treatment == treat & get(column_name) != Control)
-  dataset_delta_Iso_treat_Control <- dplyr::filter(dataset_delta, treatment == treat & get(column_name) == Control)
+  # Filter data based on treatment and x
+  dataset_delta_Iso_treat <- dplyr::filter(dataset_delta, treatment == treat & get(x) != Control)
+  dataset_delta_Iso_treat_Control <- dplyr::filter(dataset_delta, treatment == treat & get(x) == Control)
 
-  # Calculate averages for each column_name
+  # Calculate averages for each x
   average_lookup <- dplyr::summarise(
-    dplyr::group_by(dataset_delta_Iso_treat, !!rlang::sym(column_name)),
+    dplyr::group_by(dataset_delta_Iso_treat, !!rlang::sym(x)),
     TotalSleepChange = mean(TotalSleepChange),
     DayTimeSleepChange = mean(DayTimeSleepChange),
     NightTimeSleepChange = mean(NightTimeSleepChange))
   average_lookup <- average_lookup[order(average_lookup$TotalSleepChange), ]  # sort
 
-  # Reorder column_names based on the average changes in sleep
-  dataset_delta_Iso_treat[[column_name]] <- factor(dataset_delta_Iso_treat[[column_name]], levels = average_lookup[[column_name]])
+  # Reorder x based on the average changes in sleep
+  dataset_delta_Iso_treat[[x]] <- factor(dataset_delta_Iso_treat[[x]], levels = average_lookup[[x]])
 
   # Add the second treatment group's calculations if applicable
-  if (treat2 != "NULL"){
-    # Filter data based on treatment and column_name
-    dataset_delta_Iso_treat2 <- dplyr::filter(dataset_delta, treatment == treat2 & get(column_name) != Control)
-    dataset_delta_Iso_treat2_Control <- dplyr::filter(dataset_delta, treatment == treat2 & get(column_name) == Control)
+  if (!is.null(treat2)){
+    # Filter data based on treatment and x
+    dataset_delta_Iso_treat2 <- dplyr::filter(dataset_delta, treatment == treat2 & get(x) != Control)
+    dataset_delta_Iso_treat2_Control <- dplyr::filter(dataset_delta, treatment == treat2 & get(x) == Control)
 
-    # Reorder column_names based on the average changes in sleep
-    dataset_delta_Iso_treat2[[column_name]]<- factor(dataset_delta_Iso_treat2[[column_name]], levels = average_lookup[[column_name]])
+    # Reorder x based on the average changes in sleep
+    dataset_delta_Iso_treat2[[x]]<- factor(dataset_delta_Iso_treat2[[x]], levels = average_lookup[[x]])
   }
 
   # List of sleep-related metrics to plot
   names <- c("TotalSleepChange", "DayTimeSleepChange", "NightTimeSleepChange")
 
   # Set the number of batch names for adjusting plot width
-  if (length(unique(dataset$batch_name)) > 4) {
-    q <- length(unique(dataset$batch_name))
+  if (length(unique(dataset$Batch)) > 4) {
+    q <- length(unique(dataset$Batch))
   } else {
     q <- 5
   }
@@ -84,17 +95,17 @@ normDisplay <- function(treat, treat2 = NULL, column_name, Control, font = "plai
     }
 
     # Plot the 2 conditions as well as the controls
-    p1 <- plot_fun(dataset_delta_Iso_treat, treat, column_name, font = font)
-    p2<- plot_fun(dataset_delta_Iso_treat_Control, paste(treat, Control), "batch_name", font = font)
+    p1 <- plot_fun(plot_data = dataset_delta_Iso_treat, title = treat, xdef = x, font = font)
+    p2<- plot_fun(dataset_delta_Iso_treat_Control, paste(treat, Control), "Batch", font = font)
 
-    if (treat2 != "NULL"){
-    p3 <- plot_fun(dataset_delta_Iso_treat2, treat2, column_name, font = font)
-    p4 <- plot_fun(dataset_delta_Iso_treat2_Control, paste(treat2, Control), "batch_name", font = font)
+    if (!is.null(treat2)){
+    p3 <- plot_fun(dataset_delta_Iso_treat2, treat2, x, font = font)
+    p4 <- plot_fun(dataset_delta_Iso_treat2_Control, paste(treat2, Control), "Batch", font = font)
     }
 
 
     # Combine and save the plots as a PDF
-    if(treat2 != "NULL"){
+    if(!is.null(treat2)){
     combined_plot <- cowplot::plot_grid(p1, p2, p3, p4, ncol = 2, align = "h", axis = "b")}
     else{combined_plot <- cowplot::plot_grid(p1, p2, ncol = 2, align = "h", axis = "b")}
 

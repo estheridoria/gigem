@@ -42,8 +42,11 @@
 #' 3. It concatenates the normalized and general summary statistics for each batch into separate CSV files.
 #' 4. The final CSV files, \code{all_batches_norm_summary.csv} and \code{all_batches_summary.csv},
 #'    are saved in the parent directory, containing combined results for all batches.
-runAllBatches <- function(controlgeno, controltreat,
-                          controllight, controlenviro, font = "plain") {
+runAllBatches <- function(controlgeno = NULL, controltreat = NULL,
+                          controllight = NULL, controlenviro = NULL, font = "plain") {
+  if (is.null(controlgeno) & is.null(controltreat) & is.null(controllight) &is.null(controlenviro)){
+    stop("At least one control measure is necessary. Please specify a controlgeno, controltreat, controllight and/or controlenviro.")
+  }
 
   #ask user which plots they want
   pref <- plotPreferences()

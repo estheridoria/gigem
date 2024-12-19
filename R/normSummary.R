@@ -24,21 +24,25 @@
 #' Additionally, the function runs statistical analyses on the normalized data and writes the results to a
 #' separate CSV file.
 normSummary <- function(ExperimentData, readin_summary_dt_final, groups,
-                        normalized_factor, controlgeno, controltreat,
-                        controllight, controlenviro) {
+                        normalized_factor, controlgeno = NULL, controltreat = NULL,
+                        controllight = NULL, controlenviro = NULL) {
 
   # Generate a data table with only the metadata
-  norm_keep <- data.table::data.table(readin_summary_dt_final[,1:13])
-  norm_keep$batch_name <- ExperimentData@Batch
+  norm_keep <- data.table::data.table(readin_summary_dt_final[,1:14])
 
   for (group in groups) {
 
     # Calculate normalization factor for use in generating normalized values (everything is normalized to the controls)
     a <- normalized_factor[
-      genotype == controlgeno &
-        light == controllight &
-        environment == controlenviro &
-        treatment == controltreat, ..group]
+        (is.null(controllight) || light == controllight) &
+        (is.null(controlenviro) || environment == controlenviro) &
+        (is.null(controltreat) | treatment == controltreat)  &
+        (is.null(controlgeno) | genotype == controlgeno),
+        .SD,
+        .SDcols = group
+        ]
+
+
 
     factor <- as.numeric(a[[1]])
 
@@ -48,12 +52,12 @@ normSummary <- function(ExperimentData, readin_summary_dt_final, groups,
   }
 
   # Write the normalized summary data table to a CSV file
+  norm_keep[, light := paste0('"', light, '"')]
   data.table::fwrite(norm_keep, paste("norm_summary_", ExperimentData@Batch, ".csv", sep = ""))
 
   norm_groups <- paste0("norm_", groups)
   # Run statistical analyses for the normalized data
   summary_norm <- generateSE(dt = norm_keep, groups = norm_groups, Batch = ExperimentData@Batch, norm=TRUE)
   data.table::fwrite(summary_norm,paste("stat_norm_",ExperimentData@Batch,".csv",sep = ""))
-
   return(norm_keep)
 }

@@ -6,6 +6,7 @@
 #' @return NULL
 #' @keywords internal
 .onLoad <- function(libname, pkgname) {
+
   if (!methods::isClass("ExperimentData")) {
   # Define the ExperimentData class to store information
     if (!methods::isClass("data.table")) {
@@ -21,6 +22,7 @@
     )
   )
   }
+
 }
 
 

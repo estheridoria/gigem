@@ -49,7 +49,7 @@ runOneBatch <- function(info, divisions, num_days, pref, controlgeno, controltre
   dt_final <- manualDeadRemoval(ExperimentData, dt_curated, num_days, divisions, pref, font)
 
   # Write bout length pdf, and calculate bout and latency stats
-  dt_finalSummary <- cleanSummary(ExperimentData, dt_final, num_days, loading_metadata, divisions, pref, font)
+  dt_finalSummary <- cleanSummary(ExperimentData, dt = dt_final, num_days, loadinginfo_linked =loading_metadata, divisions, pref, font)
 
   if (pref[5] == 1){
   # Generate concatenated plots
@@ -73,8 +73,9 @@ runOneBatch <- function(info, divisions, num_days, pref, controlgeno, controltre
   # Summary of statistics for sleep time for all groups
   stat_summary <- statsSummary(ExperimentData, dt_finalSummary, groups, norm_factor)
 
+
   # Calculate normalized statistics of sleep time for all groups
   norm_summary <- normSummary(ExperimentData, readin_summary_dt_final = dt_finalSummary, groups,
-                              norm_factor, controlgeno, controltreat,
+                              normalized_factor = norm_factor, controlgeno, controltreat,
                               controllight, controlenviro)
 }

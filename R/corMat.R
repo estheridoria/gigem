@@ -10,7 +10,7 @@
 #'         A CSV file with correlation p-values is saved as `statcorRelative<Compare1>.csv` and `statcorUnadjusted<Compare1>.csv`.
 #'
 #' @export
-corMat <- function(Compare1, Compare2, font = "plain"){
+corMat <- function(Compare1, Compare2, var = NULL, Column = NULL, font = "plain"){
 
   # Check if 'all_batches_summary.csv' exists in the current directory, and if not, stop execution.
   if (!file.exists("all_batches_summary.csv")) {
@@ -25,21 +25,18 @@ corMat <- function(Compare1, Compare2, font = "plain"){
   # Validate that Compare1 is provided and is a valid string.
   if(missing(Compare2) || !rlang::is_string(Compare2)){
     stop("Compare2 is missing or invalid")}
-  if (controlColumn %in% colnames(meanData)) {
-    # Proceed with filtering
-  } else {
-    stop("Column does not exist!")
-  }
+
 
 
   # Read in the combined data from the CSV file.
   combined_data <- read.csv("all_batches_summary.csv")
+  combined_data$light <- gsub("\"", "", combined_data$light)
 
-  # Summarize sleep data by temp, sex, treatment, and genotype, calculating means for sleep-related variables.
+  #Summarize sleep data by temp, sex, treatment, batch, and genotype, calculating means for sleep-related variables.
   meanData <- dplyr::summarise(
     dplyr::group_by(
       combined_data,
-      temp, sex, treatment, genotype, environment, light
+      temp, sex, treatment, genotype, environment, light, Batch
     ),
     dplyr::across(
       sleep_fraction:mean_bout_length_D,
@@ -48,62 +45,79 @@ corMat <- function(Compare1, Compare2, font = "plain"){
     ),
     .groups = "keep"
   )
+  # meanData <- combined_data
+  #subset data by Column & var if applicable
+  if (!is.null(Column)){
+    meanData <- meanData[meanData[[Column]] == var,]
+  }
+
+  if (is.null(Column) || Column %in% colnames(meanData)) {
+    # Proceed with filtering
+  } else {
+    stop("Specified Column does not exist among the variables!")
+  }
 
   # Define sleep time variables.
+  #names <- c("sleep_time_l", "sleep_time_d")
   names <- c("mean_sleep_time_l", "mean_sleep_time_d")
 
+
   # Extract and order the genotypes.
-  genotypes <- unique(meanData$genotype)[order(unique(meanData$genotype))]
+  #genotypes <- unique(meanData$genotype)[order(unique(meanData$genotype))]
 
   # Initialize an empty data frame for the genotypes.
-  abs.df <- df <- df1 <- data.frame(genotypes)
+  abs.df<- df <- df1 <- meanData[meanData$treatment == Compare1,1:7]
 
-  # Generate a data frame with relative sleep loss (p.sleeploss) for each sleep time variable.
+  # Generate a data frame with relative sleep loss (p.sleeploss) & absolute for each sleep time variable.
   for(i in 1:2){
-    gsleep <- meanData[meanData$treatment == Compare1, names[i]]
-    isleep <- meanData[meanData$treatment == Compare2, names[i]]
+    gsleep <- meanData[meanData$treatment == Compare1,names[i]]
+    isleep <- meanData[meanData$treatment == Compare2,names[i]]
     p.sleeploss <- (gsleep - isleep) / gsleep
     sleeploss <- (gsleep - isleep)
     df <- cbind(df, p.sleeploss)
     abs.df <- cbind(abs.df, sleeploss)
   }
-
   # Define additional trait variables to compare.
-  traitlist <- c("mean_n_bouts_L", "mean_n_bouts_D", "mean_mean_bout_length_L",
-                 "mean_mean_bout_length_D")
+  #traitlist <- c("n_bouts_L", "n_bouts_D", "mean_bout_length_L","mean_bout_length_D")
+  traitlist <- c("mean_n_bouts_L", "mean_n_bouts_D", "mean_mean_bout_length_L", "mean_mean_bout_length_D")
 
   # Add the trait comparisons for each treatment group.
   for (i in 1:4){
-    df1 <- cbind(df1, meanData[meanData$treatment == Compare1, traitlist[i]],
-                 meanData[meanData$treatment == Compare2, traitlist[i]])
+    a <- meanData[meanData$treatment == Compare1,traitlist[i]]
+    b <- meanData[meanData$treatment == Compare2,traitlist[i]]
+      df1 <- cbind(df1, a, b)
   }
 
-  abs.df <- cbind(abs.df, (df1[3] - df1[2]))
-  abs.df <- cbind(abs.df, (df1[5] - df1[4]))
-  abs.df <- cbind(abs.df, (df1[7] - df1[6]))
+  #calculate the absolute loss in sleep and bouts
   abs.df <- cbind(abs.df, (df1[9] - df1[8]))
+  abs.df <- cbind(abs.df, (df1[11] - df1[10]))
+  abs.df <- cbind(abs.df, (df1[13] - df1[12]))
+  abs.df <- cbind(abs.df, (df1[15] - df1[14]))
 
   # Calculate the loss in the number of bouts and bout length for both treatments.
-  df <- cbind(df, ((df1[3] - df1[2]) / df1[2]))
-  df <- cbind(df, ((df1[5] - df1[4]) / df1[4]))
-  df <- cbind(df, ((df1[7] - df1[6]) / df1[6]))
   df <- cbind(df, ((df1[9] - df1[8]) / df1[8]))
+  df <- cbind(df, ((df1[11] - df1[10]) / df1[10]))
+  df <- cbind(df, ((df1[13] - df1[12]) / df1[12]))
+  df <- cbind(df, ((df1[15] - df1[14]) / df1[14]))
 
   # Rename the columns for better clarity.
-  colnames(df) <- c("Genotypes", "P.sleeploss_L", "P.sleeploss_D", "P.nboutsloss_L",
+  colnames(df)[8:13] <- c("P.sleeploss_L", "P.sleeploss_D", "P.nboutsloss_L",
                     "P.nboutsloss_D", "P.boutlenloss_L", "P.boutlenloss_D")
-  colnames(abs.df) <- c("Genotypes", "Sleeploss_L", "Sleeploss_D", "Nboutsloss_L",
+  colnames(abs.df)[8:13] <- c("Sleeploss_L", "Sleeploss_D", "Nboutsloss_L",
                     "Nboutsloss_D", "Boutlenloss_L", "Boutlenloss_D")
 
   dat <- c("df", "abs.df")
-  plotnames <- c("Relative", "Unadjusted")
-
+  if (!is.null(Column)){
+    plotnames <- c(paste0("Relative_", var),paste0("Unadjusted_", var))
+  } else{
+    plotnames <- c("Relative", "Unadjusted")
+  }
   for (i in 1:2){
   # Compute the correlation matrix for the data.
-  corr <- round(cor(get(dat[i])[, 2:7]), 2)
+  corr <- round(cor(get(dat[i])[, 8:13]), 3)
 
   # Generate the p-value matrix for the correlation.
-  p.df <- as.data.frame(ggcorrplot::cor_pmat(get(dat[i])[, 2:7]))
+  p.df <- as.data.frame(ggcorrplot::cor_pmat(get(dat[i])[, 8:13]))
 
   # Save the p-value matrix as a CSV file.
   data.table::fwrite(p.df, paste0("statcor", Compare1, ".csv"))
