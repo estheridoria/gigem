@@ -74,9 +74,9 @@ runAllBatches <- function(controlgeno = NULL, controltreat = NULL,
   # Filter directories that match the "Batch" pattern.
   batch_dirs <- grep("Batch[0-9_a-zA-Z]*", all_dirs, value = TRUE)
 
-  if(length(batch_dirs) ==0)
+  if(length(batch_dirs) ==0){
     stop("The folder(s) inside the parent directory containing each Batch's data is either not present or is not formatted correctly. Please add or rename the folder and R file within to follow the format: 'Batch' followed by any combination of letters, numbers and/or underscores.")
-
+}
   # Iterate over each batch directory and run the R files
   for (batch_dir in batch_dirs){
     run_r_files_in_dir(batch_dir)

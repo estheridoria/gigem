@@ -57,7 +57,7 @@ runOneBatch <- function(info, divisions, num_days, pref, controlgeno, controltre
   }
 
   # Define input column names for normalized statistics
-  groups <- c("sleep_time_all",
+  group <- c("sleep_time_all",
               "sleep_time_l",
               "sleep_time_d",
               "n_bouts_L",
@@ -67,15 +67,18 @@ runOneBatch <- function(info, divisions, num_days, pref, controlgeno, controltre
 
   # Calculate the normalization factor for statistics
   norm_factor <- dt_finalSummary[, lapply(.SD, mean),
-                                 by = .(genotype, treatment,light,environment),
+                                 by = .(genotype, treatment,light,environment, sex),
                                  .SDcols = groups]
 
   # Summary of statistics for sleep time for all groups
   stat_summary <- statsSummary(ExperimentData, dt_finalSummary, groups, norm_factor)
 
-
-  # Calculate normalized statistics of sleep time for all groups
-  norm_summary <- normSummary(ExperimentData, readin_summary_dt_final = dt_finalSummary, groups,
-                              normalized_factor = norm_factor, controlgeno, controltreat,
-                              controllight, controlenviro)
+if (any(dt_finalSummary[,treatment] == "Grp") & any(dt_finalSummary[,treatment ] != "Iso")){
+  # Calculate normalized sleep loss statistics for all groups
+  norm_summary <- normSummary(ExperimentData, readin_summary_dt_final #<- dt_finalSummary
+                              , groups #<- group
+                              ,normalized_factor# <- norm_factor,
+                              ,control #<- "CS"
+                              )
+ }
 }
