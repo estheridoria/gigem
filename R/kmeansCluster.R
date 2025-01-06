@@ -19,7 +19,7 @@
 #'
 #' @return None. Saves the plots as PDF files and outputs a CSV file with cluster assignments.
 #' @export
-kmeansCluster <- function(Compare1, Compare2, aPriori, aPrioriColumn, font = "plain") {
+kmeansCluster <- function(Compare1, Compare2, var = NULL, aPriori, aPrioriColumn, font = "plain") {
 
   # Check if 'all_batches_summary.csv' exists in the current directory, and if not, stop execution.
   if (!file.exists("all_batches_summary.csv")) {
