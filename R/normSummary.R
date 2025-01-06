@@ -25,79 +25,115 @@
 #' separate CSV file.
 normSummary <- function(ExperimentData, readin_summary_dt_final, groups,
                         normalized_factor, control) {
-  # determine the column control is in
-  control_col <- readin_summary_dt_final[,8:13]
-  control_col <- names(control_col)[
-  sapply(control_col, function(column) any(grepl(control, column)))
-]
-llist <- unique(readin_summary_dt_final$light)
-elist <- unique(readin_summary_dt_final$environment)
-glist <- unique(readin_summary_dt_final$genotype)
-
-grp_data <- normalized_factor[grepl("Grp", treatment)]
-iso_data <- normalized_factor[grepl("Iso", treatment)]
-
-# Create a single data.table for control conditions
-# control_conditions <- normalized_factor[
-#   (control_col == "light" & light == control) |
-#     (control_col != "light" & light %in% llist) &
-#     (control_col == "environment" & environment == control) |
-#     (control_col != "environment" & environment %in% elist) &
-#     (control_col == "genotype" & genotype == control) |
-#     (control_col != "genotype" & genotype %in% glist),
-#   .(genotype, environment, light, sex)  # Keep only necessary columns for join
+#   # determine the column control is in
+#   control_col <- readin_summary_dt_final[,8:13]
+#   control_col <- names(control_col)[
+#   sapply(control_col, function(column) any(grepl(control, column)))
 # ]
+# llist <- unique(readin_summary_dt_final$light)
+# elist <- unique(readin_summary_dt_final$environment)
+# glist <- unique(readin_summary_dt_final$genotype)
+#
+# grp_data <- normalized_factor[grepl("Grp", treatment)]
+# iso_data <- normalized_factor[grepl("Iso", treatment)]
+#
+# # Create a single data.table for control conditions
+# # control_conditions <- normalized_factor[
+# #   (control_col == "light" & light == control) |
+# #     (control_col != "light" & light %in% llist) &
+# #     (control_col == "environment" & environment == control) |
+# #     (control_col != "environment" & environment %in% elist) &
+# #     (control_col == "genotype" & genotype == control) |
+# #     (control_col != "genotype" & genotype %in% glist),
+# #   .(genotype, environment, light, sex)  # Keep only necessary columns for join
+# # ]
+#
+# for (g in glist){
+#   for (e in elist) {
+#     for (l in llist) {
+#       for (group in groups) {
+#         # calculate the group and isolation
+#         a<- grp_data[light == l & environment == e & genotype == g, get(group)]
+#         b <- iso_data[light == l & environment == e & genotype == g, get(group)]
+#             top <- (b-a)/a
+#
+#             # c <- normalized_factor[
+#             #   ((control_col == "light" & light == control) |
+#             #      control_col != "light" & light == l) &
+#             #     ((control_col == "environment" & environment == control) |
+#             #        control_col != "environment" & environment == e) &
+#             #     grepl("Grp", treatment) &
+#             #     ((control_col == "genotype" & genotype == control) |
+#             #        control_col != "genotype" & genotype == g),
+#             #   get(group)
+#             # ]
+#             #
+#             # # Calculate d
+#             # d <- normalized_factor[
+#             #   ((control_col == "light" & light == control) |
+#             #      control_col != "light" & light == l) &
+#             #     ((control_col == "environment" & environment == control) |
+#             #        control_col != "environment" & environment == e) &
+#             #     grepl("Iso", treatment) &
+#             #     ((control_col == "genotype" & genotype == control) |
+#             #        control_col != "genotype" & genotype == g),
+#             #   get(group)
+#             # ]
+#             valid_rows <- normalized_factor[
+#               ((control_col == "light" & light == control) | (control_col != "light" & light == l)) &
+#                 ((control_col == "environment" & environment == control) | (control_col != "environment" & environment == e)) &
+#                 ((control_col == "genotype" & genotype == control) | (control_col != "genotype" & genotype == g))
+#             ]
+#
+#             # Filter for "Grp" and "Iso" within the valid rows
+#             c <- valid_rows[grepl("Grp", treatment), get(group)]
+#             d <- valid_rows[grepl("Iso", treatment), get(group)]
+#             bottom <- (d-c)/c
+#
+#             new_col_name <- paste0("norm_", group)
+#             normalized_factor[genotype == g & environment == e &
+#                                 light == l, new_col_name] <- top/bottom
+#             }
+#           }
+#         }
+#       }
 
-for (g in glist){
-  for (e in elist) {
-    for (l in llist) {
-      for (group in groups) {
-        # calculate the group and isolation
-        a<- grp_data[light == l & environment == e & genotype == g, get(group)]
-        b <- iso_data[light == l & environment == e & genotype == g, get(group)]
-            top <- (b-a)/a
+  # Ensure the required variables are defined
+  control_col <- readin_summary_dt_final[, 8:13]
+  control_col <- names(control_col)[
+    sapply(control_col, function(column) any(grepl(control, column)))
+  ]
 
-            # c <- normalized_factor[
-            #   ((control_col == "light" & light == control) |
-            #      control_col != "light" & light == l) &
-            #     ((control_col == "environment" & environment == control) |
-            #        control_col != "environment" & environment == e) &
-            #     grepl("Grp", treatment) &
-            #     ((control_col == "genotype" & genotype == control) |
-            #        control_col != "genotype" & genotype == g),
-            #   get(group)
-            # ]
-            #
-            # # Calculate d
-            # d <- normalized_factor[
-            #   ((control_col == "light" & light == control) |
-            #      control_col != "light" & light == l) &
-            #     ((control_col == "environment" & environment == control) |
-            #        control_col != "environment" & environment == e) &
-            #     grepl("Iso", treatment) &
-            #     ((control_col == "genotype" & genotype == control) |
-            #        control_col != "genotype" & genotype == g),
-            #   get(group)
-            # ]
-            valid_rows <- normalized_factor[
-              ((control_col == "light" & light == control) | (control_col != "light" & light == l)) &
-                ((control_col == "environment" & environment == control) | (control_col != "environment" & environment == e)) &
-                ((control_col == "genotype" & genotype == control) | (control_col != "genotype" & genotype == g))
-            ]
+  llist <- unique(readin_summary_dt_final$light)
+  elist <- unique(readin_summary_dt_final$environment)
+  glist <- unique(readin_summary_dt_final$genotype)
 
-            # Filter for "Grp" and "Iso" within the valid rows
-            c <- valid_rows[grepl("Grp", treatment), get(group)]
-            d <- valid_rows[grepl("Iso", treatment), get(group)]
-            bottom <- (d-c)/c
+  grp_data <- normalized_factor[grepl("Grp", treatment)]
+  iso_data <- normalized_factor[grepl("Iso", treatment)]
 
-            new_col_name <- paste0("norm_", group)
-            normalized_factor[genotype == g & environment == e &
-                                light == l, new_col_name] <- top/bottom
-            }
-          }
-        }
-      }
+  # Vectorized calculation for normalization
+  normalized_factor <- normalized_factor[, {
+    # Calculate the group and isolation differences
+    a <- grp_data[.SD, on = .(light, environment, genotype), get(group)]
+    b <- iso_data[.SD, on = .(light, environment, genotype), get(group)]
+    top <- (b - a) / a
 
+    # Filter valid rows
+    valid_rows <- .SD[(
+      ((control_col == "light" & light == control) | (control_col != "light" & light)) &
+        ((control_col == "environment" & environment == control) | (control_col != "environment" & environment)) &
+        ((control_col == "genotype" & genotype == control) | (control_col != "genotype" & genotype))
+    )]
+
+    # Calculate the bottom value
+    c <- valid_rows[grepl("Grp", treatment), get(group)]
+    d <- valid_rows[grepl("Iso", treatment), get(group)]
+    bottom <- (d - c) / c
+
+    # Assign normalized value
+    new_col_name <- paste0("norm_", group)
+    .(new_col_name = top / bottom)
+  }, by = .(genotype, environment, light, group)]
 
   # Write the normalized summary data table to a CSV file
 normalized_factor[, light := paste0('"', light, '"')]
