@@ -59,12 +59,13 @@ genotypePlots <- function(dt_curated_final, summary_dt_final, font) {
     plot_subdata2 <- summary_dt_final[id %in% sub_data$id]
 
     p1title <- trimws(paste(
-      if (divisions[1] != "light") {light},
-      if (divisions[1] != "genotype") {genotype},
-      if (divisions[1] != "environment" && !is.na(environment)) {environment},
-      if (divisions[1] != "treatment" && !is.na(treatment)) {treatment},
-      if (divisions[1] != "sex") {sex}
+      if (divisions[1] != "sex" && !is.na(sex) && sex != "NA") {sex},
+      if (divisions[1] != "genotype" && !is.na(genotype) && genotype != "NA") {genotype},
+      if (divisions[1] != "light" && !is.na(light) && light != "NA") {light},
+      if (divisions[1] != "treatment" && !is.na(treatment) && treatment != "NA") {treatment},
+      if (divisions[1] != "environment" && !is.na(environment) && environment != "NA") {environment}
     ))
+
         # Create overlay sleep plot
           p1 <- ggetho::ggetho(plot_subdata, ggplot2::aes(y = asleep, colour = .data[[divisions[1]]]), time_wrap = behavr::hours(24)) +
             ggetho::stat_pop_etho(show.legend = T) +
@@ -126,6 +127,7 @@ genotypePlots <- function(dt_curated_final, summary_dt_final, font) {
           combined_plot <- cowplot::plot_grid(p1, p2, p3, p4, p5, p6, ncol = 6, align = "h", axis = "b",
                                    rel_widths = c(6, u, u, u, u, u))
          )
+        p1title <- gsub(" ", "_", p1title)
         # Save combined plot
         ggplot2::ggsave(paste0("CombinedPlots", p1title, ".pdf"), combined_plot, width = (6 + u * 5 + 1.45), height = 4)
 
