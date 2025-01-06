@@ -9,9 +9,7 @@
 #' @param info A data.table containing experimental information.
 #' @param divisions A list of time divisions for the analysis.
 #' @param num_days The number of days to consider for the analysis.
-#' @param control A character string specifying the control treatment.
-#' @param controltreat A character string specifying the control treatment.
-#' @param controlgeno A character string specifying the control genotype.
+#' @param control A character string specifying the control from one of the variables in the Main.r file.
 #'
 #' @return This function does not return a value, but generates and saves two CSV files:
 #'         \code{all_batches_norm_summary.csv} and \code{all_batches_summary.csv}.
@@ -42,11 +40,7 @@
 #' 3. It concatenates the normalized and general summary statistics for each batch into separate CSV files.
 #' 4. The final CSV files, \code{all_batches_norm_summary.csv} and \code{all_batches_summary.csv},
 #'    are saved in the parent directory, containing combined results for all batches.
-runAllBatches <- function(controlgeno = NULL, controltreat = NULL,
-                          controllight = NULL, controlenviro = NULL, font = "plain") {
-  if (is.null(controlgeno) & is.null(controltreat) & is.null(controllight) &is.null(controlenviro)){
-    stop("At least one control measure is necessary. Please specify a controlgeno, controltreat, controllight and/or controlenviro.")
-  }
+runAllBatches <- function(control, font = "plain") {
 
   #ask user which plots they want
   pref <- plotPreferences()
@@ -80,8 +74,7 @@ runAllBatches <- function(controlgeno = NULL, controltreat = NULL,
   # Iterate over each batch directory and run the R files
   for (batch_dir in batch_dirs){
     run_r_files_in_dir(batch_dir)
-    runOneBatch(info, divisions, num_days, pref, controlgeno, controltreat,
-                controllight, controlenviro, font)
+    runOneBatch(info, divisions, num_days, pref, control, font)
   }
 
   # Restore the original working directory

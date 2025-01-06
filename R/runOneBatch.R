@@ -8,9 +8,7 @@
 #' @param divisions A list of time divisions for the analysis.
 #' @param num_days The number of days to consider for the analysis.
 #' @param pref A vector of preferences for generating specific plots (e.g., whether to generate concatenated plots).
-#' @param controltreat A character string specifying the control treatment.
-#' @param controlgeno A character string specifying the control genotype.
-#'
+#' @param control A character string specifying the control.
 #' @return This function does not return a value but performs a series of steps to process the data,
 #' generate plots, and calculate statistics.
 #'
@@ -26,8 +24,7 @@
 #' 8. Writes relevant output files, including the final summary and normalized statistics.
 #'
 #' @keywords internal
-runOneBatch <- function(info, divisions, num_days, pref, controlgeno, controltreat,
-                        controllight, controlenviro, font) {
+runOneBatch <- function(info, divisions, num_days, pref, control, font) {
 
   # Create an object that contains all of your inputs
   ExperimentData <- new("ExperimentData",
@@ -57,7 +54,7 @@ runOneBatch <- function(info, divisions, num_days, pref, controlgeno, controltre
   }
 
   # Define input column names for normalized statistics
-  group <- c("sleep_time_all",
+  groups <- c("sleep_time_all",
               "sleep_time_l",
               "sleep_time_d",
               "n_bouts_L",
@@ -75,10 +72,10 @@ runOneBatch <- function(info, divisions, num_days, pref, controlgeno, controltre
 
 if (any(dt_finalSummary[,treatment] == "Grp") & any(dt_finalSummary[,treatment ] != "Iso")){
   # Calculate normalized sleep loss statistics for all groups
-  norm_summary <- normSummary(ExperimentData, readin_summary_dt_final #<- dt_finalSummary
-                              , groups #<- group
-                              ,normalized_factor# <- norm_factor,
-                              ,control #<- "CS"
+  norm_summary <- normSummary(ExperimentData, dt_finalSummary #-> readin_summary_dt_final 
+                              , groups#[1] -> group
+                              ,norm_factor# -> normalized_factor,
+                              ,control
                               )
  }
 }
