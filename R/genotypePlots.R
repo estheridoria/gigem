@@ -29,44 +29,42 @@ genotypePlots <- function(dt_curated_final, summary_dt_final, font) {
   elist <- unique(summary_dt_final$environment)
   glist <- unique(summary_dt_final$genotype)
   tlist <- unique(summary_dt_final$treatment)
+  slist <- unique(summary_dt_final$sex)
 
+  # Create a data.table for the combinations of all conditions
+  condition_combinations <- expand.grid(
+    light = if (divisions[1] != "light") llist else NA,
+    environment = if (divisions[1] != "environment") elist else NA,
+    genotype = if (divisions[1] != "genotype") glist else NA,
+    treatment = if (divisions[1] != "treatment") tlist else NA,
+    sex = if (divisions[1] != "sex") slist else NA,
+    stringsAsFactors = FALSE
+  )
 
-  for (l in if (divisions[1] != "light") seq_along(llist) else 1) {
-    for (e in if (divisions[1] != "environment") seq_along(elist) else 1) {
-      for (g in if (divisions[1] != "genotype") seq_along(glist) else 1) {
-        for (t in if (divisions[1] != "treatment") seq_along(tlist) else 1) {
+  # Apply the logic for subsetting and plotting using data.table
+  condition_combinations_dt <- data.table::data.table(condition_combinations)
 
+  condition_combinations_dt[, {
+    # Subset data based on the current combination of conditions
+    sub_data <- summary_dt_final[
+      (divisions[1] == "light" | light == .SD$light) &
+        (divisions[1] == "environment" | environment == .SD$environment) &
+        (divisions[1] == "genotype" | genotype == .SD$genotype) &
+        (divisions[1] == "treatment" | treatment == .SD$treatment) &
+        (divisions[1] == "sex" | sex == .SD$sex),
+    ]
 
-        # Prepare data subset for the specific light, environment, genotype combination
-          # sub_data <- data.table::data.table()
-          # if (divisions[1] != "light"){
-          #   sub_data <- merge(summary_dt_final[light == llist[l]], subdata) }
-          # if (divisions[1] != "environment"){
-          #   sub_data <- merge(subdata, summary_dt_final[environment == elist[e]], all = T) }
-          # if (divisions[1] != "genotype"){
-          #   sub_data <- merge(subdata, summary_dt_final[genotype == glist[g]], all = T) }
-          # if (divisions[1] != "treatment"){
-          #   sub_data <- merge(subdata, summary_dt_final[treatment == tlist[t]], all = T)}
-          sub_data <- summary_dt_final[
-            (divisions[1] == "light" | light == llist[l]) &
-              (divisions[1] == "environment" |
-                 (is.na(elist[e]) & is.na(environment)) |
-                 (!is.na(elist[e]) & environment == elist[e])) &
-              (divisions[1] == "genotype" | genotype == glist[g]) &
-              (divisions[1] == "treatment" |
-                 (is.na(tlist[t]) & is.na(treatment)) |
-                 (!is.na(tlist[t]) & treatment == tlist[t])),
-          ]
+    # Curate data for plotting
+    plot_subdata <- dt_curated_final[id %in% sub_data$id]
+    plot_subdata2 <- summary_dt_final[id %in% sub_data$id]
 
-        plot_subdata <- dt_curated_final[id %in% sub_data$id]
-        plot_subdata2 <- summary_dt_final[id %in% sub_data$id]
-
-        p1title <- trimws(paste(
-          if (divisions[1] != "light") {llist[l]},
-          if (divisions[1] != "genotype") {glist[g]},
-          if (divisions[1] != "environment" && !is.na(elist[e])) {elist[e]},
-          if (divisions[1] != "treatment"&& !is.na(tlist[t])) {tlist[t]}))
-
+    p1title <- trimws(paste(
+      if (divisions[1] != "light") {light},
+      if (divisions[1] != "genotype") {genotype},
+      if (divisions[1] != "environment" && !is.na(environment)) {environment},
+      if (divisions[1] != "treatment" && !is.na(treatment)) {treatment},
+      if (divisions[1] != "sex") {sex}
+    ))
         # Create overlay sleep plot
           p1 <- ggetho::ggetho(plot_subdata, ggplot2::aes(y = asleep, colour = .data[[divisions[1]]]), time_wrap = behavr::hours(24)) +
             ggetho::stat_pop_etho(show.legend = T) +
@@ -124,19 +122,12 @@ genotypePlots <- function(dt_curated_final, summary_dt_final, font) {
 
         # Combine plots
         u <- length(unique(plot_subdata2[[divisions[1]]])) # Dynamic width adjustment
-        suppressWarnings(
+         suppressWarnings(
           combined_plot <- cowplot::plot_grid(p1, p2, p3, p4, p5, p6, ncol = 6, align = "h", axis = "b",
-                                   rel_widths = c(6, u, u, u, u, u)))
-
+                                   rel_widths = c(6, u, u, u, u, u))
+         )
         # Save combined plot
-        ggplot2::ggsave(paste0("CombinedPlots",
-                               if (divisions[1] != "light") {llist[l]},
-                               if (divisions[1] != "genotype") {glist[g]},
-                               if (divisions[1] != "environment" && !is.na(elist[e])) {elist[e]},
-                               if (divisions[1] != "treatment"&& !is.na(tlist[t])) {tlist[t]},
-                               ".pdf"), combined_plot, width = (6 + u * 5 + 1.45), height = 4)
-        }
-      }
-    }
-  }
+        ggplot2::ggsave(paste0("CombinedPlots", p1title, ".pdf"), combined_plot, width = (6 + u * 5 + 1.45), height = 4)
+
+}, by = 1:nrow(condition_combinations_dt)]
 }
