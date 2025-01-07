@@ -7,7 +7,7 @@
 #' @param Compare1 A string specifying the first comparison treatment group (e.g., "Control").
 #' @param Compare2 A string specifying the second comparison treatment group (e.g., "Treatment").
 #' @param aPriori A character vector of group names (e.g., c("L1", "L2", "S1", "S2", "CS")) to match against the specified column (default is `genotype`).
-#' @param aPrioriColumn A string specifying the column name for grouping in the data (default is `genotype`).
+#' @param aPrioriColumn A string specifying the column name for grouping in the data.
 #'
 #' @details
 #' This function performs K-means clustering on sleep data for two comparison treatment groups (`Compare1` and `Compare2`). It automatically determines the optimal number of clusters using three methods:
@@ -23,7 +23,7 @@ kmeansCluster <- function(Compare1, Compare2, var = NULL, aPriori, aPrioriColumn
 
   # Check if 'all_batches_summary.csv' exists in the current directory, and if not, stop execution.
   if (!file.exists("all_batches_summary.csv")) {
-    stop("Please run 'RunAllBatches' before attempting to run 'CorMat'")
+    stop("'all_batches_summary.csv' is not found in the current directory. Please run 'RunAllBatches' before attempting to run 'CorMat'")
   }
 
   # Validate that Compare1 is provided and is a valid string.
@@ -36,9 +36,15 @@ kmeansCluster <- function(Compare1, Compare2, var = NULL, aPriori, aPrioriColumn
     stop("Compare2 is missing or invalid")
   }
 
+  if (missing(aPrioriColumn) || !(aPrioriColumn %in% c("temp", "sex", "treatment", "genotype", "environment", "light"))) {
+    stop("'aPrioriColumn' is missing or invalid")
+  }
+
+
   # Read the data
   combined_data <- read.csv("all_batches_summary.csv")
   combined_data$light <- gsub("\"", "", combined_data$light)
+
 
   # Summarize data by required columns
   meanData <- dplyr::summarise(
@@ -53,6 +59,19 @@ kmeansCluster <- function(Compare1, Compare2, var = NULL, aPriori, aPrioriColumn
     ),
     .groups = "keep"
   )
+
+  # subset by only selecting rows with var
+  if (!is.null(var)){
+    meanData <- meanData[apply(meanData[,1:6], 1, function(row) {
+      any(grepl(var, row))  # Check if any element in the row contains 'var'
+    }), ]
+
+    # warning if var is invalid
+    if (nrow(meanData) == 0) {
+    stop("The 'var' specified is not included in the data. Please check your Main file to ensure correct spelling of the variable you want to view via kmeans clustering.")
+  }
+  }
+
 
   # Dynamically select the column to be used for grouping based on user input
   group_column <- dplyr::pull(meanData, dplyr::all_of(aPrioriColumn)) # Extract the specified column
@@ -145,7 +164,7 @@ kmeansCluster <- function(Compare1, Compare2, var = NULL, aPriori, aPrioriColumn
                                          color = cluster,
                                          fill = cluster)) +
         ggplot2::labs(
-          title = paste0("Sleep Trend with Clustering - ", lighting[i]),
+          title = paste0("Sleep Trend with Clustering - ", lighting[i], var),
           x = "Group Sleep", y = "% Sleep Loss After Isolation") +
         # ggplot2::geom_text(ggplot2::aes(x = min(gsleep) + u * 1:nrow(df), y = 1,
         #                        label = aPrioriColumn2, color = aPriori),
@@ -163,13 +182,13 @@ kmeansCluster <- function(Compare1, Compare2, var = NULL, aPriori, aPrioriColumn
         ggplot2::scale_color_viridis_d(name = "Cluster", option = "D", begin = 0, end = 0.8) +
         ggplot2::scale_y_continuous(limits = c(-0.5, 1), labels = scales::percent)
 
-    ggplot2::ggsave(paste0("ClusteredPlot_", lighting[i],Compare1, ".pdf"), height = 10, width = 10)
+    ggplot2::ggsave(paste0("ClusteredPlot_", lighting[i],Compare1, var, ".pdf"), height = 10, width = 10)
 
   }
 
   # Write the file which labels the cluster each genotype is in
   colnames(clusterfile) <- c(aPrioriColumn, "aPriori", paste0("Cluster", lighting[1]), paste0("Cluster", lighting[2]), paste0("Cluster", lighting[3]))
-  data.table::fwrite(clusterfile, paste0("clustered", Compare1, ".csv"))
+  data.table::fwrite(clusterfile, paste0("clustered", Compare1, var, ".csv"))
 #
 #   summary(lm(data = df, P.sleeploss ~ gsleep + aPriori)) # some significant // when controlling for related-ness, group sleep is typically negatively correlated with % sleep loss BUT NOT A LOT
 }
