@@ -1,194 +1,171 @@
 #' Perform K-Means Clustering on Sleep Data
 #'
-#' This function reads in a CSV file (`all_batches_summary.csv`) containing summarized data, performs K-means clustering to identify optimal clusters based on the Elbow Method, Silhouette Score, and Gap Statistic, and creates plots of sleep trends with clustering information.
-#' The user can provide a list of aPriori (e.g., genotype categories) and add them dynamically to the dataset.
+#' This function reads in a CSV file (`all_batches_norm_summary.csv`) containing summarized and relativized data, performs K-means clustering to identify optimal clusters based on the Elbow Method, Silhouette Score, and Gap Statistic, and creates a plot of sleep trends with clustering information.
+#' The user can provide a list of aPrioriConditions (e.g., genotype categories) which visually differentiates them from each other in the plots.
+#' If the data does not have "Grp" and "Iso" treatments, the 'all_batches_norm_summary.csv' will not be produced by 'runAllBatches' and this function will not run.
 #'
-#' @param combined_data A `data.frame` containing summarized data, with columns for genotype, sleep time, and other factors.
-#' @param Compare1 A string specifying the first comparison treatment group (e.g., "Control").
-#' @param Compare2 A string specifying the second comparison treatment group (e.g., "Treatment").
-#' @param aPriori A character vector of group names (e.g., c("L1", "L2", "S1", "S2", "CS")) to match against the specified column (default is `genotype`).
-#' @param aPrioriColumn A string specifying the column name for grouping in the data.
+#' @param x A string specifying the x-axis parameter of the cluster plot as written in 'all_batches_norm_summary.csv' (e.g., "norm_sleep_time_all").
+#' @param y A string specifying the y-axis parameter of the cluster plot as written in 'all_batches_norm_summary.csv' (e.g., "norm_mean_bout_length_L").
+#' @param condition a string specifying the experimental condition to subset the data by (within the temperature, sex, treatment, genotype, environment or light parameters).
+#' @param parameter A string specifying the parameter of the condition.
+#' @param condition2 a string specifying the second experimental condition to subset the data by (within the temperature, sex, treatment, genotype, environment or light parameters).
+#' @param parameter2 A string specifying the parameter of the second condition.
+#' @param aPrioriConditions A vector of (partial spellings of the) conditions (e.g., c("L1", "L2", "S1", "S2", "CS")) in one of the experimental parameters.
+#' @param aPrioriParameter A string specifying the parameter of the aPrioriConditions.
+#' @param font A character string variable determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")
 #'
 #' @details
-#' This function performs K-means clustering on sleep data for two comparison treatment groups (`Compare1` and `Compare2`). It automatically determines the optimal number of clusters using three methods:
+#' This function performs K-means clustering on sleep data for two comparison treatment groups (`x` and `y`). It automatically determines the optimal number of clusters using three methods:
 #' - Elbow Method
 #' - Silhouette Score
 #' - Gap Statistic
-#' The function generates and saves a series of plots showing the sleep trends, with points colored by cluster assignment and aPriori information.
+#' The function generates and saves a series of plots showing the sleep trends, with points colored by cluster assignment and shaped by aPrioriConditions information.
 #' The clustering results are saved in a CSV file.
 #'
-#' @return None. Saves the plots as PDF files and outputs a CSV file with cluster assignments.
+#' @return None. Saves the plot as a PDF file and outputs a CSV file with cluster assignments.
 #' @export
-kmeansCluster <- function(Compare1, Compare2, var = NULL, aPriori, aPrioriColumn, font = "plain") {
-
-  # Check if 'all_batches_summary.csv' exists in the current directory, and if not, stop execution.
-  if (!file.exists("all_batches_summary.csv")) {
-    stop("'all_batches_summary.csv' is not found in the current directory. Please run 'RunAllBatches' before attempting to run 'CorMat'")
+kmeansCluster <- function(x, y, condition = NULL, parameter = NULL, condition2 = NULL, parameter2 = NULL, aPrioriConditions, aPrioriParameter, font = "plain") {
+  # Check if 'all_batches_norm_summary.csv' exists in the current directory, and if not, stop execution.
+  if (!file.exists("all_batches_norm_summary.csv")) {
+    stop("'all_batches_norm_summary.csv' is not found in the current directory. Please run 'runAllBatches' before attempting to run 'kmeansCluster'. If you have already run it, ")
+  }
+  # Validate that y is provided and is a valid string.
+  if(missing(y) || !rlang::is_string(y)){
+    stop("y is missing or invalid")
   }
 
-  # Validate that Compare1 is provided and is a valid string.
-  if(missing(Compare1) || !rlang::is_string(Compare1)){
-    stop("Compare1 is missing or invalid")
+  # Validate that x is provided and is a valid string.
+  if(missing(x) || !rlang::is_string(x)){
+    stop("x is missing or invalid")
   }
 
-  # Validate that Compare2 is provided and is a valid string.
-  if(missing(Compare2) || !rlang::is_string(Compare2)){
-    stop("Compare2 is missing or invalid")
+  if (missing(aPrioriParameter) || !(aPrioriParameter %in% c("temp", "sex", "treatment", "genotype", "environment", "light"))) {
+    stop("'aPrioriParameter' is missing or invalid")
   }
-
-  if (missing(aPrioriColumn) || !(aPrioriColumn %in% c("temp", "sex", "treatment", "genotype", "environment", "light"))) {
-    stop("'aPrioriColumn' is missing or invalid")
+  if (!is.null(parameter) && !(parameter %in% c("temp", "sex", "treatment", "genotype", "environment", "light"))) {
+    stop("'parameter' is  invalid")
   }
-
-
-  # Read the data
-  combined_data <- read.csv("all_batches_summary.csv")
+  if (!is.null(parameter2) && !(parameter2 %in% c("temp", "sex", "treatment", "genotype", "environment", "light"))) {
+    stop("'parameter2' is invalid")
+  }
+  if (!(font %in% c("plain", "bold", "italic","bold.italic"))){
+    stop("'font' must be 'plain', 'bold', 'italic', or 'bold.italic'")
+  }
+  combined_data <- read.csv("all_batches_norm_summary.csv")
   combined_data$light <- gsub("\"", "", combined_data$light)
 
+  data.table::setDT(combined_data)
 
-  # Summarize data by required columns
-  meanData <- dplyr::summarise(
-    dplyr::group_by(
-      combined_data,
-      temp, sex, treatment, genotype, environment, light, Batch
-    ),
-    dplyr::across(
-      sleep_fraction:mean_bout_length_D,
-      ~mean(., na.rm = TRUE),
-      .names = "mean_{.col}"
-    ),
-    .groups = "keep"
-  )
+  # subset by only selecting rows with condition
+  if (!is.null(condition)){
+    combined_data <- combined_data[get(parameter) == condition,]
 
-  # subset by only selecting rows with var
-  if (!is.null(var)){
-    meanData <- meanData[apply(meanData[,1:6], 1, function(row) {
-      any(grepl(var, row))  # Check if any element in the row contains 'var'
-    }), ]
+    # warning if condition is invalid
+    if (nrow(combined_data) == 0) {
+      stop("The 'condition' specified is not included in the data within the 'parameter' specified.")
+    }
+    if (!is.null(condition2)){
+      combined_data <- combined_data[get(parameter2) == condition2,]
 
-    # warning if var is invalid
-    if (nrow(meanData) == 0) {
-    stop("The 'var' specified is not included in the data. Please check your Main file to ensure correct spelling of the variable you want to view via kmeans clustering.")
-  }
+      # warning if condition is invalid
+      if (nrow(combined_data) == 0) {
+        stop("The 'condition2' specified is not included in the data within the 'parameter2' specified.")
+      }
+    }
   }
 
+  # Initialize the aPrioriConditions column with NAs
 
-  # Dynamically select the column to be used for grouping based on user input
-  group_column <- dplyr::pull(meanData, dplyr::all_of(aPrioriColumn)) # Extract the specified column
+  combined_data[, aPrioriConditions := as.character(NA)]
 
-  # Initialize the aPriori column
-  data.table::setDT(meanData)
-  meanData[, aPriori := as.character(NA)]
-
-  # Dynamically add the grouping column based on user input
-  for (group in aPriori) {
-    meanData[is.na(aPriori) & grepl(group, group_column), aPriori := group]
+  # Dynamically select the aPriori column
+  group_Column <- dplyr::pull(combined_data, dplyr::all_of(aPrioriParameter))
+  # Dynamically add the aprioriCondition grouping column to the dataset
+  for (group in aPrioriConditions) {
+    combined_data[is.na(aPrioriConditions) & grepl(group, group_Column), aPrioriConditions := group]
   }
 
   # Further processing
-  columnnames <- c("aPrioriColumn2", "gsleep", "isleep", "P.sleeploss", "aPriori")
-  names <- c("mean_sleep_time_all", "mean_sleep_time_l", "mean_sleep_time_d")
-  lighting <- c("ZT0_24", "ZT0_12", "ZT12_24")
+  columnnames <- c("x", "y", aPrioriParameter,"aPrioriConditions")
 
   # This code automatically selects the optimal number of clusters and prints the plots
-  N_clus <- FALSE
 
-  for (i in 1:3) {
-    gsleep <- meanData[meanData$treatment == Compare1, get(names[i])]
-    isleep <- meanData[meanData$treatment == Compare2, get(names[i])]
-    name <-   meanData[meanData$treatment == Compare1, get(aPrioriColumn)]
-    aPriori.grp <- meanData[meanData$treatment == Compare1, "aPriori"]
-    aPriori.grp[is.na(aPriori)] <- "Other"
-    p.sleeploss <- (gsleep - isleep) / gsleep
-    df <- cbind(name, gsleep, isleep, p.sleeploss, aPriori.grp)
-    colnames(df) <- columnnames
-    df <- df[order(df$gsleep), ]
-    # u <- (max(df$gsleep) - min(df$gsleep)) / nrow(df)  # create a multiplier for even spacing
+  aPrioriParameter.col <-   combined_data[, get(aPrioriParameter)]
+  aPrioriConditions.col <- combined_data[, "aPrioriConditions"]
+  aPrioriConditions.col[is.na(aPrioriConditions)] <- "Other"
+  df <- cbind(combined_data[[x]], combined_data[[y]], aPrioriParameter.col, aPrioriConditions.col)
+  colnames(df) <- columnnames
 
-    data <- df[, c(2, 4)]  # Selecting only relevant columns for clustering
+  data <- df[, c(1,2)]  # Selecting only relevant columns for clustering
 
-    # Function to compute within-cluster sum of squares
-    wss <- function(k) {
-      stats::kmeans(data, k, nstart = 10)$tot.withinss
-    }
-
-    # Function to compute average silhouette width
-    silhouette_score <- function(k) {
-      km <- stats::kmeans(data, centers = k, nstart = 10)
-      ss <- cluster::silhouette(km$cluster, dist(data))
-      mean(ss[, 3])
-    }
-
-    kmax <- min(10, nrow(data) - 1)
-
-    # Elbow Method
-    k_values <- 1:kmax
-    wss_values <- sapply(k_values, wss)
-
-    # Silhouette Method
-    sil_values <- sapply(2:kmax, silhouette_score)
-
-    # Gap Statistic
-    gap_stat <- cluster::clusGap(data, FUN = kmeans, nstart = 10, K.max = kmax, B = 50)
-
-    # Automatically select the best number of clusters
-    best_elbow <- which(diff(wss_values) == min(diff(wss_values))) + 1  # Finds the elbow
-    best_silhouette <- which.max(sil_values) + 1                        # Max silhouette width
-    best_gap <- cluster::maxSE(gap_stat$Tab[, "gap"], gap_stat$Tab[, "SE.sim"])  # Max gap statistic
-
-    # Summarize and choose the best method
-    results <- c(best_elbow, best_silhouette, best_gap)
-    names(results) <- c("Elbow", "Silhouette", "Gap Statistic")
-    optimal_clusters <- as.numeric(names(sort(table(results), decreasing = TRUE)[1]))
-
-    # Perform K-means clustering using the optimal number of clusters
-    km_res <- kmeans(data, centers = optimal_clusters, nstart = 10)
-
-    # Add cluster assignment to the original data for plotting
-    df$cluster <- as.factor(km_res$cluster)
-
-    if (N_clus) {
-      clusterfile[,i + 2] <- df[,6]
-    } else {
-      clusterfile <- cbind(df[, c(1, 5, 6, 6, 6)])  # binds aPrioriColumns, aPriori, and cluster number
-      colnames(clusterfile) <- c(aPrioriColumn, "aPriori", paste0("Cluster",
-              lighting[1]), paste0("Cluster", lighting[2]), paste0("Cluster", lighting[3]))
-      N_clus <- TRUE
-    }
-
-    # Creating a correlation plot colored by clusters and aPriori
-      ggplot2::ggplot(df, ggplot2::aes(x = gsleep, y = P.sleeploss)) +
-        #ggplot2::geom_smooth(method = "lm", color = "grey31", se = TRUE) +
-        ggplot2::geom_point(size = 5, stroke = 2, alpha = 2/3,
-                            ggplot2::aes(shape = aPriori,
-                                         color = cluster,
-                                         fill = cluster)) +
-        ggplot2::labs(
-          title = paste0("Sleep Trend with Clustering - ", lighting[i], var),
-          x = "Group Sleep", y = "% Sleep Loss After Isolation") +
-        # ggplot2::geom_text(ggplot2::aes(x = min(gsleep) + u * 1:nrow(df), y = 1,
-        #                        label = aPrioriColumn2, color = aPriori),
-        #                    angle = 90, vjust = 1.5, hjust = 1, size = 3) +
-        ggprism::theme_prism(base_fontface = font) +
-        ggplot2::theme(title = ggplot2::element_text(size = 24),
-          axis.title.y = ggplot2::element_text(size = 26),
-                       axis.title.x = ggplot2::element_text(size = 26),
-                       axis.text.x = ggplot2::element_text(size = 20),
-                       axis.text.y = ggplot2::element_text(size = 20),
-                       legend.text = ggplot2::element_text(size = 20, face = font),
-                       legend.title = ggplot2::element_text(size = 20)) +
-        ggplot2::scale_shape_manual(name = "A Priori", values = c(0,1,4,2,3,14,9,10,11)) +
-        ggplot2::scale_fill_viridis_d(name = "Cluster", option = "D", begin = 0, end = 0.8) +
-        ggplot2::scale_color_viridis_d(name = "Cluster", option = "D", begin = 0, end = 0.8) +
-        ggplot2::scale_y_continuous(limits = c(-0.5, 1), labels = scales::percent)
-
-    ggplot2::ggsave(paste0("ClusteredPlot_", lighting[i],Compare1, var, ".pdf"), height = 10, width = 10)
-
+  # Function to compute within-cluster sum of squares
+  wss <- function(k) {
+    stats::kmeans(data, k, nstart = 10)$tot.withinss
   }
 
+  # Function to compute average silhouette width
+  silhouette_score <- function(k) {
+    km <- stats::kmeans(data, centers = k, nstart = 10)
+    ss <- cluster::silhouette(km$cluster, dist(data))
+    mean(ss[, 3])
+  }
+
+  kmax <- min(10, nrow(data) - 1)
+
+  # Elbow Method
+  k_values <- 1:kmax
+  wss_values <- sapply(k_values, wss)
+
+  # Silhouette Method
+  sil_values <- sapply(2:kmax, silhouette_score)
+
+  # Gap Statistic
+  gap_stat <- cluster::clusGap(data, FUN = kmeans, nstart = 10, K.max = kmax, B = 50)
+
+  # Automatically select the best number of clusters
+  best_elbow <- which(diff(wss_values) == min(diff(wss_values))) + 1  # Finds the elbow
+  best_silhouette <- which.max(sil_values) + 1                        # Max silhouette width
+  best_gap <- cluster::maxSE(gap_stat$Tab[, "gap"], gap_stat$Tab[, "SE.sim"])  # Max gap statistic
+
+  # Summarize and choose the best method
+  results <- c(best_elbow, best_silhouette, best_gap)
+  names(results) <- c("Elbow", "Silhouette", "Gap Statistic")
+  optimal_clusters <- as.numeric(names(sort(table(results), decreasing = TRUE)[1]))
+
+  # Perform K-means clustering using the optimal number of clusters
+  km_res <- kmeans(data, centers = optimal_clusters, nstart = 10)
+
+  # Add cluster assignment to the original data for plotting
+  df$cluster <- as.factor(km_res$cluster)
+
+  xtitle <- gsub("_", " ", x)
+  ytitle<- gsub("_", " ", y)
+
+  # Creating a correlation plot colored by clusters and aPrioriConditions
+  ggplot2::ggplot(df, ggplot2::aes(x = x, y = y)) +
+    ggplot2::geom_point(size = 5, stroke = 2, alpha = 2/3,
+                        ggplot2::aes(shape = aPrioriConditions,
+                                     color = cluster,
+                                     fill = cluster)) +
+    ggplot2::labs(
+      title = trimws(paste("Sleep Trend with Clustering", condition, condition2)),
+      x = xtitle, y = ytitle) +
+    ggprism::theme_prism(base_fontface = font) +
+    ggplot2::theme(title = ggplot2::element_text(size = 24),
+                   axis.title.y = ggplot2::element_text(size = 26),
+                   axis.title.x = ggplot2::element_text(size = 26),
+                   axis.text.x = ggplot2::element_text(size = 20),
+                   axis.text.y = ggplot2::element_text(size = 20),
+                   legend.text = ggplot2::element_text(size = 20, face = font),
+                   legend.title = ggplot2::element_text(size = 20)) +
+    ggplot2::scale_shape_manual(name = "A Priori", values = c(0,1,4,2,3,14,9,10,11)) +
+    ggplot2::scale_fill_viridis_d(name = "Cluster", option = "D", begin = 0, end = 0.8) +
+    ggplot2::scale_color_viridis_d(name = "Cluster", option = "D", begin = 0, end = 0.8)
+
+  ggplot2::ggsave(paste0("ClusteredPlot_", x, y, condition, ".pdf"), height = 10, width = 10)
+
   # Write the file which labels the cluster each genotype is in
-  colnames(clusterfile) <- c(aPrioriColumn, "aPriori", paste0("Cluster", lighting[1]), paste0("Cluster", lighting[2]), paste0("Cluster", lighting[3]))
-  data.table::fwrite(clusterfile, paste0("clustered", Compare1, var, ".csv"))
-#
-#   summary(lm(data = df, P.sleeploss ~ gsleep + aPriori)) # some significant // when controlling for related-ness, group sleep is typically negatively correlated with % sleep loss BUT NOT A LOT
+  data.table::fwrite(df, paste0("clustered", x, y, condition, ".csv"))
+  #
+
 }
