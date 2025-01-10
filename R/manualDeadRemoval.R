@@ -8,15 +8,12 @@
 #' @param num_days Numeric, the minimum lifespan (in days) required for an animal to be retained.
 #' @param divisions A character vector defining grouping variables for plot facets.
 #' @param pref A numeric vector specifying whether to generate population plots (`pref[2] == 1`) and overlay plots (`pref[3] == 1`).
+#' @param font A character string variable determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")
 #'
 #' @details
-#' This function removes animals that are detected as dead before the specified lifespan threshold (`num_days`).
-#' It filters the data to retain only animals with a lifespan greater than or equal to `num_days`, generates population
-#' plots and overlay plots of sleep data based on user preferences (`pref`), and saves the results as PDF files.
-#'
 #' Population plots are saved with the suffix `_population_sleep.pdf` and overlay plots with `_sleep_overlay.pdf`.
 #'
-#' @return A `data.table` of the curated data (`dt`) limited to animals meeting the lifespan threshold.
+#' @return A `data.table` of the curated data (`dt`) limited to animals meeting or exceeding the lifespan threshold.
 #' @keywords internal
 manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref, font) {
 

@@ -1,14 +1,15 @@
 #' Generate Combined Genotype Plots (Internal)
 #'
-#' Creates combined plots for each unique combination of `light`, `environment`, and `genotype` in the dataset.
+#' Creates combined plots for each unique combination of `light`, `environment`, `treatment`, `sex`, and `genotype` in the dataset.
 #' Generates overlay sleep plots and sleep duration plots, saving each combination as a PDF file.
 #'
 #' @param dt_curated_final A `data.table` containing curated sleep data with columns such as `id` and `asleep`.
 #' @param summary_dt_final A `data.table` containing summary statistics with columns including `light`, `environment`,
-#'   `genotype`, `treatment`, and various sleep metrics.
+#'   `genotype`, `treatment`, `sex` and various sleep metrics.
+#' @param font A character string variable determining the font style of the produced plots.
 #'
 #' @details
-#' The function iterates through all unique combinations of `light`, `environment`, and `genotype`.
+#' The function iterates through all unique combinations of `light`, `environment`, `treatment`, `sex`, and `genotype`.
 #' For each combination:
 #' - An overlay sleep plot is created using `ggetho`.
 #' - Multiple sleep duration plots (e.g., total sleep, daytime sleep, nighttime sleep) are generated
@@ -17,7 +18,7 @@
 #' - The combined figure is saved as a PDF file, with the filename reflecting the combination of `light`,
 #'   `environment`, and `genotype`.
 #'
-#' The function dynamically adjusts plot widths based on the number of unique treatments in the dataset.
+#' The function dynamically adjusts plot widths based on the number of unique possibilities of divisions[1].
 #'
 #' @return None. Plots are saved as PDF files.
 #' @keywords internal

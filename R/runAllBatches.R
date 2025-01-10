@@ -41,9 +41,17 @@
 #' 4. The final CSV files, \code{all_batches_norm_summary.csv} and \code{all_batches_summary.csv},
 #'    are saved in the parent directory, containing combined results for all batches.
 runAllBatches <- function(control, font = "plain") {
+  # Warnings
+  if(any(!(divisions[1:6] %in% c("temperature", "sex", "genotype", "treatment", "environment", "light")))){
+    stop("'divisions' entries must be from the parameter list: 'temperature', 'sex', 'genotype', 'treatment', 'environment', and 'light'")
+  }
+
+  if (!(font %in% c("plain", "bold", "italic","bold.italic"))){
+    stop("'font' must be 'plain', 'bold', 'italic', or 'bold.italic'")
+  }
 
   #ask user which plots they want
-  pref <- plotPreferences()
+  pref <- plotPreferences("all")
 
   # Get the list of all sub directories
   all_dirs <- list.dirs(parent_dir, full.names = TRUE, recursive = FALSE)
@@ -147,5 +155,6 @@ if (pref[7] == 1){
   data.table::fwrite(combined_sleepmeta, output_file, row.names = FALSE)
 
   concatGenotypePlots(combined_sleepdata, combined_sleepmeta, summary_dt_final = combined_data, font)
-  }
+}
+  setwd(original_wd)
 }

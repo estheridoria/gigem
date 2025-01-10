@@ -1,4 +1,4 @@
-#' Plot Activity and Sleep Data by Monitor
+#' Plot Activity and Sleep Data by Monitor (Internal)
 #'
 #' This internal helper function generates PDF plots of activity and sleep data for each monitor listed in `ExperimentData`.
 #' Activity data is loaded and plotted using `damr` and `ggetho`, while sleep data is annotated using `sleepr` before plotting.
@@ -13,12 +13,6 @@
 #' @return A `data.table` object (`dt`) containing the loaded DAM data, with sleep annotations if applicable.
 #' @keywords internal
 #'
-#' @details
-#' This function operates by iterating over each monitor listed in the `monitorlist` attribute of the `ExperimentData` object.
-#' For each monitor, it loads the activity data using the `damr` package and generates activity plots using `ggetho`.
-#' If specified in the `pref` vector (i.e., `pref[1] == 1`), it also generates sleep plots. Sleep data is annotated with information
-#' from the `sleepr` package before plotting. Each monitor's plot is saved in a separate PDF file.
-#' The function returns a `data.table` object (`dt`) containing the processed DAM data along with any sleep annotations.
 activityAndSleep <- function(ExperimentData, loadinginfo_linked, pref) {
 
   # Load in data

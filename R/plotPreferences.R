@@ -1,21 +1,17 @@
-#' Ask the user which plots they don't want (Internal)
+#' Ask the user which plots they want (Internal)
 #'
 #' This function prompts the user to select which plots they do not wish to generate. It presents a series of
-#' Yes/No questions regarding different types of plots, and returns their preferences in a linked metadata table
+#' Yes/No questions regarding different types of plots, and returns their preferences.
 #' for downstream analysis.
 #'
-#' @param ExperimentData An S4 object with experiment metadata, including `loadinginfo`.
+#' @param run A character string of either "all" or "one" referring to which run is done
 #'
-#' @return A data.table containing the user's plot preferences, which can be used for downstream analysis.
+#' @return A matrix containing the user's plot preferences, which can be used for downstream analysis.
 #' @export
 #'
 #' @keywords internal
 #'
-#' @details
-#' The function provides a set of menu prompts to the user, asking whether they want to generate specific plots,
-#' such as sleep and activity profiles, population plots, and quantitative sleep plots. Based on the user's
-#' responses, it returns a table that links their choices for further use in analysis or decision-making processes.
-plotPreferences <- function(){
+plotPreferences <- function(run = "all"){
   # activityAndSleep.R #17-34 & #40-57
   r1 <- menu(c("Yes", "No"), title="Do you want to generate each monitor's sleep and activity profile?")
 
@@ -34,9 +30,15 @@ plotPreferences <- function(){
   # runOneBatch.R #53 (run genotypePlots())
   r5 <- menu(c("Yes", "No"), title="Do you want to generate all plots grouped by genotype, within batches?")
 
+  if (run == "all"){
   # runAllBatches.R #117 (run concatGenotypePlots())
   r7 <- menu(c("Yes", "No"), title="Do you want to generate all plots grouped by genotype, summarized accross batches?")
+  }
+  if (run =="one"){
+  results <- rbind(r1, r2, r3, r4, r5, r6, "2")
+  } else{
+    results <- rbind(r1, r2, r3, r4, r5, r6, r7)
 
-  results <- rbind(r1, r2, r3, r4, r5, r6, r7)
+  }
   return(results)
 }

@@ -4,16 +4,11 @@
 #' generating a curated `behavr` table without these IDs. It saves a CSV file listing removed IDs and generates
 #' PDF plots comparing sleep data before and after curation.
 #'
-#' @param ExperimentData An S4 object containing experiment metadata. Must include a `Batch` identifier for saved filenames.
+#' @param ExperimentData An S4 object containing experiment metadata.
+#'   Must include `Batch` (identifier for the batch being processed).
 #' @param dt A `behavr` table containing animal activity and sleep data, with metadata accessible via `meta(dt)`.
 #'
 #' @return A curated `behavr` table (`dt_curated_1`) with dead IDs removed.
-#' @details
-#' - Dead IDs are identified using `sleepr::curate_dead_animals`.
-#' - A CSV file named `removed_list1_<Batch>.csv` is saved, containing the list of removed IDs.
-#' - Two PDF plots are generated:
-#'   1. `<Batch>_sleep_before_deadcheck.pdf`: Sleep data before curation.
-#'   2. `<Batch>_sleep_after_deadcheck.pdf`: Sleep data after removing dead IDs.
 #'
 #' @keywords internal
 aliveVsDead <- function(ExperimentData, dt) {

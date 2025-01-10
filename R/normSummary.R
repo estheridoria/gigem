@@ -8,8 +8,7 @@
 #' @param readin_summary_dt_final A data.table with summary statistics for all genotypes, to be normalized.
 #' @param groups A character vector specifying the groups to include in the normalization.
 #' @param normalized_factor A data.table with the normalization factor for each genotype.
-#' @param controltreat A character string specifying the control treatment for normalizing.
-#' @param controlgeno A character string specifying the control genotype for normalizing.
+#' @param control A character string specifying the control for normalizing.
 #'
 #' @return A data.table with selected columns from the normalized summary, also written as a CSV file.
 #' @export
@@ -30,6 +29,7 @@ normSummary <- function(ExperimentData, readin_summary_dt_final, groups,
   control_col <- names(control_col)[
     sapply(control_col, function(column) any(grepl(control, column)))
   ]
+  telist <- unique(readin_summary_dt_final$temperature)
   llist <- unique(readin_summary_dt_final$light)
   elist <- unique(readin_summary_dt_final$environment)
   glist <- unique(readin_summary_dt_final$genotype)
@@ -39,7 +39,7 @@ normSummary <- function(ExperimentData, readin_summary_dt_final, groups,
   iso_data <- normalized_factor[grepl("Iso", treatment)]
 
   # Combine all combinations of light, environment, genotype, and sex into a data.table
-  combinations <- data.table::CJ(light = llist, environment = elist, genotype = glist, sex = slist)
+  combinations <- data.table::CJ(temperature = telist, light = llist, environment = elist, genotype = glist, sex = slist)
 
   # This will hold the results
   result <- data.table::data.table()
@@ -48,17 +48,19 @@ normSummary <- function(ExperimentData, readin_summary_dt_final, groups,
   for (group in groups) {
     # Calculate top and bottom using the combined data.table
     for (i in 1:nrow(combinations)) {
+      te <- combinations$temperature[i]
       l <- combinations$light[i]
       e <- combinations$environment[i]
       g <- combinations$genotype[i]
       s <- combinations$sex[i]
 
       # Calculate group and isolation for this combination
-      a <- grp_data[light == l & environment == e & genotype == g, get(group)]
-      b <- iso_data[light == l & environment == e & genotype == g, get(group)]
-      top <- (b - a) / a
+      a <- grp_data[temperature == te & light == l & environment == e & genotype == g, get(group)]
+      b <- iso_data[temperature == te & light == l & environment == e & genotype == g, get(group)]
+      top <- (a-b) / a
 
       valid_rows <- normalized_factor[
+        ((control_col == "temperature" & temperature == control) | (control_col != "temperature" & temperature == te)) &
         ((control_col == "light" & light == control) | (control_col != "light" & light == l)) &
           ((control_col == "environment" & environment == control) | (control_col != "environment" & environment == e)) &
           ((control_col == "genotype" & genotype == control) | (control_col != "genotype" & genotype == g)) &
@@ -68,7 +70,7 @@ normSummary <- function(ExperimentData, readin_summary_dt_final, groups,
       # Filter for "Grp" and "Iso" within the valid rows
       c <- valid_rows[grepl("Grp", treatment), get(group)]
       d <- valid_rows[grepl("Iso", treatment), get(group)]
-      bottom <- (d - c) / c
+      bottom <- (c-d) / c
 
       # Update the result table with normalized values
       new_col_name <- paste0("norm_", group)

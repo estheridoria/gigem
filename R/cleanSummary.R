@@ -2,19 +2,16 @@
 #'
 #' This internal helper function calculates and summarizes sleep metrics, performs bout analysis, and saves related plots.
 #'
-#' @param ExperimentData An S4 object with experiment metadata, including a `Batch` identifier for saved filenames.
+#' @param ExperimentData An S4 object containing experiment metadata.
+#'   Must include `Batch` (identifier for the batch being processed).
 #' @param dt A `behavr` table containing sleep and activity data.
-#' @param num_days Number of days for calculating average metrics.
+#' @param num_days Number of days for displaying and calculating average metrics.
 #' @param loadinginfo_linked Linked metadata for the behavioral data.
-#' @param divisions A list of grouping columns used for facet plots.
+#' @param divisions A list of grouping columns used for facetting plots.
 #' @param pref A preference vector to control plot generation.
+#' @param font A string variable determining the font style of the produced plots.
 #'
-#' @return A summarized `data.table` containing sleep metrics and bout data for each ID.
-#' @details
-#' - Calculates sleep fractions and durations for overall, light, and dark phases.
-#' - Performs bout analysis for sleep architecture.
-#' - Generates and saves plots of sleep and bout metrics by grouping factors.
-#' - Outputs a CSV file named `summary_<Batch>.csv` with summarized data.
+#' @return A summarized `data.table` (`summary_<Batch>.csv`) containing sleep metrics and bout data for each ID.
 #'
 #' @keywords internal
 cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divisions, pref, font) {
@@ -28,12 +25,12 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
   # Calculate overall sleep metrics and phase-based sleep data
   summary_dt_final <- behavr::rejoin(dt[, .(
     sleep_fraction = mean(asleep),
-    sleep_fraction_all = mean(asleep),
+    sleep_fraction_All = mean(asleep),
     sleep_time_all = 1440 * mean(asleep),
-    sleep_fraction_l = mean(asleep[phase == "L"]),
-    sleep_time_l = 720 * mean(asleep[phase == "L"]),
-    sleep_fraction_d = mean(asleep[phase == "D"]),
-    sleep_time_d = 720 * mean(asleep[phase == "D"])
+    sleep_fraction_L = mean(asleep[phase == "L"]),
+    sleep_time_L = 720 * mean(asleep[phase == "L"]),
+    sleep_fraction_D = mean(asleep[phase == "D"]),
+    sleep_time_D = 720 * mean(asleep[phase == "D"])
   ), by = id])
 
   # Remove the 'file_info' column
@@ -143,9 +140,9 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
   }
 
   # Generate sleep time and bout plots for light and dark phases
-  create_sleeptime_plot(summary_dt_final, "sleep_time_all", "Total Sleep (min)", divisions, 1500, "bar")
-  create_sleeptime_plot(summary_dt_final, "sleep_time_l", "Daytime Sleep (min)", divisions, 1000, "bar")
-  create_sleeptime_plot(summary_dt_final, "sleep_time_d", "Nighttime Sleep (min)", divisions, 1000, "bar")
+  create_sleeptime_plot(summary_dt_final, "sleep_time_All", "Total Sleep (min)", divisions, 1500, "bar")
+  create_sleeptime_plot(summary_dt_final, "sleep_time_L", "Daytime Sleep (min)", divisions, 1000, "bar")
+  create_sleeptime_plot(summary_dt_final, "sleep_time_D", "Nighttime Sleep (min)", divisions, 1000, "bar")
   create_sleeptime_plot(summary_dt_final, "n_bouts_L", "Daytime Sleep Bouts", divisions, 80, "violin")
   create_sleeptime_plot(summary_dt_final, "n_bouts_D", "Nighttime Sleep Bouts", divisions, 80, "violin")
 }
