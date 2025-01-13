@@ -2,11 +2,12 @@
 #'
 #' Computes the relative sleep changes between two treatments and generates a correlation matrix plot with significance annotations.
 #'
-#' @param Compare1 A character string representing the first treatment to compare. This should be the control.
-#' @param Compare2 A character string representing the second treatment to compare. This will be compared to the control.
-#' @param var A character string representing the variable to subset the data by.
-#' This should be one of the entries in the Main file under temperature, light, genotype, sex, treatment or environment.
-#' @param font A character string variable determining the font style of the produced plots.
+#' @param treat A string specifying a treatment to subset the data by.
+#' @param temp A string specifying a temperature condition to subset the data by.
+#' @param enviro A string specifying a environment condition to subset the data by.
+#' @param lights A string specifying a light condition to subset the data by.
+#' @param geno A string specifying a genotype condition to subset the data by.
+#' @param font A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")
 #'
 #' @details Two `ggplot` objects containing the correlation matrix plot with significance annotations for percentage of sleep lost and raw number of minutes lost.
 #'         The plots are saved as PDF files named `Relative<Compare1>.pdf` and `Unadjusted<Compare1>.pdf`.
@@ -15,11 +16,10 @@
 #' @return None. Plots are saved as PDF files, while p-values are saved as csv files.
 #'
 #' @export
-corMat <- function(treat = NULL, temp = NULL, enviro = NULL, lights = NULL, geno = NULL, font = "plain"){
-
+corMat <- function(temp = NULL, enviro = NULL, lights = NULL, geno = NULL, font = "plain"){
   # Check if 'all_batches_summary.csv' exists in the current directory, and if not, stop execution.
-  if (!file.exists("all_batches_norm_summary.csv")) {
-    stop("The file 'all_batches_norm_summary.csv' is missing from the current directory.
+  if (!file.exists("all_batches_summary.csv")) {
+    stop("The file 'all_batches_summary.csv' is missing from the current directory.
          Please run 'RunAllBatches' before attempting to run 'CorMat'")
   }
 
@@ -28,20 +28,21 @@ corMat <- function(treat = NULL, temp = NULL, enviro = NULL, lights = NULL, geno
   }
 
   # Read in the combined data from the CSV file.
-  combined_data <- read.csv("all_batches_norm_summary.csv")
+  combined_data <- read.csv("all_batches_summary.csv")
   combined_data$light <- gsub("\"", "", combined_data$light)
+  data.table::setDT(combined_data)
 
   # subset by only selecting rows with condition(s) specified
   titlee <- c("")
-  if(!is.null(treat)){
-    combined_data <- combined_data[combined_data$treatment == treat,]
-
-    # warning if condition is invalid
-    if (nrow(combined_data) == 0) {
-      stop("The 'treat' specified is not included in the data within the 'treatment' parameter")
-    }
-    titlee <- trimws(paste(titlee, treat))
-  }
+  # if(!is.null(treat)){
+  #   combined_data <- combined_data[combined_data$treatment == treat,]
+  #
+  #   # warning if condition is invalid
+  #   if (nrow(combined_data) == 0) {
+  #     stop("The 'treat' specified is not included in the data within the 'treatment' parameter")
+  #   }
+  #   titlee <- trimws(paste(titlee, treat))
+  # }
   if(!is.null(temp)){
     combined_data <- combined_data[combined_data$temperature == temp,]
     # warning if condition is invalid
@@ -75,36 +76,46 @@ corMat <- function(treat = NULL, temp = NULL, enviro = NULL, lights = NULL, geno
     titlee <- trimws(paste(titlee, geno))
   }
 
-  # Initialize an empty data frame for the genotypes.
-  df <- combined_data[,15:21]
+  # Summarize sleep data by temp, sex, treatment, and genotype, calculating means for sleep-related variables.
+  meanData <- dplyr::summarise(
+    dplyr::group_by(
+      combined_data,
+      sex, genotype, temperature, treatment, environment, light
+    ),
+    dplyr::across(
+      sleep_fraction:mean_bout_length_D,
+      ~mean(., na.rm = TRUE),
+      .names = "mean_{.col}"
+    ),
+    .groups = "keep"
+  )
 
-  # # Generate a data frame with relative sleep loss (p.sleeploss) & absolute for each sleep time variable.
-  #   p.sleeploss <- meanData[meanData$treatment == Compare1,names[i]]
-  #   isleep <- meanData[meanData$treatment == Compare2,names[i]]
-  #    <- (gsleep - isleep) / gsleep
-  #   sleeploss <- (gsleep - isleep)
-  #   df <- cbind(df, p.sleeploss)
+  # Define sleep time variables.
+  names <- c("mean_sleep_time_All", "mean_sleep_time_L", "mean_sleep_time_D")
+  names <- c("mean_sleep_time_all", "mean_sleep_time_l", "mean_sleep_time_d") # delete when possible
+  traitlist <- c("mean_n_bouts_L", "mean_n_bouts_D", "mean_mean_bout_length_L",
+                 "mean_mean_bout_length_D")
 
-  # Define additional trait variables to compare.
-  # traitlist <- c("norm_n_bouts_L", "norm_n_bouts_D", "norm_mean_bout_length_L", "norm_mean_bout_length_D")
+  if("Grp" %in% meanData$treatment && "Iso" %in% meanData$treatment){
+    # Generate a data frame with absolute sleep loss (p.sleeploss) for each sleep time variable.
+    gsleep <- meanData[meanData$treatment == "Grp", names]
+    isleep <- meanData[meanData$treatment == "Iso", names]
+    sleepchange <- (gsleep - isleep)
+    # Define additional trait variables to compare.
+    gtrait <- meanData[meanData$treatment == "Grp", traitlist]
+    itrait <- meanData[meanData$treatment == "Iso", traitlist]
+    traitchange <- (gtrait - itrait)
+    df <- cbind(sleepchange, traitchange)
+    # Rename the columns for better clarity.
+    colnames(df) <- c("Sleepchange_All", "Sleepchange_L", "Sleepchange_D", "Nboutschange_L",
+                      "Nboutschange_D", "Boutlenchange_L", "Boutlenchange_D")
+  } else {
+    df <- meanData[, c(names, traitlist)]
+    # Rename the columns for better clarity.
+    colnames(df) <- c("Sleeptime_All", "Sleeptime_L", "Sleeptime_D", "Nbouts_L",
+                      "Nbouts_D", "Boutlen_L", "Boutlen_D")
+  }
 
-  # # Add the trait comparisons for each treatment group.
-  # for (i in 1:4){
-  #   a <- meanData[meanData$treatment == Compare1,traitlist[i]]
-  #   b <- meanData[meanData$treatment == Compare2,traitlist[i]]
-  #     df1 <- cbind(df1, a, b)
-  # }
-
-  # Rename the columns for better clarity.
-  colnames(df) <- c("Sleeploss_All", "Sleeploss_L", "Sleeploss_D", "Nboutsloss_L",
-                    "Nboutsloss_D", "Boutlenloss_L", "Boutlenloss_D")
-
-  # if (!is.null(var)){
-  #   plotnames <- c(paste0("Relative_", var),paste0("Unadjusted_", var))
-  # } else{
-  #   plotnames <- c("Relative", "Unadjusted")
-  # }
-  # for (i in 1:2){
   # Compute the correlation matrix for the data.
   corr <- round(cor(df), 3)
 
@@ -117,11 +128,12 @@ corMat <- function(treat = NULL, temp = NULL, enviro = NULL, lights = NULL, geno
   # Define a function to assign significance labels (e.g., "*" for p-values < 0.05).
   labs.function <- function(x){
     dplyr::case_when(
-              x >= 0.10 ~ "",
-              x < 0.10 & x >= 0.05 ~ ".",
-              x < 0.05 & x >= 0.01 ~ "*",
-              x < 0.01 & x >= 0.001 ~ "**",
-              x < 0.001 ~ "***")
+      x >= 0.10 ~ "",
+      x < 0.10 & x >= 0.05 ~ "",
+      x < 0.05 & x >= 0.01 ~ "*",
+      x < 0.01 & x >= 0.001 ~ "**",
+      x < 0.001 & x >= 0.0001 ~ "***",
+      x < 0.0001 ~ "****")
   }
 
   # Add significance labels to the p-value matrix.
@@ -140,7 +152,7 @@ corMat <- function(treat = NULL, temp = NULL, enviro = NULL, lights = NULL, geno
       axis.text.y = ggplot2::element_text(size = 14),
       axis.text.x = ggplot2::element_text(size = 14, angle = 45, vjust = 1, hjust = 1),
       legend.text = ggplot2::element_text(size = 14, face = font)
-      )
+    )
 
   # Subset the significance labels to match the correlation plot's data.
   p.labs$in.df <- ifelse(is.na(match(paste0(p.labs$Var1, p.labs$Var2),
@@ -154,10 +166,10 @@ corMat <- function(treat = NULL, temp = NULL, enviro = NULL, lights = NULL, geno
   # Add the significance labels (asterisks) to the correlation plot.
   cor.plot.labs <- cor.plot +
     ggplot2::geom_text(ggplot2::aes(x = p.labs$Var1, y = p.labs$Var2),
-              label = p.labs$lab, nudge_y = 0.25, size = 5)
+                       label = p.labs$lab, nudge_y = 0.25, size = 5)
 
-titlee <- gsub(" ", "_", titlee)
+  titlee <- gsub(" ", "_", titlee)
   # Save the plot as a PDF file.
   ggplot2::ggsave(paste0("Correlation", titlee, ".pdf"), cor.plot.labs, height = 7, width = 7)
 
-  }
+}
