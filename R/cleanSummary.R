@@ -24,13 +24,12 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
 
   # Calculate overall sleep metrics and phase-based sleep data
   summary_dt_final <- behavr::rejoin(dt[, .(
-    sleep_fraction = mean(asleep),
-    sleep_fraction_All = mean(asleep),
-    sleep_time_all = 1440 * mean(asleep),
-    sleep_fraction_L = mean(asleep[phase == "L"]),
-    sleep_time_L = 720 * mean(asleep[phase == "L"]),
-    sleep_fraction_D = mean(asleep[phase == "D"]),
-    sleep_time_D = 720 * mean(asleep[phase == "D"])
+    Sleep_Fraction_All = mean(asleep),
+    Sleep_Time_All = 1440 * mean(asleep),
+    Sleep_Fraction_L = mean(asleep[phase == "L"]),
+    Sleep_Time_L = 720 * mean(asleep[phase == "L"]),
+    Sleep_Fraction_D = mean(asleep[phase == "D"]),
+    Sleep_Time_D = 720 * mean(asleep[phase == "D"])
   ), by = id])
 
   # Remove the 'file_info' column
@@ -65,32 +64,32 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
   )
   dev.off()
 }
-  # Process daily bout length and latency by light/dark phase
+  # Process daily bout length and latency by Light/dark phase
   summary_dt_final <- processDays(num_days, bout_dt, summary_dt_final)
 
-  # Calculate bout lengths during light (L) and dark (D) phases, filtering by duration
+  # Calculate bout lengths during Light (L) and dark (D) phases, filtering by duration
   bout_dt_min <- sleepr::bout_analysis(asleep, dt)[, .(
     id, duration = duration / 60, t = t / 60,
     phase = ifelse(t %% behavr::hours(24) < behavr::hours(12), "L", "D")
   )][duration >= 5]
 
-  # Summarize bout lengths for light and dark phases
+  # Summarize bout lengths for Light and dark phases
   summary_bout_L <- bout_dt_min[phase == "L", .(
-    n_bouts_L = .N / num_days,
-    mean_bout_length_L = mean(duration)
+    n_Bouts_L = .N / num_days,
+    mean_Bout_Length_L = mean(duration)
   ), by = id]
 
   summary_bout_D <- bout_dt_min[phase == "D", .(
-    n_bouts_D = .N / num_days,
-    mean_bout_length_D = mean(duration)
+    n_Bouts_D = .N / num_days,
+    mean_Bout_Length_D = mean(duration)
   ), by = id]
 
   # Merge bout summary data into final summary table
   summary_dt_final <- merge(summary_dt_final, summary_bout_L, by = "id")
   summary_dt_final <- merge(summary_dt_final, summary_bout_D, by = "id")
 
-  lightCol <- summary_dt_final[,light]
-  summary_dt_final[, light := paste0('"', light, '"')]
+  LightCol <- summary_dt_final[,Light]
+  summary_dt_final[, Light := paste0('"', Light, '"')]
 
   summary_dt_final<- data.table::data.table(summary_dt_final[,1:13], Batch = ExperimentData@Batch, summary_dt_final[,14:ncol(summary_dt_final)])
 
@@ -100,7 +99,7 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
     paste0("summary_", ExperimentData@Batch, ".csv"),
     quote = TRUE
   )
-  summary_dt_final[, light := lightCol]
+  summary_dt_final[, Light := LightCol]
 
   if(pref[4] ==1){
   # Helper function to create sleep plots for specified metrics
@@ -139,12 +138,12 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
     dev.off()
   }
 
-  # Generate sleep time and bout plots for light and dark phases
-  create_sleeptime_plot(summary_dt_final, "sleep_time_All", "Total Sleep (min)", divisions, 1500, "bar")
-  create_sleeptime_plot(summary_dt_final, "sleep_time_L", "Daytime Sleep (min)", divisions, 1000, "bar")
-  create_sleeptime_plot(summary_dt_final, "sleep_time_D", "Nighttime Sleep (min)", divisions, 1000, "bar")
-  create_sleeptime_plot(summary_dt_final, "n_bouts_L", "Daytime Sleep Bouts", divisions, 80, "violin")
-  create_sleeptime_plot(summary_dt_final, "n_bouts_D", "Nighttime Sleep Bouts", divisions, 80, "violin")
+  # Generate sleep time and bout plots for Light and dark phases
+  create_sleeptime_plot(summary_dt_final, "Sleep_Time_All", "Total Sleep (min)", divisions, 1500, "bar")
+  create_sleeptime_plot(summary_dt_final, "Sleep_Time_L", "Daytime Sleep (min)", divisions, 1000, "bar")
+  create_sleeptime_plot(summary_dt_final, "Sleep_Time_D", "Nighttime Sleep (min)", divisions, 1000, "bar")
+  create_sleeptime_plot(summary_dt_final, "n_Bouts_L", "Daytime Sleep Bouts", divisions, 80, "violin")
+  create_sleeptime_plot(summary_dt_final, "n_Bouts_D", "Nighttime Sleep Bouts", divisions, 80, "violin")
 }
   # Return the final summary table
   return(summary_dt_final)

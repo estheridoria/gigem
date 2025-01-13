@@ -29,28 +29,29 @@ runOneBatch <- function(info = NULL, divisions, num_days, pref = NULL, control, 
     if (!(font %in% c("plain", "bold", "italic","bold.italic"))){
     stop("'font' must be 'plain', 'bold', 'italic', or 'bold.italic'")
     }
+    if(any(!(divisions[1:6] %in% c("Sex", "Genotype", "Temperature", "Treatment","Environment","Light")))){
+      stop("'divisions' entries must be from the parameter list: 'Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment', or 'Light'")
+    }
+    if (missing(control)){
+      stop("'control' must be specified")
+    }
 
-  if (is.null(pref)){
-    #warnings
-    #ask user which plots they want
-    pref <- plotPreferences("one")
+    if (is.null(pref)){
+      #warnings
+      #ask user which plots they want
+      pref <- plotPreferences("one")
 
 
     #add more warnings copying runAllBatches
-
-    # Save the current working directory
     original_wd <- getwd()
-    # Change to the target directory
-    setwd(dirname(rstudioapi::getSourceEditorContext()$path))
-
     # Get the list of R files in the directory
-    r_files <- list.files(dir, pattern = "\\.R$", full.names = TRUE)
+    r_files <- list.files(getwd(), pattern = "\\.R$", full.names = TRUE)
 
     # Source each R file (run info)
     for (r_file in r_files) {
-      source(r_file) # should I take this out? and reformat it to remove source()?
+      source(r_file)
     }
-
+    setwd(original_wd)
   }
 
   # Create an object that contains all of your inputs
@@ -81,30 +82,26 @@ runOneBatch <- function(info = NULL, divisions, num_days, pref = NULL, control, 
   }
 
   # Define input column names for normalized statistics
-  groups <- c("sleep_time_All",
-              "sleep_time_L",
-              "sleep_time_D",
-              "n_bouts_L",
-              "mean_bout_length_L",
-              "n_bouts_D",
-              "mean_bout_length_D")
+  groups <- c("Sleep_Time_All",
+              "Sleep_Time_L",
+              "Sleep_Time_D",
+              "n_Bouts_L",
+              "mean_Bout_Length_L",
+              "n_Bouts_D",
+              "mean_Bout_Length_D")
 
   # Calculate the normalization factor for statistics
   norm_factor <- dt_finalSummary[, lapply(.SD, mean),
-                                 by = .(sex, genotype, temperature, treatment,environment,light, Batch),
+                                 by = .(Sex, Genotype, Temperature, Treatment,Environment,Light, Batch),
                                  .SDcols = groups]
 
   # Summary of statistics for sleep time for all groups
   stat_summary <- statsSummary(ExperimentData, dt_finalSummary, groups, norm_factor)
 
-if (any(dt_finalSummary[,treatment] == "Grp") & any(dt_finalSummary[,treatment ] != "Iso")){
+if (any(dt_finalSummary[,Treatment] == "Grp") & any(dt_finalSummary[,Treatment ] != "Iso")){
   # Calculate normalized sleep loss statistics for all groups
   norm_summary <- normSummary(ExperimentData, dt_finalSummary, groups,
                               norm_factor,control)
 }
-
-  if(is.null(pref)){
-    setwd(original_wd)
-  }
 
 }

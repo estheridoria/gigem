@@ -1,22 +1,22 @@
 #' Generate Combined Genotype Plots (Internal)
 #'
-#' Creates combined plots for each unique combination of `light`, `environment`, `treatment`, `sex`, and `genotype` in the dataset.
+#' Creates combined plots for each unique combination of `Light`, `Environment`, `Treatment`, `Sex`, and `Genotype` in the dataset.
 #' Generates overlay sleep plots and sleep duration plots, saving each combination as a PDF file.
 #'
 #' @param dt_curated_final A `data.table` containing curated sleep data with columns such as `id` and `asleep`.
-#' @param summary_dt_final A `data.table` containing summary statistics with columns including `light`, `environment`,
-#'   `genotype`, `treatment`, `sex` and various sleep metrics.
+#' @param summary_dt_final A `data.table` containing summary statistics with columns including `Light`, `Environment`,
+#'   `Genotype`, `Treatment`, `Sex` and various sleep metrics.
 #' @param font A character string variable determining the font style of the produced plots.
 #'
 #' @details
-#' The function iterates through all unique combinations of `light`, `environment`, `treatment`, `sex`, and `genotype`.
+#' The function iterates through all unique combinations of `Light`, `Environment`, `Treatment`, `Sex`, and `Genotype`.
 #' For each combination:
 #' - An overlay sleep plot is created using `ggetho`.
 #' - Multiple sleep duration plots (e.g., total sleep, daytime sleep, nighttime sleep) are generated
 #'   using a helper function, `create_sleeptime_plot`.
 #' - Plots are combined into a single figure using `cowplot::plot_grid`.
-#' - The combined figure is saved as a PDF file, with the filename reflecting the combination of `light`,
-#'   `environment`, and `genotype`.
+#' - The combined figure is saved as a PDF file, with the filename reflecting the combination of `Light`,
+#'   `Environment`, and `Genotype`.
 #'
 #' The function dynamically adjusts plot widths based on the number of unique possibilities of divisions[1].
 #'
@@ -25,20 +25,20 @@
 
 genotypePlots <- function(dt_curated_final, summary_dt_final, font) {
 
-  # Get unique values for light, environment, and genotype
-  llist <- unique(summary_dt_final$light)
-  elist <- unique(summary_dt_final$environment)
-  glist <- unique(summary_dt_final$genotype)
-  tlist <- unique(summary_dt_final$treatment)
-  slist <- unique(summary_dt_final$sex)
+  # Get unique values for Light, Environment, and Genotype
+  llist <- unique(summary_dt_final$Light)
+  elist <- unique(summary_dt_final$Environment)
+  glist <- unique(summary_dt_final$Genotype)
+  tlist <- unique(summary_dt_final$Treatment)
+  slist <- unique(summary_dt_final$Sex)
 
   # Create a data.table for the combinations of all conditions
   condition_combinations <- expand.grid(
-    light = if (divisions[1] != "light") llist else NA,
-    environment = if (divisions[1] != "environment") elist else NA,
-    genotype = if (divisions[1] != "genotype") glist else NA,
-    treatment = if (divisions[1] != "treatment") tlist else NA,
-    sex = if (divisions[1] != "sex") slist else NA,
+    Light = if (divisions[1] != "Light") llist else NA,
+    Environment = if (divisions[1] != "Environment") elist else NA,
+    Genotype = if (divisions[1] != "Genotype") glist else NA,
+    Treatment = if (divisions[1] != "Treatment") tlist else NA,
+    Sex = if (divisions[1] != "Sex") slist else NA,
     stringsAsFactors = FALSE
   )
 
@@ -48,11 +48,11 @@ genotypePlots <- function(dt_curated_final, summary_dt_final, font) {
   condition_combinations_dt[, {
     # Subset data based on the current combination of conditions
     sub_data <- summary_dt_final[
-      (divisions[1] == "light" | light == .SD$light) &
-        (divisions[1] == "environment" | environment == .SD$environment) &
-        (divisions[1] == "genotype" | genotype == .SD$genotype) &
-        (divisions[1] == "treatment" | treatment == .SD$treatment) &
-        (divisions[1] == "sex" | sex == .SD$sex),
+      (divisions[1] == "Light" | Light == .SD$Light) &
+        (divisions[1] == "Environment" | Environment == .SD$Environment) &
+        (divisions[1] == "Genotype" | Genotype == .SD$Genotype) &
+        (divisions[1] == "Treatment" | Treatment == .SD$Treatment) &
+        (divisions[1] == "Sex" | Sex == .SD$Sex),
     ]
 
     # Curate data for plotting
@@ -60,11 +60,11 @@ genotypePlots <- function(dt_curated_final, summary_dt_final, font) {
     plot_subdata2 <- summary_dt_final[id %in% sub_data$id]
 
     p1title <- trimws(paste(
-      if (divisions[1] != "sex" && !is.na(sex) && sex != "NA") {sex},
-      if (divisions[1] != "genotype" && !is.na(genotype) && genotype != "NA") {genotype},
-      if (divisions[1] != "light" && !is.na(light) && light != "NA") {light},
-      if (divisions[1] != "treatment" && !is.na(treatment) && treatment != "NA") {treatment},
-      if (divisions[1] != "environment" && !is.na(environment) && environment != "NA") {environment}
+      if (divisions[1] != "Sex" && !is.na(Sex) && Sex != "NA") {Sex},
+      if (divisions[1] != "Genotype" && !is.na(Genotype) && Genotype != "NA") {Genotype},
+      if (divisions[1] != "Light" && !is.na(Light) && Light != "NA") {Light},
+      if (divisions[1] != "Treatment" && !is.na(Treatment) && Treatment != "NA") {Treatment},
+      if (divisions[1] != "Environment" && !is.na(Environment) && Environment != "NA") {Environment}
     ))
 
         # Create overlay sleep plot
@@ -115,11 +115,11 @@ genotypePlots <- function(dt_curated_final, summary_dt_final, font) {
           }
 
         # Generate sleep duration plots
-        p2 <- create_sleeptime_plot(plot_subdata2, "sleep_time_all", "Total Sleep (min)", 1500, "bar", font)
-        p3 <- create_sleeptime_plot(plot_subdata2, "sleep_time_l", "Daytime Sleep (min)", 1000, "bar", font)
-        p4 <- create_sleeptime_plot(plot_subdata2, "sleep_time_d", "Nighttime Sleep (min)", 1000, "bar", font)
-        p5 <- create_sleeptime_plot(plot_subdata2, "n_bouts_L", "Daytime Sleep Bouts", 80, "violin", font)
-        p6 <- create_sleeptime_plot(plot_subdata2, "n_bouts_D", "Nighttime Sleep Bouts", 80, "violin", font)
+        p2 <- create_sleeptime_plot(plot_subdata2, "Sleep_Time_All", "Total Sleep (min)", 1500, "bar", font)
+        p3 <- create_sleeptime_plot(plot_subdata2, "Sleep_Time_L", "Daytime Sleep (min)", 1000, "bar", font)
+        p4 <- create_sleeptime_plot(plot_subdata2, "Sleep_Time_D", "Nighttime Sleep (min)", 1000, "bar", font)
+        p5 <- create_sleeptime_plot(plot_subdata2, "n_Bouts_L", "Daytime Sleep Bouts", 80, "violin", font)
+        p6 <- create_sleeptime_plot(plot_subdata2, "n_Bouts_D", "Nighttime Sleep Bouts", 80, "violin", font)
 
 
         # Combine plots

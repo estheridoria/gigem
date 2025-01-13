@@ -19,12 +19,12 @@ generateSE <- function(dt, groups, Batch, norm = FALSE) {
     # Compute summary statistics for the current group
     summary_group <- summarySE(data = dt,
                                 measurevar = paste0(group),
-                                groupvars = c("sex", "genotype", "treatment", "environment", "light"))
+                                groupvars = c("Sex", "Genotype", "Temperature", "Treatment","Environment","Light", "Batch"))
 
     # Merge summary statistics into a common table
     if (N_col) {
-      summary_norm_common <- merge(summary_norm_common, summary_group[, c(1:5, 7:10)],
-                                   by = c("sex", "genotype", "treatment", "environment", "light"))
+      summary_norm_common <- merge(summary_norm_common, summary_group[, c(1:7, 9:12)],
+                                   by = c("Sex", "Genotype", "Temperature", "Treatment","Environment","Light", "Batch"))
     } else {
       summary_norm_common <- summary_group
       N_col <- TRUE

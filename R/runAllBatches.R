@@ -42,14 +42,16 @@
 #'    are saved in the parent directory, containing combined results for all batches.
 runAllBatches <- function(control, font = "plain") {
   # Warnings
-  if(any(!(divisions[1:6] %in% c("temperature", "sex", "genotype", "treatment", "environment", "light")))){
-    stop("'divisions' entries must be from the parameter list: 'temperature', 'sex', 'genotype', 'treatment', 'environment', and 'light'")
+  if(any(!(divisions[1:6] %in% c("Sex", "Genotype", "Temperature", "Treatment","Environment","Light")))){
+    stop("'divisions' entries must be from the parameter list: 'Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment', or 'Light'")
   }
 
   if (!(font %in% c("plain", "bold", "italic","bold.italic"))){
     stop("'font' must be 'plain', 'bold', 'italic', or 'bold.italic'")
   }
-
+  if (missing(control)){
+    stop("'control' must be specified")
+  }
   #ask user which plots they want
   pref <- plotPreferences("all")
 
