@@ -57,7 +57,7 @@ normSummary <- function(ExperimentData, readin_summary_dt_final, groups,
       # Calculate group and isolation for this combination
       a <- grp_data[Temperature == te & Light == l & Environment == e & Genotype == g, get(group)]
       b <- iso_data[Temperature == te & Light == l & Environment == e & Genotype == g, get(group)]
-      top <- (a-b) / a
+      top <- (b-a) / a
 
       valid_rows <- normalized_factor[
         ((control_col == "Temperature" & Temperature == control) | (control_col != "Temperature" & Temperature == te)) &
@@ -70,7 +70,7 @@ normSummary <- function(ExperimentData, readin_summary_dt_final, groups,
       # Filter for "Grp" and "Iso" within the valid rows
       c <- valid_rows[grepl("Grp", Treatment), get(group)]
       d <- valid_rows[grepl("Iso", Treatment), get(group)]
-      bottom <- (c-d) / c
+      bottom <- (d-c) / c
 
       # Update the result table with normalized values
       new_col_name <- paste0("norm_", group)

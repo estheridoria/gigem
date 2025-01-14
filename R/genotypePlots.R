@@ -30,6 +30,7 @@ genotypePlots <- function(dt_curated_final, summary_dt_final, font) {
   elist <- unique(summary_dt_final$Environment)
   glist <- unique(summary_dt_final$Genotype)
   tlist <- unique(summary_dt_final$Treatment)
+  telist <- unique(summary_dt_final$Temperature)
   slist <- unique(summary_dt_final$Sex)
 
   # Create a data.table for the combinations of all conditions
@@ -38,6 +39,7 @@ genotypePlots <- function(dt_curated_final, summary_dt_final, font) {
     Environment = if (divisions[1] != "Environment") elist else NA,
     Genotype = if (divisions[1] != "Genotype") glist else NA,
     Treatment = if (divisions[1] != "Treatment") tlist else NA,
+    Temperature = if (divisions[1] != "Temperature") telist else NA,
     Sex = if (divisions[1] != "Sex") slist else NA,
     stringsAsFactors = FALSE
   )
@@ -52,6 +54,7 @@ genotypePlots <- function(dt_curated_final, summary_dt_final, font) {
         (divisions[1] == "Environment" | Environment == .SD$Environment) &
         (divisions[1] == "Genotype" | Genotype == .SD$Genotype) &
         (divisions[1] == "Treatment" | Treatment == .SD$Treatment) &
+        (divisions[1] == "Temperature" | Temperature == .SD$Temperature) &
         (divisions[1] == "Sex" | Sex == .SD$Sex),
     ]
 
@@ -64,6 +67,7 @@ genotypePlots <- function(dt_curated_final, summary_dt_final, font) {
       if (divisions[1] != "Genotype" && !is.na(Genotype) && Genotype != "NA") {Genotype},
       if (divisions[1] != "Light" && !is.na(Light) && Light != "NA") {Light},
       if (divisions[1] != "Treatment" && !is.na(Treatment) && Treatment != "NA") {Treatment},
+      if (divisions[1] != "Temperature" && !is.na(Temperature) && Temperature != "NA") {Temperature},
       if (divisions[1] != "Environment" && !is.na(Environment) && Environment != "NA") {Environment}
     ))
 
@@ -73,7 +77,7 @@ genotypePlots <- function(dt_curated_final, summary_dt_final, font) {
             ggetho::stat_ld_annotations() +
             ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
             ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
-            ggplot2::labs(title = p1title, y= "% Flies Sleeping") +
+            ggplot2::labs(title = p1title, y= "Sleep (%)") +
             ggplot2::scale_y_continuous(limits = c(0,1), labels = scales::percent)+
             ggprism::theme_prism(base_fontface = font) +
             ggplot2::theme(title = ggplot2::element_text(size = 22),

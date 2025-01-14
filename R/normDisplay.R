@@ -1,18 +1,18 @@
 #' Visualize Changes in Sleep Between
 #'
-#' This function generates bar plots to visualize the changes in sleep across different genotypes and treatments.
+#' This function generates bar plots to visualize the changes in sleep across different Genotypes and Treatments.
 #' It reads a CSV file containing normalized sleep data, calculates the changes in sleep, and then creates plots
 #' for each of the sleep-related metrics (`TotalSleepChange`, `DayTimeSleepChange`, `NightTimeSleepChange`).
-#' Two plots are made showing the normalized sleeploss for the treatment of interest (`treat`).
+#' Two plots are made showing the normalized sleeploss for the Treatment of interest (`treat`).
 #' One plot contains only the `control` entry in `x` while the other plot contains every entry except `control`.
 #' The plots are saved as PDFs labeled, "NormalizedSleepLoss...".
 #'
 #' @param x The name of a parameter in "all_batches_norm_summary.csv" to be used as the x-axis in the plot.
-#' @param treat A string specifying a treatment to subset the data by.
-#' @param temp A string specifying a temperature condition to subset the data by.
-#' @param enviro A string specifying a environment condition to subset the data by.
-#' @param lights A string specifying a light condition to subset the data by.
-#' @param geno A string specifying a genotype condition to subset the data by.
+#' @param treat A string specifying a Treatment to subset the data by.
+#' @param temp A string specifying a Temperature condition to subset the data by.
+#' @param enviro A string specifying a Environment condition to subset the data by.
+#' @param Lights A string specifying a Light condition to subset the data by.
+#' @param geno A string specifying a Genotype condition to subset the data by.
 #' @param font A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")
 #'
 #'
@@ -20,12 +20,12 @@
 #' @export
 #'
 #' @keywords internal
-normDisplay <- function(x, treat = NULL, temp = NULL, enviro = NULL, lights = NULL, geno = NULL, font = "plain") {
+normDisplay <- function(x, treat = NULL, temp = NULL, enviro = NULL, Lights = NULL, geno = NULL, font = "plain") {
   if (!file.exists("all_batches_norm_summary.csv")) {
     stop("'all_batches_norm_summary.csv' is not found in the current directory. Please run 'runAllBatches' before attempting to run 'kmeansCluster'. If you have already run it, ")
   }
   # Validate that x is provided and is a valid string.
-  if(missing(x) || !rlang::is_string(x) || !(x %in% c("temperature", "sex", "treatment", "genotype", "environment", "light"))){
+  if(missing(x) || !rlang::is_string(x) || !(x %in% c("Temperature", "Sex", "Treatment", "Genotype", "Environment", "Light"))){
     stop("x is missing or invalid")
   }
   if (!(font %in% c("plain", "bold", "italic","bold.italic"))){
@@ -35,46 +35,46 @@ normDisplay <- function(x, treat = NULL, temp = NULL, enviro = NULL, lights = NU
 
   # Read the normalized data from CSV file
   dataset <- read.csv("all_batches_norm_summary.csv")
-  dataset$light <- gsub("\"", "", dataset$light)
+  dataset$Light <- gsub("\"", "", dataset$Light)
   titlee <- c("")
   if(!is.null(treat)){
-    dataset <- dataset[dataset$treatment == treat,]
+    dataset <- dataset[dataset$Treatment == treat,]
 
     # warning if condition is invalid
     if (nrow(dataset) == 0) {
-      stop("The 'treat' specified is not included in the data within the 'treatment' parameter")
+      stop("The 'treat' specified is not included in the data within the 'Treatment' parameter")
     }
     titlee <- trimws(paste(titlee, treat))
   }
   if(!is.null(temp)){
-    dataset <- dataset[dataset$temperature == temp,]
+    dataset <- dataset[dataset$Temperature == temp,]
     # warning if condition is invalid
     if (nrow(dataset) == 0) {
-      stop("The 'temp' specified is not included in the data within the 'temperature' parameter")
+      stop("The 'temp' specified is not included in the data within the 'Temperature' parameter")
     }
     titlee <- trimws(paste(titlee, temp))
   }
   if(!is.null(enviro)){
-  dataset <- dataset[dataset$environment == enviro,]
+  dataset <- dataset[dataset$Environment == enviro,]
   # warning if condition is invalid
   if (nrow(dataset) == 0) {
-    stop("The 'enviro' specified is not included in the data within the 'environment' parameter")
+    stop("The 'enviro' specified is not included in the data within the 'Environment' parameter")
   }
   titlee <- trimws(paste(titlee, enviro))
   }
-  if(!is.null(lights)){
-    dataset <- dataset[dataset$light == lights,]
+  if(!is.null(Lights)){
+    dataset <- dataset[dataset$Light == Lights,]
     # warning if condition is invalid
     if (nrow(dataset) == 0) {
-      stop("The 'lights' specified is not included in the data within the 'light' parameter")
+      stop("The 'Lights' specified is not included in the data within the 'Light' parameter")
     }
-    titlee <- trimws(paste(titlee, lights))
+    titlee <- trimws(paste(titlee, Lights))
   }
   if(!is.null(geno)){
-    dataset <- dataset[dataset$genotype == geno,]
+    dataset <- dataset[dataset$Genotype == geno,]
     # warning if condition is invalid
     if (nrow(dataset) == 0) {
-      stop("The 'geno' specified is not included in the data within the 'genotype' parameter")
+      stop("The 'geno' specified is not included in the data within the 'Genotype' parameter")
     }
     titlee <- trimws(paste(titlee, geno))
     }
@@ -82,12 +82,13 @@ normDisplay <- function(x, treat = NULL, temp = NULL, enviro = NULL, lights = NU
   dataset <- data.table::setDT(dataset)
 
   # Calculate the change in sleep
-  dataset_delta <- dplyr::mutate(dataset, TotalSleepChange = norm_sleep_time_all)
-  dataset_delta <- dplyr::mutate(dataset_delta, DayTimeSleepChange = norm_sleep_time_l)
-  dataset_delta <- dplyr::mutate(dataset_delta, NightTimeSleepChange = norm_sleep_time_d)
+  dataset_delta <- dplyr::mutate(dataset, TotalSleepChange = norm_Sleep_Time_All)
+  dataset_delta <- dplyr::mutate(dataset_delta, DayTimeSleepChange = norm_Sleep_Time_L)
+  dataset_delta <- dplyr::mutate(dataset_delta, NightTimeSleepChange = norm_Sleep_Time_D)
+  #dataset_delta[, 22:24] <- dataset_delta[, 22:24] * -1
 
-  # Filter data based on treatment and x
-  # dataset_delta_Iso_treat <- dplyr::filter(dataset_delta, treatment == treat)
+  # Filter data based on Treatment and x
+  # dataset_delta_Iso_treat <- dplyr::filter(dataset_delta, Treatment == treat)
 
   # Calculate averages for each x
   average_lookup <- dplyr::summarise(

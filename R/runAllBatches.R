@@ -10,6 +10,7 @@
 #' @param divisions A list of time divisions for the analysis.
 #' @param num_days The number of days to consider for the analysis.
 #' @param control A character string specifying the control from one of the variables in the Main.r file.
+#' @param font A string variable determining the font style of the produced plots.
 #'
 #' @return This function does not return a value, but generates and saves two CSV files:
 #'         \code{all_batches_norm_summary.csv} and \code{all_batches_summary.csv}.
@@ -156,7 +157,7 @@ if (pref[7] == 1){
   output_file <- file.path(parent_dir, "all_sleepmeta.csv")
   data.table::fwrite(combined_sleepmeta, output_file, row.names = FALSE)
 
-  concatGenotypePlots(combined_sleepdata, combined_sleepmeta, summary_dt_final = combined_data, font)
+  concatGenotypePlots(combined_sleepdata, combined_sleepmeta, combined_data, font)
 }
   setwd(original_wd)
 }

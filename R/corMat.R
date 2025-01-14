@@ -1,12 +1,12 @@
 #' Correlation Matrix for Sleep Data (Exported)
 #'
-#' Computes the relative sleep changes between two treatments and generates a correlation matrix plot with significance annotations.
+#' Computes the relative sleep changes between two Treatments and generates a correlation matrix plot with significance annotations.
 #'
-#' @param treat A string specifying a treatment to subset the data by.
-#' @param temp A string specifying a temperature condition to subset the data by.
-#' @param enviro A string specifying a environment condition to subset the data by.
-#' @param lights A string specifying a light condition to subset the data by.
-#' @param geno A string specifying a genotype condition to subset the data by.
+#' @param treat A string specifying a Treatment to subset the data by.
+#' @param temp A string specifying a Temperature condition to subset the data by.
+#' @param enviro A string specifying a Environment condition to subset the data by.
+#' @param Lights A string specifying a Light condition to subset the data by.
+#' @param geno A string specifying a Genotype condition to subset the data by.
 #' @param font A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")
 #'
 #' @details Two `ggplot` objects containing the correlation matrix plot with significance annotations for percentage of sleep lost and raw number of minutes lost.
@@ -16,7 +16,7 @@
 #' @return None. Plots are saved as PDF files, while p-values are saved as csv files.
 #'
 #' @export
-corMat <- function(temp = NULL, enviro = NULL, lights = NULL, geno = NULL, font = "plain"){
+corMat <- function(temp = NULL, enviro = NULL, Lights = NULL, geno = NULL, font = "plain"){
   # Check if 'all_batches_summary.csv' exists in the current directory, and if not, stop execution.
   if (!file.exists("all_batches_summary.csv")) {
     stop("The file 'all_batches_summary.csv' is missing from the current directory.
@@ -29,61 +29,61 @@ corMat <- function(temp = NULL, enviro = NULL, lights = NULL, geno = NULL, font 
 
   # Read in the combined data from the CSV file.
   combined_data <- read.csv("all_batches_summary.csv")
-  combined_data$light <- gsub("\"", "", combined_data$light)
+  combined_data$Light <- gsub("\"", "", combined_data$Light)
   data.table::setDT(combined_data)
 
   # subset by only selecting rows with condition(s) specified
   titlee <- c("")
   # if(!is.null(treat)){
-  #   combined_data <- combined_data[combined_data$treatment == treat,]
+  #   combined_data <- combined_data[combined_data$Treatment == treat,]
   #
   #   # warning if condition is invalid
   #   if (nrow(combined_data) == 0) {
-  #     stop("The 'treat' specified is not included in the data within the 'treatment' parameter")
+  #     stop("The 'treat' specified is not included in the data within the 'Treatment' parameter")
   #   }
   #   titlee <- trimws(paste(titlee, treat))
   # }
   if(!is.null(temp)){
-    combined_data <- combined_data[combined_data$temperature == temp,]
+    combined_data <- combined_data[combined_data$Temperature == temp,]
     # warning if condition is invalid
     if (nrow(combined_data) == 0) {
-      stop("The 'temp' specified is not included in the data within the 'temperature' parameter")
+      stop("The 'temp' specified is not included in the data within the 'Temperature' parameter")
     }
     titlee <- trimws(paste(titlee, temp))
   }
   if(!is.null(enviro)){
-    combined_data <- combined_data[combined_data$environment == enviro,]
+    combined_data <- combined_data[combined_data$Environment == enviro,]
     # warning if condition is invalid
     if (nrow(combined_data) == 0) {
-      stop("The 'enviro' specified is not included in the data within the 'environment' parameter")
+      stop("The 'enviro' specified is not included in the data within the 'Environment' parameter")
     }
     titlee <- trimws(paste(titlee, enviro))
   }
-  if(!is.null(lights)){
-    combined_data <- combined_data[combined_data$light == lights,]
+  if(!is.null(Lights)){
+    combined_data <- combined_data[combined_data$Light == Lights,]
     # warning if condition is invalid
     if (nrow(combined_data) == 0) {
-      stop("The 'lights' specified is not included in the data within the 'light' parameter")
+      stop("The 'Lights' specified is not included in the data within the 'Light' parameter")
     }
-    titlee <- trimws(paste(titlee, lights))
+    titlee <- trimws(paste(titlee, Lights))
   }
   if(!is.null(geno)){
-    combined_data <- combined_data[combined_data$genotype == geno,]
+    combined_data <- combined_data[combined_data$Genotype == geno,]
     # warning if condition is invalid
     if (nrow(combined_data) == 0) {
-      stop("The 'geno' specified is not included in the data within the 'genotype' parameter")
+      stop("The 'geno' specified is not included in the data within the 'Genotype' parameter")
     }
     titlee <- trimws(paste(titlee, geno))
   }
 
-  # Summarize sleep data by temp, sex, treatment, and genotype, calculating means for sleep-related variables.
+  # Summarize sleep data by temp, Sex, Treatment, and Genotype, calculating means for sleep-related variables.
   meanData <- dplyr::summarise(
     dplyr::group_by(
       combined_data,
-      sex, genotype, temperature, treatment, environment, light
+      Sex, Genotype, Temperature, Treatment, Environment, Light
     ),
     dplyr::across(
-      sleep_fraction:mean_bout_length_D,
+      Sleep_Fraction_All:mean_Bout_Length_D,
       ~mean(., na.rm = TRUE),
       .names = "mean_{.col}"
     ),
@@ -91,29 +91,28 @@ corMat <- function(temp = NULL, enviro = NULL, lights = NULL, geno = NULL, font 
   )
 
   # Define sleep time variables.
-  names <- c("mean_sleep_time_All", "mean_sleep_time_L", "mean_sleep_time_D")
-  names <- c("mean_sleep_time_all", "mean_sleep_time_l", "mean_sleep_time_d") # delete when possible
-  traitlist <- c("mean_n_bouts_L", "mean_n_bouts_D", "mean_mean_bout_length_L",
-                 "mean_mean_bout_length_D")
+  names <- c("mean_Sleep_Time_All", "mean_Sleep_Time_L", "mean_Sleep_Time_D")
+  traitlist <- c("mean_n_Bouts_L", "mean_n_Bouts_D", "mean_mean_Bout_Length_L",
+                 "mean_mean_Bout_Length_D")
 
-  if("Grp" %in% meanData$treatment && "Iso" %in% meanData$treatment){
+  if("Grp" %in% meanData$Treatment && "Iso" %in% meanData$Treatment){
     # Generate a data frame with absolute sleep loss (p.sleeploss) for each sleep time variable.
-    gsleep <- meanData[meanData$treatment == "Grp", names]
-    isleep <- meanData[meanData$treatment == "Iso", names]
+    gsleep <- meanData[meanData$Treatment == "Grp", names]
+    isleep <- meanData[meanData$Treatment == "Iso", names]
     sleepchange <- (gsleep - isleep)
     # Define additional trait variables to compare.
-    gtrait <- meanData[meanData$treatment == "Grp", traitlist]
-    itrait <- meanData[meanData$treatment == "Iso", traitlist]
+    gtrait <- meanData[meanData$Treatment == "Grp", traitlist]
+    itrait <- meanData[meanData$Treatment == "Iso", traitlist]
     traitchange <- (gtrait - itrait)
     df <- cbind(sleepchange, traitchange)
     # Rename the columns for better clarity.
-    colnames(df) <- c("Sleepchange_All", "Sleepchange_L", "Sleepchange_D", "Nboutschange_L",
-                      "Nboutschange_D", "Boutlenchange_L", "Boutlenchange_D")
+    colnames(df) <- c("Sleepchange_All", "Sleepchange_L", "Sleepchange_D", "nBoutschange_L",
+                      "nBoutschange_D", "Boutlenchange_L", "Boutlenchange_D")
   } else {
     df <- meanData[, c(names, traitlist)]
     # Rename the columns for better clarity.
-    colnames(df) <- c("Sleeptime_All", "Sleeptime_L", "Sleeptime_D", "Nbouts_L",
-                      "Nbouts_D", "Boutlen_L", "Boutlen_D")
+    colnames(df) <- c("Sleeptime_All", "Sleeptime_L", "Sleeptime_D", "NBouts_L",
+                      "NBouts_D", "Boutlen_L", "Boutlen_D")
   }
 
   # Compute the correlation matrix for the data.

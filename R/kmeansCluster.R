@@ -1,22 +1,22 @@
 #' Perform K-Means Clustering on Sleep Data
 #'
 #' This function reads in a CSV file (`all_batches_norm_summary.csv`) containing summarized and relativized data, performs K-means clustering to identify optimal clusters based on the Elbow Method, Silhouette Score, and Gap Statistic, and creates a plot of sleep trends with clustering information.
-#' The user can provide a list of aPrioriConditions (e.g., genotype categories) which visually differentiates them from each other in the plots.
-#' If the data does not have "Grp" and "Iso" treatments, the 'all_batches_norm_summary.csv' will not be produced by 'runAllBatches' and this function will not run.
+#' The user can provide a list of aPrioriConditions (e.g., Genotype categories) which visually differentiates them from each other in the plots.
+#' If the data does not have "Grp" and "Iso" Treatments, the 'all_batches_norm_summary.csv' will not be produced by 'runAllBatches' and this function will not run.
 #'
-#' @param x A string specifying the x-axis parameter of the cluster plot as written in 'all_batches_norm_summary.csv' (e.g., "norm_sleep_time_all").
-#' @param y A string specifying the y-axis parameter of the cluster plot as written in 'all_batches_norm_summary.csv' (e.g., "norm_mean_bout_length_L").
-#' @param treat A string specifying a treatment to subset the data by.
-#' @param temp A string specifying a temperature condition to subset the data by.
-#' @param enviro A string specifying a environment condition to subset the data by.
-#' @param lights A string specifying a light condition to subset the data by.
-#' @param geno A string specifying a genotype condition to subset the data by.
+#' @param x A string specifying the x-axis parameter of the cluster plot as written in 'all_batches_norm_summary.csv' (e.g., "norm_Sleep_Time_All").
+#' @param y A string specifying the y-axis parameter of the cluster plot as written in 'all_batches_norm_summary.csv' (e.g., "norm_mean_Bout_length_L").
+#' @param treat A string specifying a Treatment to subset the data by.
+#' @param temp A string specifying a Temperature condition to subset the data by.
+#' @param enviro A string specifying a Environment condition to subset the data by.
+#' @param Lights A string specifying a Light condition to subset the data by.
+#' @param geno A string specifying a Genotype condition to subset the data by.
 #' @param aPrioriConditions A vector of (partial spellings of the) conditions (e.g., c("L1", "L2", "S1", "S2", "CS")) in one of the experimental parameters.
 #' @param aPrioriParameter A string specifying the parameter of the aPrioriConditions.
 #' @param font A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")
 #'
 #' @details
-#' This function performs K-means clustering on sleep data for two comparison treatment groups (`x` and `y`). It automatically determines the optimal number of clusters using three methods:
+#' This function performs K-means clustering on sleep data for two comparison Treatment groups (`x` and `y`). It automatically determines the optimal number of clusters using three methods:
 #' - Elbow Method
 #' - Silhouette Score
 #' - Gap Statistic
@@ -25,7 +25,7 @@
 #'
 #' @return None. Saves the plot as a PDF file and outputs a CSV file with cluster assignments.
 #' @export
-kmeansCluster <- function(x, y, treat = NULL, temp = NULL, enviro = NULL, lights = NULL, geno = NULL, aPrioriConditions, aPrioriParameter, font = "plain") {
+kmeansCluster <- function(x, y, treat = NULL, temp = NULL, enviro = NULL, Lights = NULL, geno = NULL, aPrioriConditions, aPrioriParameter, font = "plain") {
   # Check if 'all_batches_norm_summary.csv' exists in the current directory, and if not, stop execution.
   if (!file.exists("all_batches_norm_summary.csv")) {
     stop("'all_batches_norm_summary.csv' is not found in the current directory. Please run 'runAllBatches' before attempting to run 'kmeansCluster'. If you have already run it, ")
@@ -40,7 +40,7 @@ kmeansCluster <- function(x, y, treat = NULL, temp = NULL, enviro = NULL, lights
     stop("x is missing or invalid")
   }
 
-  if (missing(aPrioriParameter) || !(aPrioriParameter %in% c("temperature", "sex", "treatment", "genotype", "environment", "light"))) {
+  if (missing(aPrioriParameter) || !(aPrioriParameter %in% c("Temperature", "Sex", "Treatment", "Genotype", "Environment", "Light"))) {
     stop("'aPrioriParameter' is missing or invalid")
   }
   if (!(font %in% c("plain", "bold", "italic","bold.italic"))){
@@ -48,50 +48,50 @@ kmeansCluster <- function(x, y, treat = NULL, temp = NULL, enviro = NULL, lights
   }
   # Read the normalized data from CSV file
   combined_data <- read.csv("all_batches_norm_summary.csv")
-  combined_data$light <- gsub("\"", "", combined_data$light)
+  combined_data$Light <- gsub("\"", "", combined_data$Light)
 
   data.table::setDT(combined_data)
 
   # subset by only selecting rows with condition(s) specified
   titlee <- c("")
   if(!is.null(treat)){
-    combined_data <- combined_data[combined_data$treatment == treat,]
+    combined_data <- combined_data[combined_data$Treatment == treat,]
 
     # warning if condition is invalid
     if (nrow(combined_data) == 0) {
-      stop("The 'treat' specified is not included in the data within the 'treatment' parameter")
+      stop("The 'treat' specified is not included in the data within the 'Treatment' parameter")
     }
     titlee <- trimws(paste(titlee, treat))
   }
   if(!is.null(temp)){
-    combined_data <- combined_data[combined_data$temperature == temp,]
+    combined_data <- combined_data[combined_data$Temperature == temp,]
     # warning if condition is invalid
     if (nrow(combined_data) == 0) {
-      stop("The 'temp' specified is not included in the data within the 'temperature' parameter")
+      stop("The 'temp' specified is not included in the data within the 'Temperature' parameter")
     }
     titlee <- trimws(paste(titlee, temp))
   }
   if(!is.null(enviro)){
-    combined_data <- combined_data[combined_data$environment == enviro,]
+    combined_data <- combined_data[combined_data$Environment == enviro,]
     # warning if condition is invalid
     if (nrow(combined_data) == 0) {
-      stop("The 'enviro' specified is not included in the data within the 'environment' parameter")
+      stop("The 'enviro' specified is not included in the data within the 'Environment' parameter")
     }
     titlee <- trimws(paste(titlee, enviro))
   }
-  if(!is.null(lights)){
-    combined_data <- combined_data[combined_data$light == lights,]
+  if(!is.null(Lights)){
+    combined_data <- combined_data[combined_data$Light == Lights,]
     # warning if condition is invalid
     if (nrow(combined_data) == 0) {
-      stop("The 'lights' specified is not included in the data within the 'light' parameter")
+      stop("The 'Lights' specified is not included in the data within the 'Light' parameter")
     }
-    titlee <- trimws(paste(titlee, lights))
+    titlee <- trimws(paste(titlee, Lights))
   }
   if(!is.null(geno)){
-    combined_data <- combined_data[combined_data$genotype == geno,]
+    combined_data <- combined_data[combined_data$Genotype == geno,]
     # warning if condition is invalid
     if (nrow(combined_data) == 0) {
-      stop("The 'geno' specified is not included in the data within the 'genotype' parameter")
+      stop("The 'geno' specified is not included in the data within the 'Genotype' parameter")
     }
     titlee <- trimws(paste(titlee, geno))
   }
@@ -185,10 +185,10 @@ kmeansCluster <- function(x, y, treat = NULL, temp = NULL, enviro = NULL, lights
     ggplot2::scale_fill_viridis_d(name = "Cluster", option = "D", begin = 0, end = 0.8) +
     ggplot2::scale_color_viridis_d(name = "Cluster", option = "D", begin = 0, end = 0.8)
 
-  ggplot2::ggsave(paste0("ClusteredPlot_", titlee, x, y, ".pdf"), height = 7, width = 7)
+  ggplot2::ggsave(paste0("ClusteredPlot_", titlee, y, x, ".pdf"), height = 7, width = 7)
 
 
-  # Write the file which labels the cluster each genotype is in
+  # Write the file which labels the cluster each Genotype is in
   data.table::fwrite(df, paste0("clustered", titlee, x, y, ".csv"))
 
 }

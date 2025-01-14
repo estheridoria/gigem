@@ -9,6 +9,8 @@
 #' @param num_days The number of days to consider for the analysis.
 #' @param pref A vector of preferences for generating specific plots (e.g., whether to generate concatenated plots).
 #' @param control A character string specifying the control.
+#' @param font A string variable determining the font style of the produced plots.
+#'
 #' @return This function does not return a value but performs a series of steps to process the data,
 #' generate plots, and calculate statistics.
 #'
