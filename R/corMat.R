@@ -91,25 +91,21 @@ corMat <- function(temp = NULL, enviro = NULL, Lights = NULL, geno = NULL, font 
   )
 
   # Define sleep time variables.
-  names <- c("mean_Sleep_Time_All", "mean_Sleep_Time_L", "mean_Sleep_Time_D")
-  traitlist <- c("mean_n_Bouts_L", "mean_n_Bouts_D", "mean_mean_Bout_Length_L",
+  traitlist <- c("mean_Sleep_Time_All", "mean_Sleep_Time_L", "mean_Sleep_Time_D",
+                 "mean_n_Bouts_L", "mean_n_Bouts_D", "mean_mean_Bout_Length_L",
                  "mean_mean_Bout_Length_D")
 
   if("Grp" %in% meanData$Treatment && "Iso" %in% meanData$Treatment){
-    # Generate a data frame with absolute sleep loss (p.sleeploss) for each sleep time variable.
-    gsleep <- meanData[meanData$Treatment == "Grp", names]
-    isleep <- meanData[meanData$Treatment == "Iso", names]
-    sleepchange <- (gsleep - isleep)
-    # Define additional trait variables to compare.
+   # Define additional trait variables to compare.
     gtrait <- meanData[meanData$Treatment == "Grp", traitlist]
     itrait <- meanData[meanData$Treatment == "Iso", traitlist]
-    traitchange <- (gtrait - itrait)
-    df <- cbind(sleepchange, traitchange)
+    traitchange <- (itrait - gtrait)
+    df <- cbind(traitchange)
     # Rename the columns for better clarity.
     colnames(df) <- c("Sleepchange_All", "Sleepchange_L", "Sleepchange_D", "nBoutschange_L",
                       "nBoutschange_D", "Boutlenchange_L", "Boutlenchange_D")
   } else {
-    df <- meanData[, c(names, traitlist)]
+    df <- meanData[, c(traitlist)]
     # Rename the columns for better clarity.
     colnames(df) <- c("Sleeptime_All", "Sleeptime_L", "Sleeptime_D", "NBouts_L",
                       "NBouts_D", "Boutlen_L", "Boutlen_D")
@@ -119,7 +115,20 @@ corMat <- function(temp = NULL, enviro = NULL, Lights = NULL, geno = NULL, font 
   corr <- round(cor(df), 3)
 
   # Generate the p-value matrix for the correlation.
-  p.df <- as.data.frame(ggcorrplot::cor_pmat(df))
+  p_matrix <- ggcorrplot::cor_pmat(df)
+  # Step 2: Flatten the p-value matrix, adjust using FDR
+  p_vector <- as.vector(p_matrix)
+  p_adjusted_vector <- p.adjust(p_vector, method = "fdr")
+
+  # Step 3: Reshape the adjusted p-values back into a matrix
+  p_adjusted_matrix <- matrix(p_adjusted_vector, nrow = nrow(p_matrix), ncol = ncol(p_matrix))
+
+  # Step 4: Set row and column names to match the original p-value matrix
+  rownames(p_adjusted_matrix) <- rownames(p_matrix)
+  colnames(p_adjusted_matrix) <- colnames(p_matrix)
+
+  # Step 5: Convert the adjusted p-value matrix into a data frame
+  p.df <- as.data.frame(p_adjusted_matrix)
 
   # Save the p-value matrix as a CSV file.
   data.table::fwrite(p.df, paste0("statcor", titlee, ".csv"))

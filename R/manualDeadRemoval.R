@@ -36,12 +36,12 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref, fon
                                      dt_curated_2$t <= behavr::days(num_days)]
 
 
-  #save behavr and metadata into csv files (with light quoted) for concatGenotypePlots
+  #save behavr and metadata into csv files (with Light quoted) for concatGenotypePlots
   if (pref[7] == 1) {
   data.table::fwrite(dt_curated_final, paste0("sleepdata_",ExperimentData@Batch, ".csv"))
   meta_data <- behavr::meta(dt_curated_final)
   meta_data <- meta_data[, !sapply(meta_data, is.list), with = FALSE]
-  meta_data[, light := paste0('"', light, '"')]
+  meta_data[, Light := paste0('"', Light, '"')]
   data.table::fwrite(meta_data,
                      paste0("sleepmeta_",ExperimentData@Batch, ".csv"),
                      quote = TRUE)

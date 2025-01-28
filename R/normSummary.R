@@ -62,11 +62,11 @@ normSummary <- function(ExperimentData, readin_summary_dt_final, groups,
       valid_rows <- normalized_factor[
         ((control_col == "Temperature" & Temperature == control) | (control_col != "Temperature" & Temperature == te)) &
         ((control_col == "Light" & Light == control) | (control_col != "Light" & Light == l)) &
-          ((control_col == "Environment" & Environment == control) | (control_col != "Environment" & Environment == e)) &
-          ((control_col == "Genotype" & Genotype == control) | (control_col != "Genotype" & Genotype == g)) &
-          ((control_col == "Sex" & Sex == control) | (control_col != "Sex" & Sex == s))
+        ((control_col == "Environment" & Environment == control) | (control_col != "Environment" & Environment == e)) &
+        ((control_col == "Genotype" & Genotype == control) | (control_col != "Genotype" & Genotype == g)) &
+        ((control_col == "Sex" & Sex == control) | (control_col != "Sex" & Sex == s))
       ]
-
+if(nrow(valid_rows) == 2){
       # Filter for "Grp" and "Iso" within the valid rows
       c <- valid_rows[grepl("Grp", Treatment), get(group)]
       d <- valid_rows[grepl("Iso", Treatment), get(group)]
@@ -79,6 +79,7 @@ normSummary <- function(ExperimentData, readin_summary_dt_final, groups,
                                   normalized_factor$Light == l & normalized_factor$Sex == s),
                       j = new_col_name,
                       value = top / bottom)
+      }
     }
   }
   # Write the normalized summary data table to a CSV file

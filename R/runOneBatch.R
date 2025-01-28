@@ -100,10 +100,9 @@ runOneBatch <- function(info = NULL, divisions, num_days, pref = NULL, control, 
   # Summary of statistics for sleep time for all groups
   stat_summary <- statsSummary(ExperimentData, dt_finalSummary, groups, norm_factor)
 
-if (any(dt_finalSummary[,Treatment] == "Grp") & any(dt_finalSummary[,Treatment ] != "Iso")){
+if (any(dt_finalSummary[,Treatment] == "Grp") & any(dt_finalSummary[,Treatment ] == "Iso")){
   # Calculate normalized sleep loss statistics for all groups
   norm_summary <- normSummary(ExperimentData, dt_finalSummary, groups,
                               norm_factor,control)
 }
-
 }

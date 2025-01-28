@@ -23,14 +23,13 @@
 #' @keywords internal
 
 concatGenotypePlots <- function(combined_sleepdata, combined_sleepmeta, summary_dt_final, font) {
-
   summary_dt_final <- summary_dt_final[, Light := gsub("\"", "", Light)]
-
 
   #link metadata and behavr data
   data.table::setkey(combined_sleepdata, id)
   data.table::setkey(combined_sleepmeta, id)
   dt_curated_final <- behavr::behavr(combined_sleepdata, combined_sleepmeta)
 
-  genotypePlots <- function(dt_curated_final, summary_dt_final, font)
+  genotypePlots(dt_curated_final, summary_dt_final, font)
 }
+

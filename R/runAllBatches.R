@@ -25,6 +25,7 @@
 #' @importFrom ggetho ggetho stat_bar_tile_etho scale_x_days stat_ld_annotations stat_pop_etho
 #' @importFrom ggplot2 theme facet_grid aes margin mean_cl_boot vars scale_y_continuous element_rect ggplot geom_errorbar geom_point scale_fill_viridis_d ggtitle scale_x_discrete geom_text ggsave scale_color_manual scale_fill_manual labs stat_summary geom_violin ylim geom_smooth scale_shape_manual scale_color_viridis_c coord_cartesian
 #' @importFrom ggprism theme_prism
+#' @importFrom gridExtra grid.arrange
 #' @importFrom methods isClass setClass
 #' @importFrom plyr ddply
 #' @importFrom reshape2 melt
@@ -81,8 +82,45 @@ runAllBatches <- function(control, font = "plain") {
 
   if(length(batch_dirs) ==0){
     stop("The folder(s) inside the parent directory containing each Batch's data is either not present or is not formatted correctly. Please add or rename the folder and R file within to follow the format: 'Batch' followed by any combination of letters, numbers and/or underscores.")
+  }
+
+  # Iterate over each Main file and concatenate to make sure everything is formatted correctly
+  all_tables <- list()
+  for (batch_dir in batch_dirs) {
+    run_r_files_in_dir(batch_dir)
+    all_tables[[length(all_tables) + 1]] <- info
+  }
+
+    # Custom function to stop on specific warning if columns are not aligned with each batch's main files
+combine_with_warning_check <- function(dt_list) {
+  withCallingHandlers({
+    # Attempt to combine the data.tables
+    combined <- data.table::rbindlist(dt_list, fill = TRUE, use.names = TRUE)
+
+  }, warning = function(w) {
+    # Check if the warning contains the specific message
+    if (grepl("Item .* has .* rows but longest item has .*; recycled with remainder", conditionMessage(w))) {
+      stop("Error: One or more parameters in one or more of your
+           Main.R files has a different number of conditions than the other parameters.
+           Please ensure each parameter has an equal number of conditions within
+           the respective Main.R file(s).")
+    }
+    if (grepl("Column .* of item .* is missing", conditionMessage(w))) {
+      stop("Error: One or more parameters is missing from some of your data tables.
+           Please ensure all parameters are present and named correctly in all Main.R files.")
+      }
+  })
+    return()#combined)
 }
-  # Iterate over each batch directory and run the R files
+# comb <- combine_with_warning_check(all_tables)
+# #number of unique conditions
+# uniqueConditions <- nrow(data.table::data.table(unique(comb[, .(Sex, Genotype,
+#                          Temperature, Treatment, Environment, Light, start_datetime)])))
+# #factor to remove the number of control treatments from the p-adjustment
+# minus<- 1-1/length(unique(comb[,get(divisions[1])]))
+# comparisons <- uniqueConditions*minus
+
+  # Iterate over each batch directory and run the R files to run each batch
   for (batch_dir in batch_dirs){
     run_r_files_in_dir(batch_dir)
     runOneBatch(info, divisions, num_days, pref, control, font)
@@ -102,7 +140,7 @@ runAllBatches <- function(control, font = "plain") {
   }
 
   # Concatenate all data frames into one large data frame
-  combined_data <- do.call(rbind, all_tables)
+  combined_data <- do.call(rbind, all_tables[1:9])
 
   # Save the combined data frame to a CSV file in the parent directory
   output_file <- file.path(parent_dir, "all_batches_norm_summary.csv")
