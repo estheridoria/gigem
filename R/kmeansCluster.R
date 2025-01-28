@@ -4,8 +4,8 @@
 #' The user can provide a list of aPrioriConditions (e.g., Genotype categories) which visually differentiates them from each other in the plots.
 #' If the data does not have "Grp" and "Iso" Treatments, the 'all_batches_norm_summary.csv' will not be produced by 'runAllBatches' and this function will not run.
 #'
-#' @param x A string specifying the x-axis parameter of the cluster plot as written in 'all_batches_norm_summary.csv' (e.g., "norm_Sleep_Time_All").
-#' @param y A string specifying the y-axis parameter of the cluster plot as written in 'all_batches_norm_summary.csv' (e.g., "norm_mean_Bout_length_L").
+#' @param x A string specifying the x-axis parameter of the cluster plot as written in 'all_batches_norm_summary.csv' (e.g., "norm_Sleep_Time_All"). Default is NULL.
+#' @param y A string specifying the y-axis parameter of the cluster plot as written in 'all_batches_norm_summary.csv' (e.g., "norm_mean_Bout_length_L"). Default is NULL.
 #' @param treat A string specifying a Treatment to subset the data by.
 #' @param temp A string specifying a Temperature condition to subset the data by.
 #' @param enviro A string specifying a Environment condition to subset the data by.
@@ -25,32 +25,39 @@
 #'
 #' @return None. Saves the plot as a PDF file and outputs a CSV file with cluster assignments.
 #' @export
-kmeansCluster <- function(x, y, treat = NULL, temp = NULL, enviro = NULL, Lights = NULL, geno = NULL, aPrioriConditions, aPrioriParameter, font = "plain") {
-  # Check if 'all_batches_norm_summary.csv' exists in the current directory, and if not, stop execution.
-  if (!file.exists("all_batches_norm_summary.csv")) {
-    stop("'all_batches_norm_summary.csv' is not found in the current directory. Please run 'runAllBatches' before attempting to run 'kmeansCluster'. If you have already run it, ")
-  }
-  # Validate that y is provided and is a valid string.
-  if(missing(y) || !rlang::is_string(y)){
-    stop("y is missing or invalid")
-  }
+kmeansCluster <- function(x = NULL, y = NULL, sex = NULL, geno = NULL,
+                                 temp = NULL, treat = NULL, enviro = NULL,
+                                 Lights = NULL, aPrioriConditions,
+                                 aPrioriParameter, font = "plain") {
+  aPrioriConditions <- c("CS", "L1", "L2", "S1", "S2")
+  aPrioriParameter <- "Genotype"
 
-  # Validate that x is provided and is a valid string.
-  if(missing(x) || !rlang::is_string(x)){
-    stop("x is missing or invalid")
-  }
-
-  if (missing(aPrioriParameter) || !(aPrioriParameter %in% c("Temperature", "Sex", "Treatment", "Genotype", "Environment", "Light"))) {
-    stop("'aPrioriParameter' is missing or invalid")
-  }
-  if (!(font %in% c("plain", "bold", "italic","bold.italic"))){
-    stop("'font' must be 'plain', 'bold', 'italic', or 'bold.italic'")
-  }
   # Read the normalized data from CSV file
-  combined_data <- read.csv("all_batches_norm_summary.csv")
+  combined_data <- read.csv("all_batches_summary.csv")
   combined_data$Light <- gsub("\"", "", combined_data$Light)
 
   data.table::setDT(combined_data)
+
+  # Check if 'all_batches_summary.csv' exists in the current directory, and if not, stop execution.
+  if (!file.exists("all_batches_summary.csv")) {
+    stop("'all_batches_norm_summary.csv' is not found in the current directory. Please run 'runAllBatches' before attempting to run 'kmeansCluster'. If you have already run it, ")
+  }
+
+  # Validate that y is valid.
+  if(!is.null(y) && !any(grep(y, colnames(combined_data)[15:30]))){
+    stop("'y' is invalid")
+  }
+
+  # Validate that x is valid.
+  if(!is.null(x) && !any(grep(x, colnames(combined_data)[15:30]))){
+    stop("'x' is invalid")
+  }
+
+  if (missing(aPrioriParameter) || !(aPrioriParameter %in% c( "Sex", "Genotype", "Temperature", "Treatment", "Environment", "Light"))) {
+    stop("'aPrioriParameter' is missing or invalid")
+  }
+  if (!(font %in% c("plain", "bold", "italic","bold.italic"))){
+    stop("'font' must be 'plain', 'bold', 'italic', or 'bold.italic'")}
 
   # subset by only selecting rows with condition(s) specified
   titlee <- c("")
@@ -95,9 +102,16 @@ kmeansCluster <- function(x, y, treat = NULL, temp = NULL, enviro = NULL, Lights
     }
     titlee <- trimws(paste(titlee, geno))
   }
+  if(!is.null(sex)){
+    combined_data <- combined_data[combined_data$Sex == sex,]
+    # warning if condition is invalid
+    if (nrow(combined_data) == 0) {
+      stop("The 'geno' specified is not included in the data within the 'Genotype' parameter")
+    }
+    titlee <- trimws(paste(titlee, sex))
+  }
 
-  combined_data <- data.table::setDT(combined_data)
-
+  ### aPriori
   # Initialize the aPrioriConditions column with NAs
   combined_data[, aPrioriConditions := as.character(NA)]
 
@@ -108,22 +122,58 @@ kmeansCluster <- function(x, y, treat = NULL, temp = NULL, enviro = NULL, Lights
     combined_data[is.na(aPrioriConditions) & grepl(group, group_Column), aPrioriConditions := group]
   }
 
-  # Further processing
-  columnnames <- c("x", "y", aPrioriParameter,"aPrioriConditions")
+  # Summarize sleep data by temp, Sex, Treatment, and Genotype, calculating means for sleep-related variables.
+  meanData <- dplyr::summarise(
+    dplyr::group_by(
+      combined_data,
+      Sex, Genotype, Temperature, Treatment, Environment, Light, aPrioriConditions
+    ),
+    dplyr::across(
+      Sleep_Fraction_All:mean_Bout_Length_D,
+      ~mean(., na.rm = TRUE),
+      .names = "{.col}"
+    ),
+    .groups = "keep"
+  )
 
-  # This code automatically selects the optimal number of clusters and prints the plots
+  # Define sleep time variables.
+  traitlist <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D",
+                 "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L",
+                 "mean_Bout_Length_D")
+  if (!is.null(y) && !is.null(x)){
+  colx <- grep(x, traitlist)
+  coly <- grep(y, traitlist)
+  }
 
-  aPrioriParameter.col <-   combined_data[, get(aPrioriParameter)]
-  aPrioriConditions.col <- combined_data[, "aPrioriConditions"]
-  aPrioriConditions.col[is.na(aPrioriConditions)] <- "Other"
-  df <- cbind(combined_data[[x]], combined_data[[y]], aPrioriParameter.col, aPrioriConditions.col)
-  colnames(df) <- columnnames
+  if("Grp" %in% meanData$Treatment && "Iso" %in% meanData$Treatment){
+    # Define trait variables to compare.
+    gtrait <- meanData[meanData$Treatment == "Grp", traitlist]
+    itrait <- meanData[meanData$Treatment == "Iso", traitlist]
 
-  data <- df[, c(1,2)]  # Selecting only relevant columns for clustering
+    df <- itrait - gtrait
+
+    # Rename the columns for better clarity.
+    colnames(df) <- c("Sleepchange_All", "Sleepchange_L", "Sleepchange_D", "nBoutschange_L",
+                      "nBoutschange_D", "Boutlenchange_L", "Boutlenchange_D")
+
+    meta <-  meanData[meanData$Treatment == "Iso", c("Sex", "Genotype", "Temperature",
+               "Treatment", "Environment","Light", "aPrioriConditions")]
+    traits <- c("Sleepchange_All", "Sleepchange_L", "Sleepchange_D", "nBoutschange_L",
+                "nBoutschange_D", "Boutlenchange_L", "Boutlenchange_D")
+  } else {
+    df <- meanData[, c(traitlist, c("Sex", "Genotype", "Temperature",
+                                      "Treatment", "Environment","Light", "Batch",
+                                      "aPrioriConditions"))]
+    # Rename the columns for better clarity.
+    colnames(df) <- c("Sleeptime_All", "Sleeptime_L", "Sleeptime_D", "NBouts_L",
+                      "NBouts_D", "Boutlen_L", "Boutlen_D")
+    traits <- c("Sleeptime_All", "Sleeptime_L", "Sleeptime_D", "NBouts_L",
+                "NBouts_D", "Boutlen_L", "Boutlen_D")
+  }
 
   # Function to compute within-cluster sum of squares
   wss <- function(k) {
-    stats::kmeans(data, k, nstart = 10)$tot.withinss
+    stats::kmeans(data, 2, nstart = 10)$tot.withinss
   }
 
   # Function to compute average silhouette width
@@ -133,10 +183,90 @@ kmeansCluster <- function(x, y, treat = NULL, temp = NULL, enviro = NULL, Lights
     mean(ss[, 3])
   }
 
-  kmax <- min(10, nrow(data) - 1)
+  kmax <- min(10, nrow(df) - 1)
+  k_values <- 1:kmax
+
+
+  # Creating a correlation plot colored by clusters and aPrioriConditions
+  clustered_plot<- function(data,font, legend = FALSE){
+  p<- ggplot2::ggplot(data, ggplot2::aes(x = data[,1], y = data[,2])) +
+    ggplot2::geom_point(size = 1, stroke = .5, alpha = 2/3,
+                        ggplot2::aes(shape = aPrioriConditions,
+                                     color = cluster,
+                                     fill = cluster)) +
+    ggplot2::geom_smooth(method = "lm",  # Line of best fit
+                se = FALSE,      # No error bars
+                col = "grey",     # Single color for the line of best fit
+                size = 0.5)    + # Color of the line
+    ggplot2::labs(title = NULL, x = NULL, y = NULL) +
+    ggprism::theme_prism(base_fontface = font) +
+    ggplot2::theme(title = ggplot2::element_text(size = 12),
+                   axis.title.y = ggplot2::element_text(size = 13),
+                   axis.title.x = ggplot2::element_text(size = 13),
+                   axis.text.x = ggplot2::element_text(size = 10),
+                   axis.text.y = ggplot2::element_text(size = 10),
+                   legend.text = ggplot2::element_text(size = 10, face = font),
+                   legend.title = ggplot2::element_text(size = 10)) +
+    ggplot2::scale_shape_manual(name = "A Priori", values = c(0,1,4,2,3,14,9,10,11)) +
+    ggplot2::scale_color_manual(values = scales::alpha(c("#0000FF", "#FF0000", "#008B8B", "#808080", "#ADD8E6", "#FFA500","#FFD700", "#32CD32","#800080", "#000080"), alpha = .7)) +
+    ggplot2::scale_fill_manual(values = scales::alpha(c("#0000FF", "#FF0000", "#008B8B", "#808080", "#ADD8E6", "#FFA500","#FFD700", "#32CD32","#800080", "#000080"), alpha = .6))
+  if(legend == FALSE){
+    p<- p+ ggplot2::guides(color = "none", fill = "none", shape = "none")
+  }
+    return(p)
+  }
+
+  # Create an empty list to store plots
+  plots <- list()
+
+  if (!is.null(y) && !is.null(x)){
+
+    #subset data
+    data <- df[,c(colx, coly)]
+
+    wss_values <- sapply(k_values, wss)
+
+    # Silhouette Method
+    sil_values <- sapply(2:kmax, silhouette_score)
+
+    # Gap Statistic
+    gap_stat <- cluster::clusGap(data, FUN = kmeans, nstart = 10, K.max = kmax, B = 50)
+
+    # Automatically select the best number of clusters
+    best_elbow <- which(diff(wss_values) == min(diff(wss_values))) + 1  # Finds the elbow
+    best_silhouette <- which.max(sil_values) + 1                        # Max silhouette width
+    best_gap <- cluster::maxSE(gap_stat$Tab[, "gap"], gap_stat$Tab[, "SE.sim"])  # Max gap statistic
+
+    # Summarize and choose the best method
+    results <- c(best_elbow, best_silhouette, best_gap)
+    names(results) <- c("Elbow", "Silhouette", "Gap Statistic")
+    optimal_clusters <- as.numeric(names(sort(table(results), decreasing = TRUE)[1]))
+
+    # Perform K-means clustering using the optimal number of clusters
+    km_res <- kmeans(data, centers = optimal_clusters, nstart = 10)
+
+    # Add cluster assignment to the original data for plotting
+    data$cluster <- as.factor(km_res$cluster)
+    data$aPrioriConditions <- meta$aPrioriConditions
+
+    myplot <- clustered_plot(data, font, TRUE)
+    ggplot2::ggsave(paste0("kmeanscluster", titlee, y, x, ".pdf"), myplot, height = 5, width = 5)
+
+    # Write the file which labels the cluster each Genotype is in
+    data.table::fwrite(data, paste0("clustered", titlee, y, x, ".csv"))
+
+    } else {
+  for (i in seq_along(traits)) {
+    for (j in 1:i) {
+      if (i == j) {
+        # Add a blank plot for the diagonal
+        blank_plot <- ggplot2::ggplot() + ggplot2::theme_void()
+        plots[[paste0("plot_", i, "_", j)]] <- blank_plot
+      } else {
+
+  data<- df[,traits[c(i,j)]]
 
   # Elbow Method
-  k_values <- 1:kmax
   wss_values <- sapply(k_values, wss)
 
   # Silhouette Method
@@ -159,36 +289,111 @@ kmeansCluster <- function(x, y, treat = NULL, temp = NULL, enviro = NULL, Lights
   km_res <- kmeans(data, centers = optimal_clusters, nstart = 10)
 
   # Add cluster assignment to the original data for plotting
-  df$cluster <- as.factor(km_res$cluster)
+  data$cluster <- as.factor(km_res$cluster)
+  data$aPrioriConditions <- meta$aPrioriConditions
 
-  xtitle <- gsub("_", " ", x)
-  ytitle<- gsub("_", " ", y)
-  titlee <- gsub(" ", "", titlee)
-  # Creating a correlation plot colored by clusters and aPrioriConditions
-  ggplot2::ggplot(df, ggplot2::aes(x = x, y = y)) +
-    ggplot2::geom_point(size = 5, stroke = 2, alpha = 2/3,
-                        ggplot2::aes(shape = aPrioriConditions,
-                                     color = cluster,
-                                     fill = cluster)) +
-    ggplot2::labs(
-      title = trimws(paste("Sleep Trend with Clustering", titlee)),
-      x = xtitle, y = ytitle) +
-    ggprism::theme_prism(base_fontface = font) +
-    ggplot2::theme(title = ggplot2::element_text(size = 24),
-                   axis.title.y = ggplot2::element_text(size = 26),
-                   axis.title.x = ggplot2::element_text(size = 26),
-                   axis.text.x = ggplot2::element_text(size = 20),
-                   axis.text.y = ggplot2::element_text(size = 20),
-                   legend.text = ggplot2::element_text(size = 20, face = font),
-                   legend.title = ggplot2::element_text(size = 20)) +
-    ggplot2::scale_shape_manual(name = "A Priori", values = c(0,1,4,2,3,14,9,10,11)) +
-    ggplot2::scale_fill_viridis_d(name = "Cluster", option = "D", begin = 0, end = 0.8) +
-    ggplot2::scale_color_viridis_d(name = "Cluster", option = "D", begin = 0, end = 0.8)
-
-  ggplot2::ggsave(paste0("ClusteredPlot_", titlee, y, x, ".pdf"), height = 7, width = 7)
-
+  #make all the plots
+  plots[[paste0("plot_", i, "_", j)]] <- clustered_plot(data, font)
 
   # Write the file which labels the cluster each Genotype is in
-  data.table::fwrite(df, paste0("clustered", titlee, x, y, ".csv"))
+  data.table::fwrite(data, paste0("clustered", titlee, traits[i], traits[j], ".csv"))
+      }
+    }
+  }
 
+# Create a grid layout for the lower triangle
+      layout_matrix <- matrix(NA, nrow = length(traits)+1, ncol = length(traits)+1)
+
+      plot_index <- 1
+      for (i in seq_along(traits)) {
+        for (j in 1:i) {
+          layout_matrix[length(traits) - j + 1, i+1] <- plot_index
+          plot_index <- plot_index + 1
+        }
+      }
+      for (i in seq_along(traits)) {
+          layout_matrix[length(traits) - i + 1, 1] <- plot_index
+          plot_index <- plot_index + 1
+        }
+      for (i in seq_along(traits)) {
+        layout_matrix[length(traits)+1, i+1] <- plot_index
+        plot_index <- plot_index + 1
+      }
+      row_labels <- lapply(traits, function(x) grid::textGrob(x, gp = grid::gpar(fontsize = 10, fontface = font)))
+      col_labels <- lapply(traits, function(x) grid::textGrob(x, rot = 45, gp = grid::gpar(fontsize = 10, fontface = font)))
+      ploters<- c(plots, row_labels, col_labels)
+      # legend <- cowplot::get_legend(clustered_plot(data, font, TRUE))
+
+      # c("#0000FF", "#FF0000", "#008B8B", "#808080", "#ADD8E6", "#FFA500","#FFD700", "#32CD32","#800080", "#000080")
+      # c(0,1,4,2,3,14,9,10,11)
+
+      # Arrange the plots in the grid
+      myplot<- gridExtra::grid.arrange(grobs = ploters,
+                              layout_matrix = layout_matrix,
+                              heights = c(0.6, rep(0.9, length(traits))),
+                              widths = c(0.6, rep(0.9, length(traits))),
+                              top = paste("Clustered Sleep Traits", titlee))
+
+      # Define colors and shapes
+      colors <- c("#0000FF", "#FF0000", "#008B8B", "#808080", "#ADD8E6", "#FFA500", "#FFD700", "#32CD32", "#800080", "#000080")
+      shapes <- c(0, 1, 4, 2, 3, 14, 9, 10, 11)
+
+      # Create aPrioriCondition for shapes
+      # aPrioriCondition <- c("Cond1", "Cond2", "Cond3", "Cond4", "Cond5", "Cond6", "Cond7", "Cond8", "Cond9", "Cond10")
+
+      # Prepare data for the legends
+      legend_data_colors <- data.frame(
+        Cluster = factor(1:10),
+        Color = colors
+      )
+
+      legend_data_shapes <- data.frame(
+        aPriori = factor(aPrioriConditions),
+        Shape = shapes[1:length(aPrioriConditions)]
+      )
+
+      # Create the color legend
+      color_legend <- ggplot2::ggplot(legend_data_colors, ggplot2::aes(x = 1, y = Cluster, color = Cluster)) +
+        ggplot2::geom_point(size = 3) +
+        ggplot2::scale_color_manual(values = colors) +
+        ggplot2::theme_void() +
+        ggplot2::theme(
+          legend.position = "none"
+        ) +
+        ggplot2::labs(title = "Colors")
+
+      # Create the shape legend
+      shape_legend <- ggplot2::ggplot(legend_data_shapes, ggplot2::aes(x = 1, y = aPriori, shape = aPriori)) +
+        ggplot2::geom_point(size = 3) +
+        ggplot2::scale_shape_manual(values = shapes) +
+        ggplot2::theme_void() +
+        ggplot2::theme(
+          legend.position = "none"
+        ) +
+        ggplot2::labs(title = "Shapes")
+
+      # Extract the legends
+      suppressWarnings(
+      color_grob <- cowplot::get_legend(color_legend + ggplot2::theme(legend.position = "right"))
+      )
+      suppressWarnings(
+        shape_grob <- cowplot::get_legend(shape_legend + ggplot2::theme(legend.position = "right"))
+      )
+      # Combine the legends
+      combined_legend <- gridExtra::grid.arrange(
+        gridExtra::arrangeGrob(color_grob, shape_grob, ncol = 1)
+      )
+
+      # Save the final plot with legends
+      final_plot <- gridExtra::grid.arrange(
+        myplot,
+        combined_legend,
+        ncol = 2,
+        widths = c(14, 1.5) # Adjust widths as needed
+      )
+
+      titlee <- gsub(" ", "", titlee)
+
+      ggplot2::ggsave(paste0("kmeanstraits", titlee, ".pdf"), final_plot, height = 14, width = 15.5)
+  }
 }
