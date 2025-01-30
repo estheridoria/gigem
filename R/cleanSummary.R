@@ -142,8 +142,8 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
   create_sleeptime_plot(summary_dt_final, "Sleep_Time_All", "Total Sleep (min)", divisions, 1500, "bar")
   create_sleeptime_plot(summary_dt_final, "Sleep_Time_L", "Daytime Sleep (min)", divisions, 1000, "bar")
   create_sleeptime_plot(summary_dt_final, "Sleep_Time_D", "Nighttime Sleep (min)", divisions, 1000, "bar")
-  create_sleeptime_plot(summary_dt_final, "n_Bouts_L", "Daytime Sleep Bouts", divisions, 80, "violin")
-  create_sleeptime_plot(summary_dt_final, "n_Bouts_D", "Nighttime Sleep Bouts", divisions, 80, "violin")
+  create_sleeptime_plot(summary_dt_final, "n_Bouts_L", "# Daytime Sleep Bouts", divisions, 80, "violin")
+  create_sleeptime_plot(summary_dt_final, "n_Bouts_D", "# Nighttime Sleep Bouts", divisions, 80, "violin")
 }
   # Return the final summary table
   return(summary_dt_final)
