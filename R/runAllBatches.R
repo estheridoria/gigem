@@ -23,7 +23,7 @@
 #' @importFrom ggbeeswarm geom_beeswarm
 #' @importFrom ggcorrplot cor_pmat ggcorrplot
 #' @importFrom ggetho ggetho stat_bar_tile_etho scale_x_days stat_ld_annotations stat_pop_etho
-#' @importFrom ggplot2 theme facet_grid aes margin mean_cl_boot vars scale_y_continuous element_rect ggplot geom_errorbar geom_point scale_fill_viridis_d ggtitle scale_x_discrete geom_text ggsave scale_color_manual scale_fill_manual labs stat_summary geom_violin ylim geom_smooth scale_shape_manual scale_color_viridis_c coord_cartesian
+#' @importFrom ggplot2 theme facet_grid aes margin mean_cl_boot vars scale_y_continuous element_rect ggplot geom_errorbar geom_point scale_fill_viridis_d ggtitle scale_x_discrete geom_text ggsave scale_color_manual scale_fill_manual labs stat_summary geom_violin ylim geom_smooth scale_shape_manual scale_color_viridis_c coord_cartesian annotate
 #' @importFrom ggprism theme_prism
 #' @importFrom gridExtra grid.arrange
 #' @importFrom methods isClass setClass
@@ -57,14 +57,13 @@ runAllBatches <- function(control, font = "plain") {
   #ask user which plots they want
   pref <- plotPreferences("all")
 
-  # Get the list of all sub directories
-  all_dirs <- list.dirs(parent_dir, full.names = TRUE, recursive = FALSE)
-
   # Save the current working directory
   original_wd <- getwd()
 
-  run_r_files_in_dir <- function(dir) {
+  # Get the list of all sub directories
+  all_dirs <- list.dirs(original_wd, full.names = TRUE, recursive = FALSE)
 
+  run_r_files_in_dir <- function(dir) {
     # Change to the target directory
     setwd(dir)
 
@@ -110,22 +109,18 @@ combine_with_warning_check <- function(dt_list) {
            Please ensure all parameters are present and named correctly in all Main.R files.")
       }
   })
-    return()#combined)
+    return()
 }
-# comb <- combine_with_warning_check(all_tables)
-# #number of unique conditions
-# uniqueConditions <- nrow(data.table::data.table(unique(comb[, .(Sex, Genotype,
-#                          Temperature, Treatment, Environment, Light, start_datetime)])))
-# #factor to remove the number of control treatments from the p-adjustment
-# minus<- 1-1/length(unique(comb[,get(divisions[1])]))
-# comparisons <- uniqueConditions*minus
+
+each_dir <- list.dirs(original_wd, full.names = FALSE, recursive = FALSE)
 
   # Iterate over each batch directory and run the R files to run each batch
-  for (batch_dir in batch_dirs){
-    run_r_files_in_dir(batch_dir)
-    runOneBatch(info, divisions, num_days, pref, control, font)
+  for (oneBatch in each_dir){
+    runOneBatch(control, oneBatch, font, pref)
   }
 
+
+#-------------------------------------------------------------------------------
   # Restore the original working directory
   setwd(original_wd)
 

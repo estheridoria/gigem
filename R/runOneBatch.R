@@ -26,8 +26,9 @@
 #' 8. Writes relevant output files, including the final summary and normalized statistics.
 #'
 #' @keywords export
-runOneBatch <- function(info = NULL, divisions, num_days, pref = NULL, control, font = "plain") {
+runOneBatch <- function(control, oneBatch, font = "plain", pref = NULL) {
 
+#warn thy user
     if (!(font %in% c("plain", "bold", "italic","bold.italic"))){
     stop("'font' must be 'plain', 'bold', 'italic', or 'bold.italic'")
     }
@@ -38,23 +39,35 @@ runOneBatch <- function(info = NULL, divisions, num_days, pref = NULL, control, 
       stop("'control' must be specified")
     }
 
-    if (is.null(pref)){
-      #warnings
-      #ask user which plots they want
-      pref <- plotPreferences("one")
+# conditionally run set up for singlet batches
+                  if (is.null(pref)){
+                    #add more warnings copying runAllBatches
 
+                    pref<- plotPreferences("one")
 
-    #add more warnings copying runAllBatches
-    original_wd <- getwd()
-    # Get the list of R files in the directory
-    r_files <- list.files(getwd(), pattern = "\\.R$", full.names = TRUE)
+                    # Get the list of all sub directories
+                    all_dirs <- list.dirs(getwd(), full.names = FALSE, recursive = FALSE)
+                    if (length(grep(oneBatch, all_dirs)) != 1){
+                      stop("The 'oneBatch' specified is not a subdirectory inside the current working directory. Please make sure your current directory is correct.")
+                    }
 
-    # Source each R file (run info)
-    for (r_file in r_files) {
-      source(r_file)
-    }
-    setwd(original_wd)
+                    #setwd & check that 'Batch' is valid
+                    original_wd <- getwd()
+                    singlet <- TRUE
+                  }
+
+# set the stage
+  # Change to the target directory
+  setwd(paste0(original_wd, "/", oneBatch))
+
+  # Get the list of R files in the directory
+  r_files <- list.files(getwd(), pattern = "\\.R$", full.names = TRUE)
+
+  # Source each R file (run info)
+  for (r_file in r_files) {
+    source(r_file)
   }
+
 
   # Create an object that contains all of your inputs
   ExperimentData <- new("ExperimentData",
@@ -105,4 +118,7 @@ if (any(dt_finalSummary[,Treatment] == "Grp") & any(dt_finalSummary[,Treatment ]
   norm_summary <- normSummary(ExperimentData, dt_finalSummary, groups,
                               norm_factor,control)
 }
+  if(singlet){
+    setwd(original_wd)
+    }
 }
