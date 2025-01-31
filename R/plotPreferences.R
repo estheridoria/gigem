@@ -22,13 +22,13 @@ plotPreferences <- function(run = "all"){
   r3 <- menu(c("Yes", "No"), title="Do you want to generate population plot overlays? (i.e. Each condition overlayed according to your first entry in 'Divisions')")
 
   # cleanSummary.R #45
-  r6 <- menu(c("Yes", "No"), title="Do you want to generate sleep bout plots grouped by batch?")
+  r4 <- menu(c("Yes", "No"), title="Do you want to generate sleep bout plots grouped by batch?")
 
   # cleanSummary.R #92
-  r4 <- menu(c("Yes", "No"), title="Do you want to generate quantitative sleep plots grouped by batch?")
+  r5 <- menu(c("Yes", "No"), title="Do you want to generate quantitative sleep plots grouped by batch?")
 
   # runOneBatch.R #53 (run genotypePlots())
-  r5 <- menu(c("Yes", "No"), title="Do you want to generate all plots grouped by genotype, within batches?")
+  r6 <- menu(c("Yes", "No"), title="Do you want to generate all plots grouped by genotype, within batches?")
 
   if (run == "all"){
   # runAllBatches.R #117 (run concatGenotypePlots())

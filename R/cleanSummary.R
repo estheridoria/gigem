@@ -38,7 +38,7 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
   # Perform bout analysis for sleep architecture
   bout_dt <- sleepr::bout_analysis(asleep, dt)[asleep == TRUE, -"asleep"]
 
-  if(pref[6] == 1){
+  if(pref[4] == 1){
   # Plot bout duration by time of day
   pdf(paste0(ExperimentData@Batch, '_population_sleep_bout_wrap', '.pdf'),
       width = 5*length(unique(info[[divisions[3]]]))+2,
@@ -101,7 +101,7 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
   )
   summary_dt_final[, Light := LightCol]
 
-  if(pref[4] ==1){
+  if(pref[5] ==1){
   # Helper function to create sleep plots for specified metrics
   create_sleeptime_plot <- function(plot_data, yParam,Yname, divisions, limits, geom) {
     pdf(paste0(ExperimentData@Batch, '_', yParam, '.pdf'), width = (prod(sapply(divisions[c(4,6)], function(col) length(unique(info[[col]]))))*1.5+2), ## swapped 6 and 5 between this line and the next

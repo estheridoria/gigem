@@ -91,7 +91,7 @@ runOneBatch <- function(control, oneBatch, font = "plain", pref = NULL) {
   # Write bout length pdf, and calculate bout and latency stats
   dt_finalSummary <- cleanSummary(ExperimentData, dt = dt_final, num_days, loadinginfo_linked =loading_metadata, divisions, pref, font)
 
-  if (pref[5] == 1){
+  if (pref[6] == 1){
   # Generate concatenated plots
   genotypePlots(dt_final, dt_finalSummary, font)
   }
