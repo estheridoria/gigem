@@ -23,7 +23,7 @@
 #' @return None. Plots are saved as PDF files.
 #' @keywords internal
 
-genotypePlots <- function(dt_curated_final, summary_dt_final, font) {
+genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, font) {
   #Dynamically exclude columns where the value is equal to divisions[1] &
   columns_to_consider <- c("Sex", "Genotype", "Temperature", "Treatment", "Environment", "Light")
   condition_combinations <- unique(summary_dt_final[,.SD,.SDcols = columns_to_consider[columns_to_consider != divisions[1]]])

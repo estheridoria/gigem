@@ -30,6 +30,9 @@ concatGenotypePlots <- function(combined_sleepdata, combined_sleepmeta, summary_
   data.table::setkey(combined_sleepmeta, id)
   dt_curated_final <- behavr::behavr(combined_sleepdata, combined_sleepmeta)
 
-  genotypePlots(dt_curated_final, summary_dt_final, font)
+  ExperimentData <- new("ExperimentData",
+                        Batch = "MultiBatch")
+
+  genotypePlots(ExperimentData, dt_curated_final, summary_dt_final, font)
 }
 
