@@ -50,11 +50,11 @@ runOneBatch <- function(control, oneBatch, font = "plain", pref = NULL) {
                     if (length(grep(oneBatch, all_dirs)) != 1){
                       stop("The 'oneBatch' specified is not a subdirectory inside the current working directory. Please make sure your current directory is correct.")
                     }
-
-                    #setwd & check that 'Batch' is valid
-                    original_wd <- getwd()
-                    singlet <- TRUE
+                    #
+                    # #setwd & check that 'Batch' is valid
+                    # singlet <- TRUE
                   }
+original_wd <- getwd()
 
 # set the stage
   # Change to the target directory
@@ -118,7 +118,7 @@ if (any(dt_finalSummary[,Treatment] == "Grp") & any(dt_finalSummary[,Treatment ]
   norm_summary <- normSummary(ExperimentData, dt_finalSummary, groups,
                               norm_factor,control)
 }
-  if(exists("singlet") & singlet == TRUE) {
+  # if(exists("singlet") & singlet == TRUE) {
     setwd(original_wd)
-    }
+    # }
 }

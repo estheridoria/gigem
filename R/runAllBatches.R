@@ -89,7 +89,6 @@ runAllBatches <- function(control, font = "plain") {
     run_r_files_in_dir(batch_dir)
     all_tables[[length(all_tables) + 1]] <- info
   }
-
     # Custom function to stop on specific warning if columns are not aligned with each batch's main files
 combine_with_warning_check <- function(dt_list) {
   withCallingHandlers({
@@ -111,6 +110,8 @@ combine_with_warning_check <- function(dt_list) {
   })
     return()
 }
+
+setwd(original_wd)
 
 each_dir <- list.dirs(original_wd, full.names = FALSE, recursive = FALSE)
 

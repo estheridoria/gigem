@@ -61,14 +61,16 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
                      legend.position = "none")
     if (!is.null(p_value)) {
       # Define thresholds and corresponding labels
-      thresholds <- c(0.0001, 0.001, 0.01, 0.05)
-      labels <- c("****", "***", "**", "*")
+      thresholds <- c(0.0001, 0.001, 0.01, 0.05, 0.1)
+      labels <- c("****", "***", "**", "*", ".")
 
       # Find the corresponding label directly using logical comparisons
       p_label <- ifelse(p_value <= thresholds[1], labels[1],
                  ifelse(p_value <= thresholds[2], labels[2],
                  ifelse(p_value <= thresholds[3], labels[3],
-                 ifelse(p_value <= thresholds[4], labels[4], ""))))
+                 ifelse(p_value <= thresholds[4], labels[4],
+                 ifelse(p_value <= thresholds[5], labels[5],
+                        "")))))
 
       # If a label is assigned, annotate the plot
       if (p_label !="") {
@@ -133,6 +135,7 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
                                 plot_subdata2[Treatment == "Iso", get(yParam)])
         p_value[[yParam]] <- t_test_result$p.value
       }
+      p1title <- gsub(" ", "_", p1title)
       p_values[, get("p1title") := p_value]
       p_v<- unlist(p_value)
     } else {p_v <<- NULL}
@@ -148,7 +151,7 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
           combined_plot <- cowplot::plot_grid(p1 , p2, p3, p4, p5, p6, ncol = 6, align = "h", axis = "tb",
                                    rel_widths = c(6, u, u, u, u, u))
          )
-        p1title <- gsub(" ", "_", p1title)
+
         # Save combined plot
         ggplot2::ggsave(paste0("CombinedPlots", p1title, ExperimentData@Batch, ".pdf"), combined_plot, width = (6 + u * 5 + 1.45), height = 4)
 
@@ -156,9 +159,9 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
 
   #-------------
 
-  pvdf <- data.frame(matrix(unlist(p_values), nrow = 5, byrow = TRUE))
-  rownames(pvdf) <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D")
-  colnames(pvdf)<- names(p_values)
+  pvdf <- data.frame(matrix(unlist(p_values), nrow = ncol(p_values), byrow = TRUE))
+  colnames(pvdf) <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D")
+  rownames(pvdf)<- names(p_values)
   write.csv(pvdf, paste0("pValues_", ExperimentData@Batch, ".csv"))
 
 }
