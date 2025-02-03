@@ -125,14 +125,14 @@ The standard `status` of each fly is "OK". See section 1.6 to manually change th
 
 ### 1.3 Start/Stop Points
 
-The `start_datetime` should be the first light-on time-point after the flies have been loaded into the monitor(s). The `stop_datetime` is the last light-on time-point (plus a few minutes) before removing them from the monitors. Typically, this will be between two to four Zeitgeber cycles (48-96 hours for a typical 24-hour cycle) from the `start_datetime` time-point. Please ensure that the time `stop_datetime` is a few minutes past the light-on time point; this will ensure none of the functions that deal with time are hindered (see section 2.3).
+The `start_datetime` should be the first light-on time-point after the flies have been loaded into the monitor(s). The `stop_datetime` is the last light-on time-point (plus a few minutes) before removing them from the monitors. Typically, this will be between two to four Zeitgeber cycles (48-96 hours for a typical 24-hour cycle) from the `start_datetime` time-point. Please ensure that the time `stop_datetime` is twenty minutes past the light-on time point; this will ensure none of the functions that deal with time are hindered and alive flies are not mistakenly considered dead (see section 2.3).
 
 ```{Main echo = TRUE} 
   # Start date and time of the monitoring period
   start_datetime = "2019-08-17 10:00:00",
   
   # Stop date and time of the monitoring period
-  stop_datetime = "2019-08-19 10:05:00",
+  stop_datetime = "2019-08-19 10:20:00",
 ```         
 
 ### 1.4 Organism Specifications
@@ -226,7 +226,7 @@ divisions<- c("treatment",            # 1: Sleep plot, overlay and color
 
 ### 2.3 Truncated Length of Analysis
 
-Decide the number of days you wish to analyze from the experiment. This should be less than the number of days between `start_datetime` and `stop_datetime`. 
+Decide the number of days you wish to analyze from the experiment. This should be less than the difference between `start_datetime` and `stop_datetime`. 
 
 ```{Main echo = T}
 # Set the number of days you wish to analyze
@@ -403,7 +403,7 @@ info <- data.table::data.table(
   start_datetime = "2019-08-17 10:00:00",
   
   # Stop date and time of the monitoring period
-  stop_datetime = "2019-08-19 10:05:00",
+  stop_datetime = "2019-08-19 10:20:00",
   
   # Sex of the subjects being monitored (M = Male, F = Female)
   sex = "M",
