@@ -93,7 +93,7 @@ runOneBatch <- function(control, oneBatch, font = "plain", pref = NULL) {
 
   if (pref[6] == 1){
   # Generate concatenated plots
-  genotypePlots(dt_final, dt_finalSummary, font)
+  genotypePlots(ExperimentData, dt_final, dt_finalSummary, font)
   }
 
   # Define input column names for normalized statistics
@@ -118,7 +118,7 @@ if (any(dt_finalSummary[,Treatment] == "Grp") & any(dt_finalSummary[,Treatment ]
   norm_summary <- normSummary(ExperimentData, dt_finalSummary, groups,
                               norm_factor,control)
 }
-  if(singlet){
+  if(exists("singlet") & singlet == TRUE) {
     setwd(original_wd)
     }
 }
