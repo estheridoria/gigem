@@ -4,7 +4,7 @@
 \alias{manualDeadRemoval}
 \title{Manually Remove IDs of Animals Detected as Dead (Internal)}
 \usage{
-manualDeadRemoval(ExperimentData, dt, num_days, divisions, pref)
+manualDeadRemoval(ExperimentData, dt, num_days, divisions, pref, font)
 }
 \arguments{
 \item{ExperimentData}{An S4 object containing experiment metadata, including \code{Batch} for output filenames.}
@@ -16,19 +16,17 @@ manualDeadRemoval(ExperimentData, dt, num_days, divisions, pref)
 \item{divisions}{A character vector defining grouping variables for plot facets.}
 
 \item{pref}{A numeric vector specifying whether to generate population plots (\code{pref[2] == 1}) and overlay plots (\code{pref[3] == 1}).}
+
+\item{font}{A character string variable determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")}
 }
 \value{
-A \code{data.table} of the curated data (\code{dt}) limited to animals meeting the lifespan threshold.
+A \code{data.table} of the curated data (\code{dt}) limited to animals meeting or exceeding the lifespan threshold.
 }
 \description{
 Removes animals detected as dead before a specified final time point, trims the data to a defined time range,
 and generates population and overlay plots of sleep data.
 }
 \details{
-This function removes animals that are detected as dead before the specified lifespan threshold (\code{num_days}).
-It filters the data to retain only animals with a lifespan greater than or equal to \code{num_days}, generates population
-plots and overlay plots of sleep data based on user preferences (\code{pref}), and saves the results as PDF files.
-
 Population plots are saved with the suffix \verb{_population_sleep.pdf} and overlay plots with \verb{_sleep_overlay.pdf}.
 }
 \keyword{internal}

@@ -4,33 +4,35 @@
 \alias{genotypePlots}
 \title{Generate Combined Genotype Plots (Internal)}
 \usage{
-genotypePlots(dt_curated_final, summary_dt_final)
+genotypePlots(ExperimentData, dt_curated_final, summary_dt_final, font)
 }
 \arguments{
 \item{dt_curated_final}{A \code{data.table} containing curated sleep data with columns such as \code{id} and \code{asleep}.}
 
-\item{summary_dt_final}{A \code{data.table} containing summary statistics with columns including \code{light}, \code{environment},
-\code{genotype}, \code{treatment}, and various sleep metrics.}
+\item{summary_dt_final}{A \code{data.table} containing summary statistics with columns including \code{Light}, \code{Environment},
+\code{Genotype}, \code{Treatment}, \code{Sex} and various sleep metrics.}
+
+\item{font}{A character string variable determining the font style of the produced plots.}
 }
 \value{
 None. Plots are saved as PDF files.
 }
 \description{
-Creates combined plots for each unique combination of \code{light}, \code{environment}, and \code{genotype} in the dataset.
+Creates combined plots for each unique combination of \code{Light}, \code{Environment}, \code{Treatment}, \code{Sex}, and \code{Genotype} in the dataset.
 Generates overlay sleep plots and sleep duration plots, saving each combination as a PDF file.
 }
 \details{
-The function iterates through all unique combinations of \code{light}, \code{environment}, and \code{genotype}.
+The function iterates through all unique combinations of \code{Light}, \code{Environment}, \code{Treatment}, \code{Sex}, and \code{Genotype}.
 For each combination:
 \itemize{
 \item An overlay sleep plot is created using \code{ggetho}.
 \item Multiple sleep duration plots (e.g., total sleep, daytime sleep, nighttime sleep) are generated
 using a helper function, \code{create_sleeptime_plot}.
 \item Plots are combined into a single figure using \code{cowplot::plot_grid}.
-\item The combined figure is saved as a PDF file, with the filename reflecting the combination of \code{light},
-\code{environment}, and \code{genotype}.
+\item The combined figure is saved as a PDF file, with the filename reflecting the combination of \code{Light},
+\code{Environment}, and \code{Genotype}.
 }
 
-The function dynamically adjusts plot widths based on the number of unique treatments in the dataset.
+The function dynamically adjusts plot widths based on the number of unique possibilities of divisions\link{1}.
 }
 \keyword{internal}

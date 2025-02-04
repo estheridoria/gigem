@@ -2,7 +2,7 @@
 % Please edit documentation in R/activityAndSleep.R
 \name{activityAndSleep}
 \alias{activityAndSleep}
-\title{Plot Activity and Sleep Data by Monitor}
+\title{Plot Activity and Sleep Data by Monitor (Internal)}
 \usage{
 activityAndSleep(ExperimentData, loadinginfo_linked, pref)
 }
@@ -22,12 +22,5 @@ A \code{data.table} object (\code{dt}) containing the loaded DAM data, with slee
 This internal helper function generates PDF plots of activity and sleep data for each monitor listed in \code{ExperimentData}.
 Activity data is loaded and plotted using \code{damr} and \code{ggetho}, while sleep data is annotated using \code{sleepr} before plotting.
 Each monitor's data is plotted in separate PDF files.
-}
-\details{
-This function operates by iterating over each monitor listed in the \code{monitorlist} attribute of the \code{ExperimentData} object.
-For each monitor, it loads the activity data using the \code{damr} package and generates activity plots using \code{ggetho}.
-If specified in the \code{pref} vector (i.e., \code{pref[1] == 1}), it also generates sleep plots. Sleep data is annotated with information
-from the \code{sleepr} package before plotting. Each monitor's plot is saved in a separate PDF file.
-The function returns a \code{data.table} object (\code{dt}) containing the processed DAM data along with any sleep annotations.
 }
 \keyword{internal}

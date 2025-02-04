@@ -2,40 +2,37 @@
 % Please edit documentation in R/normSummary.R
 \name{normSummary}
 \alias{normSummary}
-\title{Generate Normalized Statistics Summary (Internal)}
+\title{Generate Normalized Statistics Summary Specifically of Sleep Loss (Internal)}
 \usage{
 normSummary(
   ExperimentData,
   readin_summary_dt_final,
   groups,
   normalized_factor,
-  controlgeno,
-  controltreat
+  control
 )
 }
 \arguments{
 \item{ExperimentData}{An S4 object containing experimental data, including a \code{Batch} attribute.}
 
-\item{readin_summary_dt_final}{A data.table with summary statistics for all genotypes, to be normalized.}
+\item{readin_summary_dt_final}{A data.table with summary statistics for all Genotypes, to be normalized.}
 
 \item{groups}{A character vector specifying the groups to include in the normalization.}
 
-\item{normalized_factor}{A data.table with the normalization factor for each genotype.}
+\item{normalized_factor}{A data.table with the normalization factor for each Genotype.}
 
-\item{controlgeno}{A character string specifying the control genotype for normalizing.}
-
-\item{controltreat}{A character string specifying the control treatment for normalizing.}
+\item{control}{A character string specifying the control for normalizing.}
 }
 \value{
 A data.table with selected columns from the normalized summary, also written as a CSV file.
 }
 \description{
-Produces a summary data table with normalized statistics for each genotype and writes it as a CSV file.
+Produces a summary data table with normalized statistics for each Genotype and writes it as a CSV file.
 Combines the normalized statistics columns for the specified \code{groups} with a subset of other columns,
 keeping key summary data.
 }
 \details{
-This function generates a normalized summary of statistics for each genotype by normalizing the values
+This function generates a normalized summary of statistics for each Genotype by normalizing the values
 in the specified \code{groups} using the provided \code{normalized_factor}. It combines the normalized values for
 the specified groups with other key summary columns, retaining the first 12 columns and appending the
 last columns corresponding to the normalized groups. The resulting data table is then written to a CSV file.

@@ -2,24 +2,19 @@
 % Please edit documentation in R/plotPreferences.R
 \name{plotPreferences}
 \alias{plotPreferences}
-\title{Ask the user which plots they don't want (Internal)}
+\title{Ask the user which plots they want (Internal)}
 \usage{
-plotPreferences()
+plotPreferences(run = "all")
 }
 \arguments{
-\item{ExperimentData}{An S4 object with experiment metadata, including \code{loadinginfo}.}
+\item{run}{A character string of either "all" or "one" referring to which run is done}
 }
 \value{
-A data.table containing the user's plot preferences, which can be used for downstream analysis.
+A matrix containing the user's plot preferences, which can be used for downstream analysis.
 }
 \description{
 This function prompts the user to select which plots they do not wish to generate. It presents a series of
-Yes/No questions regarding different types of plots, and returns their preferences in a linked metadata table
+Yes/No questions regarding different types of plots, and returns their preferences.
 for downstream analysis.
-}
-\details{
-The function provides a set of menu prompts to the user, asking whether they want to generate specific plots,
-such as sleep and activity profiles, population plots, and quantitative sleep plots. Based on the user's
-responses, it returns a table that links their choices for further use in analysis or decision-making processes.
 }
 \keyword{internal}

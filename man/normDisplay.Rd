@@ -2,37 +2,42 @@
 % Please edit documentation in R/normDisplay.R
 \name{normDisplay}
 \alias{normDisplay}
-\title{Visualize Changes in Sleep Between Genotypes and Treatments}
+\title{Visualize Changes in Sleep Between}
 \usage{
-normDisplay(C1, C2, column_name, WT)
+normDisplay(
+  x,
+  treat = NULL,
+  temp = NULL,
+  enviro = NULL,
+  Lights = NULL,
+  geno = NULL,
+  font = "plain"
+)
 }
 \arguments{
-\item{C1}{A string specifying the first treatment group.}
+\item{x}{The name of a parameter in "all_batches_norm_summary.csv" to be used as the x-axis in the plot.}
 
-\item{C2}{A string specifying the second treatment group.}
+\item{treat}{A string specifying a Treatment to subset the data by.}
 
-\item{column_name}{The name of a column in the normalized summary CSV that will be used for comparison in the data.}
+\item{temp}{A string specifying a Temperature condition to subset the data by.}
 
-\item{WT}{A string specifying the wild type genotype to be used for comparison.}
+\item{enviro}{A string specifying a Environment condition to subset the data by.}
+
+\item{Lights}{A string specifying a Light condition to subset the data by.}
+
+\item{geno}{A string specifying a Genotype condition to subset the data by.}
+
+\item{font}{A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")}
 }
 \value{
-None. Saves the plots as PDF files.
+None. Saves the plots as PDF files labeled \code{NormalizedSleepLoss...}
 }
 \description{
-This function generates bar plots to visualize the changes in sleep across different genotypes and treatments.
+This function generates bar plots to visualize the changes in sleep across different Genotypes and Treatments.
 It reads a CSV file containing normalized sleep data, calculates the changes in sleep, and then creates plots
 for each of the sleep-related metrics (\code{TotalSleepChange}, \code{DayTimeSleepChange}, \code{NightTimeSleepChange}).
-The plots compare the changes between two treatments (C1 and C2) for each genotype, and also include plots
-for wild type (WT) genotypes within each treatment group. The resulting plots are saved as PDF files.
-}
-\details{
-The function processes normalized sleep data from a CSV file ("all_batches_norm_summary.csv") and calculates the
-change in sleep for each treatment group (\code{C1}, \code{C2}) and genotype, including wild type (WT). The changes in sleep
-are calculated for three metrics: \code{TotalSleepChange}, \code{DayTimeSleepChange}, and \code{NightTimeSleepChange}.
-
-For each sleep metric, the function generates bar plots comparing the changes in sleep between the two treatments
-(C1 and C2) for each genotype, as well as for wild type genotypes within each treatment group. The plots are saved as
-PDF files. The number of batch names is used to adjust the width of the plots, and each plot is formatted to show the
-mean change in sleep with customized themes and labels.
+Two plots are made showing the normalized sleeploss for the Treatment of interest (\code{treat}).
+One plot contains only the \code{control} entry in \code{x} while the other plot contains every entry except \code{control}.
+The plots are saved as PDFs labeled, "NormalizedSleepLoss...".
 }
 \keyword{internal}

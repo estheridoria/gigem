@@ -4,33 +4,56 @@
 \alias{kmeansCluster}
 \title{Perform K-Means Clustering on Sleep Data}
 \usage{
-kmeansCluster(Compare1, Compare2, groupings, column_name)
+kmeansCluster(
+  x = NULL,
+  y = NULL,
+  sex = NULL,
+  geno = NULL,
+  temp = NULL,
+  treat = NULL,
+  enviro = NULL,
+  Lights = NULL,
+  aPrioriConditions,
+  aPrioriParameter,
+  font = "plain"
+)
 }
 \arguments{
-\item{Compare1}{A string specifying the first comparison treatment group (e.g., "Control").}
+\item{x}{A string specifying the x-axis parameter of the cluster plot as written in 'all_batches_norm_summary.csv' (e.g., "norm_Sleep_Time_All"). Default is NULL.}
 
-\item{Compare2}{A string specifying the second comparison treatment group (e.g., "Treatment").}
+\item{y}{A string specifying the y-axis parameter of the cluster plot as written in 'all_batches_norm_summary.csv' (e.g., "norm_mean_Bout_length_L"). Default is NULL.}
 
-\item{groupings}{A character vector of group names (e.g., c("L1", "L2", "S1", "S2", "CS")) to match against the specified column (default is \code{genotype}).}
+\item{geno}{A string specifying a Genotype condition to subset the data by.}
 
-\item{column_name}{A string specifying the column name for grouping in the data (default is \code{genotype}).}
+\item{temp}{A string specifying a Temperature condition to subset the data by.}
 
-\item{combined_data}{A \code{data.frame} containing summarized data, with columns for genotype, sleep time, and other factors.}
+\item{treat}{A string specifying a Treatment to subset the data by.}
+
+\item{enviro}{A string specifying a Environment condition to subset the data by.}
+
+\item{Lights}{A string specifying a Light condition to subset the data by.}
+
+\item{aPrioriConditions}{A vector of (partial spellings of the) conditions (e.g., c("L1", "L2", "S1", "S2", "CS")) in one of the experimental parameters.}
+
+\item{aPrioriParameter}{A string specifying the parameter of the aPrioriConditions.}
+
+\item{font}{A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")}
 }
 \value{
-None. Saves the plots as PDF files and outputs a CSV file with cluster assignments.
+None. Saves the plot as a PDF file and outputs a CSV file with cluster assignments.
 }
 \description{
-This function reads in a CSV file (\code{all_batches_summary.csv}) containing summarized data, performs K-means clustering to identify optimal clusters based on the Elbow Method, Silhouette Score, and Gap Statistic, and creates plots of sleep trends with clustering information.
-The user can provide a list of groupings (e.g., genotype categories) and add them dynamically to the dataset.
+This function reads in a CSV file (\code{all_batches_norm_summary.csv}) containing summarized and relativized data, performs K-means clustering to identify optimal clusters based on the Elbow Method, Silhouette Score, and Gap Statistic, and creates a plot of sleep trends with clustering information.
+The user can provide a list of aPrioriConditions (e.g., Genotype categories) which visually differentiates them from each other in the plots.
+If the data does not have "Grp" and "Iso" Treatments, the 'all_batches_norm_summary.csv' will not be produced by 'runAllBatches' and this function will not run.
 }
 \details{
-This function performs K-means clustering on sleep data for two comparison treatment groups (\code{Compare1} and \code{Compare2}). It automatically determines the optimal number of clusters using three methods:
+This function performs K-means clustering on sleep data for two comparison Treatment groups (\code{x} and \code{y}). It automatically determines the optimal number of clusters using three methods:
 \itemize{
 \item Elbow Method
 \item Silhouette Score
 \item Gap Statistic
-The function generates and saves a series of plots showing the sleep trends, with points colored by cluster assignment and pregrouping information.
+The function generates and saves a series of plots showing the sleep trends, with points colored by cluster assignment and shaped by aPrioriConditions information.
 The clustering results are saved in a CSV file.
 }
 }

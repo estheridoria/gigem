@@ -4,20 +4,29 @@
 \alias{corMat}
 \title{Correlation Matrix for Sleep Data (Exported)}
 \usage{
-corMat(Compare1, Compare2)
+corMat(temp = NULL, enviro = NULL, Lights = NULL, geno = NULL, font = "plain")
 }
 \arguments{
-\item{Compare1}{A character string representing the first treatment to compare.}
+\item{temp}{A string specifying a Temperature condition to subset the data by.}
 
-\item{Compare2}{A character string representing the second treatment to compare.}
+\item{enviro}{A string specifying a Environment condition to subset the data by.}
 
-\item{combined_data}{A data frame containing combined data from all batches, including variables such as \code{temp}, \code{sex}, \code{treatment}, \code{genotype}, and sleep-related metrics.}
+\item{Lights}{A string specifying a Light condition to subset the data by.}
+
+\item{geno}{A string specifying a Genotype condition to subset the data by.}
+
+\item{font}{A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")}
+
+\item{treat}{A string specifying a Treatment to subset the data by.}
 }
 \value{
-A \code{ggplot} object containing the correlation matrix plot with significance annotations.
-The plot is saved as a PDF file named \verb{RelativeBouts<Compare1>.pdf}.
-A CSV file with correlation p-values is saved as \verb{statcor<Compare1>.csv}.
+None. Plots are saved as PDF files, while p-values are saved as csv files.
 }
 \description{
-Computes the relative sleep changes between two treatments and generates a correlation matrix plot with significance annotations.
+Computes the relative sleep changes between two Treatments and generates a correlation matrix plot with significance annotations.
+}
+\details{
+Two \code{ggplot} objects containing the correlation matrix plot with significance annotations for percentage of sleep lost and raw number of minutes lost.
+The plots are saved as PDF files named \verb{Relative<Compare1>.pdf} and \verb{Unadjusted<Compare1>.pdf}.
+A CSV file with correlation p-values is saved as \verb{statcorRelative<Compare1>.csv} and \verb{statcorUnadjusted<Compare1>.csv}.
 }

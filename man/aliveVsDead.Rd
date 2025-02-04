@@ -7,7 +7,8 @@
 aliveVsDead(ExperimentData, dt)
 }
 \arguments{
-\item{ExperimentData}{An S4 object containing experiment metadata. Must include a \code{Batch} identifier for saved filenames.}
+\item{ExperimentData}{An S4 object containing experiment metadata.
+Must include \code{Batch} (identifier for the batch being processed).}
 
 \item{dt}{A \code{behavr} table containing animal activity and sleep data, with metadata accessible via \code{meta(dt)}.}
 }
@@ -18,16 +19,5 @@ A curated \code{behavr} table (\code{dt_curated_1}) with dead IDs removed.
 This internal helper function identifies and removes IDs from the input \code{dt} that are detected as dead,
 generating a curated \code{behavr} table without these IDs. It saves a CSV file listing removed IDs and generates
 PDF plots comparing sleep data before and after curation.
-}
-\details{
-\itemize{
-\item Dead IDs are identified using \code{sleepr::curate_dead_animals}.
-\item A CSV file named \verb{removed_list1_<Batch>.csv} is saved, containing the list of removed IDs.
-\item Two PDF plots are generated:
-\enumerate{
-\item \verb{<Batch>_sleep_before_deadcheck.pdf}: Sleep data before curation.
-\item \verb{<Batch>_sleep_after_deadcheck.pdf}: Sleep data after removing dead IDs.
-}
-}
 }
 \keyword{internal}

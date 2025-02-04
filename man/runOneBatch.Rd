@@ -2,22 +2,22 @@
 % Please edit documentation in R/runOneBatch.R
 \name{runOneBatch}
 \alias{runOneBatch}
-\title{Run the Complete Batch Analysis (Internal)}
+\title{Run the Complete Batch Analysis (Export)}
 \usage{
-runOneBatch(info, divisions, num_days, pref, controlgeno, controltreat)
+runOneBatch(control, oneBatch, font = "plain", pref = NULL)
 }
 \arguments{
+\item{control}{A character string specifying the control.}
+
+\item{font}{A string variable determining the font style of the produced plots.}
+
+\item{pref}{A vector of preferences for generating specific plots (e.g., whether to generate concatenated plots).}
+
 \item{info}{A data.table containing experimental information (e.g., monitor, genotype, etc.).}
 
 \item{divisions}{A list of time divisions for the analysis.}
 
 \item{num_days}{The number of days to consider for the analysis.}
-
-\item{pref}{A vector of preferences for generating specific plots (e.g., whether to generate concatenated plots).}
-
-\item{controlgeno}{A character string specifying the control genotype.}
-
-\item{controltreat}{A character string specifying the control treatment.}
 }
 \value{
 This function does not return a value but performs a series of steps to process the data,
@@ -41,4 +41,4 @@ This function executes the following steps:
 \item Writes relevant output files, including the final summary and normalized statistics.
 }
 }
-\keyword{internal}
+\keyword{export}

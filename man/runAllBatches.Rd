@@ -4,12 +4,12 @@
 \alias{runAllBatches}
 \title{Run All Batches Analysis}
 \usage{
-runAllBatches(controlgeno, controltreat)
+runAllBatches(control, font = "plain")
 }
 \arguments{
-\item{controlgeno}{A character string specifying the control genotype.}
+\item{control}{A character string specifying the control from one of the variables in the Main.r file.}
 
-\item{controltreat}{A character string specifying the control treatment.}
+\item{font}{A string variable determining the font style of the produced plots.}
 
 \item{parent_dir}{The parent directory where all batch directories are located.}
 
@@ -18,8 +18,6 @@ runAllBatches(controlgeno, controltreat)
 \item{divisions}{A list of time divisions for the analysis.}
 
 \item{num_days}{The number of days to consider for the analysis.}
-
-\item{control}{A character string specifying the control treatment.}
 }
 \value{
 This function does not return a value, but generates and saves two CSV files:
