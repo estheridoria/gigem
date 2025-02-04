@@ -125,7 +125,7 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
               p1 <- p1 + ggplot2::theme(legend.position = c(0.8,0.15))}
 
     #-------------
-    yParams<- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D")
+    yParams<- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
     if (any(plot_subdata2[,Treatment] == "Grp") & any(plot_subdata2[,Treatment ] == "Iso")){
       # Perform t-test if the 'Treatment' column has both 'Grp' and 'Iso'
       p_value <- list()
@@ -145,22 +145,24 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
         p4 <- create_sleeptime_plot(plot_subdata2, yParams[3], "Nighttime Sleep (min)", 1000, "bar", font, p_v[3])
         p5 <- create_sleeptime_plot(plot_subdata2, yParams[4], "# Daytime Sleep Bouts", 80, "violin", font, p_v[4])
         p6 <- create_sleeptime_plot(plot_subdata2, yParams[5], "# Nighttime Sleep Bouts", 80, "violin", font, p_v[5])
+        p7 <- create_sleeptime_plot(plot_subdata2, yParams[6], "Daytime Bout Length", 250, "violin", font, p_v[6])
+        p8 <- create_sleeptime_plot(plot_subdata2, yParams[7], "Nighttime Bout Length", 250, "violin", font, p_v[7])
 
         # Combine plots
          suppressWarnings(
-          combined_plot <- cowplot::plot_grid(p1 , p2, p3, p4, p5, p6, ncol = 6, align = "h", axis = "tb",
-                                   rel_widths = c(6, u, u, u, u, u))
+          combined_plot <- cowplot::plot_grid(p1, p2, p3, p4, p5, p6, p7, p8, ncol = 8, align = "h", axis = "tb",
+                                   rel_widths = c(6, u, u, u, u, u, u, u))
          )
 
         # Save combined plot
-        ggplot2::ggsave(paste0("CombinedPlots", p1title, ExperimentData@Batch, ".pdf"), combined_plot, width = (6 + u * 5 + 1.45), height = 4)
+        ggplot2::ggsave(paste0("CombinedPlots", p1title, ExperimentData@Batch, ".pdf"), combined_plot, width = (6 + u * 7 + 1.45), height = 4)
 
 }, by = 1:nrow(condition_combinations)]
 
   #-------------
 
   pvdf <- data.frame(matrix(unlist(p_values), nrow = ncol(p_values), byrow = TRUE))
-  colnames(pvdf) <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D")
+  colnames(pvdf) <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
   rownames(pvdf)<- names(p_values)
   write.csv(pvdf, paste0("pValues_", ExperimentData@Batch, ".csv"))
 

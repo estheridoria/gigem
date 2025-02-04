@@ -126,7 +126,8 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
       ggplot2::geom_point(size = 1.5, stat = "summary", fun = mean, shape = 3,
                           color = "black") +
       ggprism::theme_prism(base_fontface = font)  +
-      ggplot2::scale_y_continuous(name = Yname, limits = c(0,limits)) +
+      ggplot2::scale_y_continuous(name = Yname) +
+      ggplot2::coord_cartesian(ylim = c(0,limits)) +
       ggplot2::scale_x_discrete(name = NULL)+
         ggplot2::theme(axis.title.y = ggplot2::element_text(size = 20),
                        axis.text.x = ggplot2::element_text(size = 16, angle = 45, vjust = 1, hjust= 1),
@@ -144,6 +145,8 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
   create_sleeptime_plot(summary_dt_final, "Sleep_Time_D", "Nighttime Sleep (min)", divisions, 1000, "bar")
   create_sleeptime_plot(summary_dt_final, "n_Bouts_L", "# Daytime Sleep Bouts", divisions, 80, "violin")
   create_sleeptime_plot(summary_dt_final, "n_Bouts_D", "# Nighttime Sleep Bouts", divisions, 80, "violin")
+  create_sleeptime_plot(summary_dt_final, "mean_Bout_Length_L", "Daytime Bout Length", divisions, 250, "violin")
+  create_sleeptime_plot(summary_dt_final, "mean_Bout_Length_D", "Nighttime Bout Length", divisions, 250, "violin")
 }
   # Return the final summary table
   return(summary_dt_final)

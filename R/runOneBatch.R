@@ -53,7 +53,7 @@ runOneBatch <- function(control, oneBatch, font = "plain", pref = NULL) {
                     #
                     # #setwd & check that 'Batch' is valid
                     # singlet <- TRUE
-                  }
+                   }
 original_wd <- getwd()
 
 # set the stage
