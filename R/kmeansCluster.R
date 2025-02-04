@@ -253,7 +253,7 @@ kmeansCluster <- function(x = NULL, y = NULL, sex = NULL, geno = NULL,
     ggplot2::ggsave(paste0("kmeanscluster", titlee, y, x, ".pdf"), myplot, height = 5, width = 5)
 
     # Write the file which labels the cluster each Genotype is in
-    data.table::fwrite(data, paste0("clustered", titlee, y, x, ".csv"))
+    data.table::fwrite(data, paste0("clusters_", titlee, y, "~", x, ".csv"))
 
     } else {
   for (i in seq_along(traits)) {
