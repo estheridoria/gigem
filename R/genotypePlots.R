@@ -3,6 +3,7 @@
 #' Creates combined plots for each unique combination of `Light`, `Environment`, `Treatment`, `Sex`, and `Genotype` in the dataset.
 #' Generates overlay sleep plots and sleep duration plots, saving each combination as a PDF file.
 #'
+#' @param ExperimentData An S4 object containing experiment metadata.
 #' @param dt_curated_final A `data.table` containing curated sleep data with columns such as `id` and `asleep`.
 #' @param summary_dt_final A `data.table` containing summary statistics with columns including `Light`, `Environment`,
 #'   `Genotype`, `Treatment`, `Sex` and various sleep metrics.

@@ -7,6 +7,8 @@
 genotypePlots(ExperimentData, dt_curated_final, summary_dt_final, font)
 }
 \arguments{
+\item{ExperimentData}{An S4 object containing experiment metadata.}
+
 \item{dt_curated_final}{A \code{data.table} containing curated sleep data with columns such as \code{id} and \code{asleep}.}
 
 \item{summary_dt_final}{A \code{data.table} containing summary statistics with columns including \code{Light}, \code{Environment},

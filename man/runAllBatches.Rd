@@ -10,14 +10,6 @@ runAllBatches(control, font = "plain")
 \item{control}{A character string specifying the control from one of the variables in the Main.r file.}
 
 \item{font}{A string variable determining the font style of the produced plots.}
-
-\item{parent_dir}{The parent directory where all batch directories are located.}
-
-\item{info}{A data.table containing experimental information.}
-
-\item{divisions}{A list of time divisions for the analysis.}
-
-\item{num_days}{The number of days to consider for the analysis.}
 }
 \value{
 This function does not return a value, but generates and saves two CSV files:

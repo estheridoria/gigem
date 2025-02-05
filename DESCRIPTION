@@ -1,16 +1,16 @@
 Package: gigem
 Title: Group-Isolation Gauge Effect Metrics
 Version: 0.1.0
-Authors@R: c(person("Esther", "Doria", role = c("aut", "cre"), email = "edoria@tamu.edu"), 
-	person("Wanhe", "Li", role = c("cre"), email = "whli01@tamu.edu", comment = c(ORCID = "WANHELI-ORCID-ID")), 
+Authors@R: c(person("Esther", "Doria", role = c("aut", "cre"), email = "edoria@tamu.edu", comment = c(ORCID = "0009-0008-0687-0214")), 
+	person("Wanhe", "Li", role = c("cre"), email = "whli01@tamu.edu"), 
 	person("Daniel", "Nguyen", role = "ctb"))
 Author: Esther Doria [aut, cre], 
-	Wanhe Li [cre], 
+	Wanhe Li [ctb], 
 	Daniel Nguyen [ctb]
 Maintainer: Esther Doria <esther.i.doria@gmail.com>
 Depends: R(>= 4.3.0)
 Imports: behavr, cluster, cowplot, damr, data.table, dplyr, ggbeeswarm,
-        ggcorrplot, ggetho, ggplot2, ggprism, methods, plyr, reshape2,
+        ggcorrplot, ggetho, ggplot2, ggprism, gridExtra, Hmisc, methods, plyr, reshape2,
         rlang, scales, sleepr, stats
 Description: This package analyzes and displays drosophila activity monitor (DAM) information according to differing treatment, genotype, sex, lighting and/or environmental conditions. Sleep plots, sleep quantifications, and bout quantifications are produced in quality format for users to immediately use in scientific communications. Though the title indicates it only works for group and isolation treatments, this package is versatile to accommodate the specific conditions of your Drosophila experiments.
 License: MIT + file LICENSE

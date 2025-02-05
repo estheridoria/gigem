@@ -4,12 +4,10 @@
 #' generating activity and sleep plots, trimming dead animals, calculating summary statistics, and
 #' generating normalized statistics.
 #'
-#' @param info A data.table containing experimental information (e.g., monitor, genotype, etc.).
-#' @param divisions A list of time divisions for the analysis.
-#' @param num_days The number of days to consider for the analysis.
-#' @param pref A vector of preferences for generating specific plots (e.g., whether to generate concatenated plots).
 #' @param control A character string specifying the control.
+#' @param oneBatch A character string of the Batch folder to be analyzed.
 #' @param font A string variable determining the font style of the produced plots.
+#' @param pref A vector of preferences for generating specific plots (e.g., whether to generate concatenated plots).
 #' @export
 #'
 #' @return This function does not return a value but performs a series of steps to process the data,

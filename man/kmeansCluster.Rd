@@ -23,6 +23,8 @@ kmeansCluster(
 
 \item{y}{A string specifying the y-axis parameter of the cluster plot as written in 'all_batches_norm_summary.csv' (e.g., "norm_mean_Bout_length_L"). Default is NULL.}
 
+\item{sex}{A string specifying a Sex condition to subset the data by.}
+
 \item{geno}{A string specifying a Genotype condition to subset the data by.}
 
 \item{temp}{A string specifying a Temperature condition to subset the data by.}

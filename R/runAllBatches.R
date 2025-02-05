@@ -5,10 +5,6 @@
 #' It iterates through directories matching the batch pattern, executes relevant R files, and combines
 #' both normalized and general summary statistics from each batch into a final report.
 #'
-#' @param parent_dir The parent directory where all batch directories are located.
-#' @param info A data.table containing experimental information.
-#' @param divisions A list of time divisions for the analysis.
-#' @param num_days The number of days to consider for the analysis.
 #' @param control A character string specifying the control from one of the variables in the Main.r file.
 #' @param font A string variable determining the font style of the produced plots.
 #'
@@ -26,6 +22,7 @@
 #' @importFrom ggplot2 theme facet_grid aes margin mean_cl_boot vars scale_y_continuous element_rect ggplot geom_errorbar geom_point scale_fill_viridis_d ggtitle scale_x_discrete geom_text ggsave scale_color_manual scale_fill_manual labs stat_summary geom_violin ylim geom_smooth scale_shape_manual scale_color_viridis_c coord_cartesian annotate
 #' @importFrom ggprism theme_prism
 #' @importFrom gridExtra grid.arrange
+#' @import Hmisc
 #' @importFrom methods isClass setClass
 #' @importFrom plyr ddply
 #' @importFrom reshape2 melt

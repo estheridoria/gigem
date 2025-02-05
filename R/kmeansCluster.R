@@ -6,11 +6,12 @@
 #'
 #' @param x A string specifying the x-axis parameter of the cluster plot as written in 'all_batches_norm_summary.csv' (e.g., "norm_Sleep_Time_All"). Default is NULL.
 #' @param y A string specifying the y-axis parameter of the cluster plot as written in 'all_batches_norm_summary.csv' (e.g., "norm_mean_Bout_length_L"). Default is NULL.
-#' @param treat A string specifying a Treatment to subset the data by.
+#' @param sex A string specifying a Sex condition to subset the data by.
+#' @param geno A string specifying a Genotype condition to subset the data by.
 #' @param temp A string specifying a Temperature condition to subset the data by.
+#' @param treat A string specifying a Treatment to subset the data by.
 #' @param enviro A string specifying a Environment condition to subset the data by.
 #' @param Lights A string specifying a Light condition to subset the data by.
-#' @param geno A string specifying a Genotype condition to subset the data by.
 #' @param aPrioriConditions A vector of (partial spellings of the) conditions (e.g., c("L1", "L2", "S1", "S2", "CS")) in one of the experimental parameters.
 #' @param aPrioriParameter A string specifying the parameter of the aPrioriConditions.
 #' @param font A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")
@@ -29,8 +30,8 @@ kmeansCluster <- function(x = NULL, y = NULL, sex = NULL, geno = NULL,
                                  temp = NULL, treat = NULL, enviro = NULL,
                                  Lights = NULL, aPrioriConditions,
                                  aPrioriParameter, font = "plain") {
-  aPrioriConditions <- c("CS", "L1", "L2", "S1", "S2")
-  aPrioriParameter <- "Genotype"
+  # aPrioriConditions <- c("CS", "L1", "L2", "S1", "S2")
+  # aPrioriParameter <- "Genotype"
 
   # Read the normalized data from CSV file
   combined_data <- read.csv("all_batches_summary.csv")

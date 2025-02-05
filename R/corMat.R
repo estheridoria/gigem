@@ -2,11 +2,12 @@
 #'
 #' Computes the relative sleep changes between two Treatments and generates a correlation matrix plot with significance annotations.
 #'
-#' @param treat A string specifying a Treatment to subset the data by.
+#' @param sex A string specifying a Sex condition to subset the data by.
+#' @param geno A string specifying a Genotype condition to subset the data by.
 #' @param temp A string specifying a Temperature condition to subset the data by.
+#' @param treat A string specifying a Treatment to subset the data by.
 #' @param enviro A string specifying a Environment condition to subset the data by.
 #' @param Lights A string specifying a Light condition to subset the data by.
-#' @param geno A string specifying a Genotype condition to subset the data by.
 #' @param font A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")
 #'
 #' @details Two `ggplot` objects containing the correlation matrix plot with significance annotations for percentage of sleep lost and raw number of minutes lost.
@@ -16,7 +17,9 @@
 #' @return None. Plots are saved as PDF files, while p-values are saved as csv files.
 #'
 #' @export
-corMat <- function(temp = NULL, enviro = NULL, Lights = NULL, geno = NULL, font = "plain"){
+corMat <- function(sex = NULL, geno = NULL,
+                   temp = NULL, treat = NULL, enviro = NULL,
+                   Lights = NULL, font = "plain"){
   # Check if 'all_batches_summary.csv' exists in the current directory, and if not, stop execution.
   if (!file.exists("all_batches_summary.csv")) {
     stop("The file 'all_batches_summary.csv' is missing from the current directory.
@@ -34,15 +37,15 @@ corMat <- function(temp = NULL, enviro = NULL, Lights = NULL, geno = NULL, font 
 
   # subset by only selecting rows with condition(s) specified
   titlee <- c("")
-  # if(!is.null(treat)){
-  #   combined_data <- combined_data[combined_data$Treatment == treat,]
-  #
-  #   # warning if condition is invalid
-  #   if (nrow(combined_data) == 0) {
-  #     stop("The 'treat' specified is not included in the data within the 'Treatment' parameter")
-  #   }
-  #   titlee <- trimws(paste(titlee, treat))
-  # }
+  if(!is.null(treat)){
+    combined_data <- combined_data[combined_data$Treatment == treat,]
+
+    # warning if condition is invalid
+    if (nrow(combined_data) == 0) {
+      stop("The 'treat' specified is not included in the data within the 'Treatment' parameter")
+    }
+    titlee <- trimws(paste(titlee, treat))
+  }
   if(!is.null(temp)){
     combined_data <- combined_data[combined_data$Temperature == temp,]
     # warning if condition is invalid
@@ -75,7 +78,16 @@ corMat <- function(temp = NULL, enviro = NULL, Lights = NULL, geno = NULL, font 
     }
     titlee <- trimws(paste(titlee, geno))
   }
+  titlee <- c("")
+  if(!is.null(sex)){
+    combined_data <- combined_data[combined_data$Sex == sex,]
 
+    # warning if condition is invalid
+    if (nrow(combined_data) == 0) {
+      stop("The 'sex' specified is not included in the data within the 'Sex' parameter")
+    }
+    titlee <- trimws(paste(titlee, sex))
+  }
   # Summarize sleep data by temp, Sex, Treatment, and Genotype, calculating means for sleep-related variables.
   meanData <- dplyr::summarise(
     dplyr::group_by(

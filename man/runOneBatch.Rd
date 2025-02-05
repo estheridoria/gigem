@@ -9,15 +9,11 @@ runOneBatch(control, oneBatch, font = "plain", pref = NULL)
 \arguments{
 \item{control}{A character string specifying the control.}
 
+\item{oneBatch}{A character string of the Batch folder to be analyzed.}
+
 \item{font}{A string variable determining the font style of the produced plots.}
 
 \item{pref}{A vector of preferences for generating specific plots (e.g., whether to generate concatenated plots).}
-
-\item{info}{A data.table containing experimental information (e.g., monitor, genotype, etc.).}
-
-\item{divisions}{A list of time divisions for the analysis.}
-
-\item{num_days}{The number of days to consider for the analysis.}
 }
 \value{
 This function does not return a value but performs a series of steps to process the data,

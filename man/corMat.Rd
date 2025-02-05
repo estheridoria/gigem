@@ -4,20 +4,30 @@
 \alias{corMat}
 \title{Correlation Matrix for Sleep Data (Exported)}
 \usage{
-corMat(temp = NULL, enviro = NULL, Lights = NULL, geno = NULL, font = "plain")
+corMat(
+  sex = NULL,
+  geno = NULL,
+  temp = NULL,
+  treat = NULL,
+  enviro = NULL,
+  Lights = NULL,
+  font = "plain"
+)
 }
 \arguments{
+\item{sex}{A string specifying a Sex condition to subset the data by.}
+
+\item{geno}{A string specifying a Genotype condition to subset the data by.}
+
 \item{temp}{A string specifying a Temperature condition to subset the data by.}
+
+\item{treat}{A string specifying a Treatment to subset the data by.}
 
 \item{enviro}{A string specifying a Environment condition to subset the data by.}
 
 \item{Lights}{A string specifying a Light condition to subset the data by.}
 
-\item{geno}{A string specifying a Genotype condition to subset the data by.}
-
 \item{font}{A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")}
-
-\item{treat}{A string specifying a Treatment to subset the data by.}
 }
 \value{
 None. Plots are saved as PDF files, while p-values are saved as csv files.
