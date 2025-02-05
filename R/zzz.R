@@ -8,10 +8,6 @@
 .onLoad <- function(libname, pkgname) {
 
   if (!methods::isClass("ExperimentData")) {
-  # Define the ExperimentData class to store information
-    if (!methods::isClass("data.table")) {
-      methods::setClass("data.table", contains = "data.frame")
-    }
   methods::setClass(
     Class = "ExperimentData",
     slots = list(

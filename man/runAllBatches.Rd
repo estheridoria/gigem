@@ -24,7 +24,7 @@ both normalized and general summary statistics from each batch into a final repo
 \details{
 This function performs the following steps for each batch directory:
 \enumerate{
-\item It iterates over each batch directory matching the batch pattern "Batch\link{0-9}+_\link{0-9}+".
+\item It iterates over each batch directory matching the batch pattern "Batch...".
 \item For each batch directory, it sources all R files and runs the analysis via the \code{runOneBatch} function.
 \item It concatenates the normalized and general summary statistics for each batch into separate CSV files.
 \item The final CSV files, \code{all_batches_norm_summary.csv} and \code{all_batches_summary.csv},

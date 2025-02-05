@@ -19,7 +19,7 @@
 #' - The combined figure is saved as a PDF file, with the filename reflecting the combination of `Light`,
 #'   `Environment`, and `Genotype`.
 #'
-#' The function dynamically adjusts plot widths based on the number of unique possibilities of divisions[1].
+#' The function dynamically adjusts plot widths based on the number of unique possibilities of the first divisions entry (a parameter).
 #'
 #' @return None. Plots are saved as PDF files.
 #' @keywords internal

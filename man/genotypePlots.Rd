@@ -35,6 +35,6 @@ using a helper function, \code{create_sleeptime_plot}.
 \code{Environment}, and \code{Genotype}.
 }
 
-The function dynamically adjusts plot widths based on the number of unique possibilities of divisions\link{1}.
+The function dynamically adjusts plot widths based on the number of unique possibilities of the first divisions entry (a parameter).
 }
 \keyword{internal}

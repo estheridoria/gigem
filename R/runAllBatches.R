@@ -21,20 +21,23 @@
 #' @importFrom ggetho ggetho stat_bar_tile_etho scale_x_days stat_ld_annotations stat_pop_etho
 #' @importFrom ggplot2 theme facet_grid aes margin mean_cl_boot vars scale_y_continuous element_rect ggplot geom_errorbar geom_point scale_fill_viridis_d ggtitle scale_x_discrete geom_text ggsave scale_color_manual scale_fill_manual labs stat_summary geom_violin ylim geom_smooth scale_shape_manual scale_color_viridis_c coord_cartesian annotate
 #' @importFrom ggprism theme_prism
+#' @importFrom grDevices dev.off pdf
 #' @importFrom gridExtra grid.arrange
 #' @import Hmisc
-#' @importFrom methods isClass setClass
+#' @importFrom magrittr `%>%`
+#' @importFrom methods isClass setClass new
 #' @importFrom plyr ddply
 #' @importFrom reshape2 melt
 #' @importFrom rlang "!!" sym is_string
 #' @importFrom scales percent alpha
 #' @importFrom sleepr curate_dead_animals bout_analysis
-#' @importFrom stats kmeans
+#' @importFrom stats kmeans cor dist p.adjust qt sd t.test
+#' @importFrom utils menu read.csv write.csv
 #' @export
 #'
 #' @details
 #' This function performs the following steps for each batch directory:
-#' 1. It iterates over each batch directory matching the batch pattern "Batch[0-9]+_[0-9]+".
+#' 1. It iterates over each batch directory matching the batch pattern "Batch...".
 #' 2. For each batch directory, it sources all R files and runs the analysis via the `runOneBatch` function.
 #' 3. It concatenates the normalized and general summary statistics for each batch into separate CSV files.
 #' 4. The final CSV files, \code{all_batches_norm_summary.csv} and \code{all_batches_summary.csv},

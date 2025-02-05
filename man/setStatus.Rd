@@ -28,7 +28,9 @@ for specific regions and monitors before conducting further analyses.
 }
 \examples{
 # Example usage
-info <- data.table::data.table(region_id = c(1, 2, 3), monitor = c("11", "12", "13"), status = c("OK", "OK", "OK"))
+info <- data.table::data.table(region_id = c(1, 2, 3),
+                               monitor = c("11", "12", "13"),
+                               status = c("OK", "OK", "OK"))
 updated_info <- setStatus(info, regionID_targ = 1, monitor_targ = "13")
 print(updated_info)
 }
