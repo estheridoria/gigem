@@ -6,6 +6,8 @@
 #'
 #' @param x A string specifying the x-axis parameter of the cluster plot as written in 'all_batches_norm_summary.csv' (e.g., "norm_Sleep_Time_All"). Default is NULL.
 #' @param y A string specifying the y-axis parameter of the cluster plot as written in 'all_batches_norm_summary.csv' (e.g., "norm_mean_Bout_length_L"). Default is NULL.
+#' @param condition1 A string specifying a condition within one of the experimental parameters. The difference is calculated as: `condition1`-`condition2`
+#' @param condition2 A string specifying a condition within the same experimental parameter as `condition1` that is associated with the difference seen in sleep.
 #' @param sex A string specifying a Sex condition to subset the data by.
 #' @param geno A string specifying a Genotype condition to subset the data by.
 #' @param temp A string specifying a Temperature condition to subset the data by.
@@ -13,7 +15,7 @@
 #' @param enviro A string specifying a Environment condition to subset the data by.
 #' @param Lights A string specifying a Light condition to subset the data by.
 #' @param aPrioriConditions A vector of (partial spellings of the) conditions (e.g., c("L1", "L2", "S1", "S2", "CS")) in one of the experimental parameters.
-#' @param aPrioriParameter A string specifying the parameter of the aPrioriConditions.
+#' @param aPrioriVariable A string specifying the parameter of the aPrioriConditions.
 #' @param font A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")
 #'
 #' @details
@@ -26,22 +28,22 @@
 #'
 #' @return None. Saves the plot as a PDF file and outputs a CSV file with cluster assignments.
 #' @export
-kmeansCluster <- function(x = NULL, y = NULL, sex = NULL, geno = NULL,
+kmeansCluster <- function(x = NULL, y = NULL, condition1 = NULL, condition2 = NULL, sex = NULL, geno = NULL,
                                  temp = NULL, treat = NULL, enviro = NULL,
                                  Lights = NULL, aPrioriConditions,
-                                 aPrioriParameter, font = "plain") {
+                                 aPrioriVariable, font = "plain") {
   # aPrioriConditions <- c("CS", "L1", "L2", "S1", "S2")
-  # aPrioriParameter <- "Genotype"
+  # aPrioriVariable <- "Genotype"
 
   # Read the normalized data from CSV file
-  combined_data <- read.csv("all_batches_summary.csv")
+  combined_data <- read.csv("all_batches_stat.csv")
   combined_data$Light <- gsub("\"", "", combined_data$Light)
 
   data.table::setDT(combined_data)
 
   # Check if 'all_batches_summary.csv' exists in the current directory, and if not, stop execution.
-  if (!file.exists("all_batches_summary.csv")) {
-    stop("'all_batches_norm_summary.csv' is not found in the current directory. Please run 'runAllBatches' before attempting to run 'kmeansCluster'. If you have already run it, ")
+  if (!file.exists("all_batches_stat.csv")) {
+    stop("'all_batches_stat.csv' is not found in the current directory. Please run 'runAllBatches' before attempting to run 'kmeansCluster'. If you have already run it, ")
   }
 
   # Validate that y is valid.
@@ -54,8 +56,8 @@ kmeansCluster <- function(x = NULL, y = NULL, sex = NULL, geno = NULL,
     stop("'x' is invalid")
   }
 
-  if (missing(aPrioriParameter) || !(aPrioriParameter %in% c( "Sex", "Genotype", "Temperature", "Treatment", "Environment", "Light"))) {
-    stop("'aPrioriParameter' is missing or invalid")
+  if (missing(aPrioriVariable) || !(aPrioriVariable %in% c( "Sex", "Genotype", "Temperature", "Treatment", "Environment", "Light"))) {
+    stop("'aPrioriVariable' is missing or invalid")
   }
   if (!(font %in% c("plain", "bold", "italic","bold.italic"))){
     stop("'font' must be 'plain', 'bold', 'italic', or 'bold.italic'")}
@@ -117,7 +119,7 @@ kmeansCluster <- function(x = NULL, y = NULL, sex = NULL, geno = NULL,
   combined_data[, aPrioriConditions := as.character(NA)]
 
   # Dynamically select the aPriori column
-  group_Column <- dplyr::pull(combined_data, dplyr::all_of(aPrioriParameter))
+  group_Column <- dplyr::pull(combined_data, dplyr::all_of(aPrioriVariable))
   # Dynamically add the aprioriCondition grouping column to the dataset
   for (group in aPrioriConditions) {
     combined_data[is.na(aPrioriConditions) & grepl(group, group_Column), aPrioriConditions := group]
@@ -138,38 +140,64 @@ kmeansCluster <- function(x = NULL, y = NULL, sex = NULL, geno = NULL,
   )
 
   # Define sleep time variables.
-  traitlist <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D",
-                 "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L",
-                 "mean_Bout_Length_D")
-  if (!is.null(y) && !is.null(x)){
+  traitlist <- c("Sleep_Time_All_mean", "Sleep_Time_L_mean", "Sleep_Time_D_mean",
+                 "n_Bouts_L_mean", "n_Bouts_D_mean", "mean_Bout_Length_L_mean",
+                 "mean_Bout_Length_D_mean")
+  if (!is.null(y) && !is.null(x)){ ### ??? what does this supposed to do???
   colx <- grep(x, traitlist)
   coly <- grep(y, traitlist)
   }
 
-  if("Grp" %in% meanData$Treatment && "Iso" %in% meanData$Treatment){
-    # Define trait variables to compare.
-    gtrait <- meanData[meanData$Treatment == "Grp", traitlist]
-    itrait <- meanData[meanData$Treatment == "Iso", traitlist]
-
-    df <- itrait - gtrait
-
+  # if("Grp" %in% meanData$Treatment && "Iso" %in% meanData$Treatment){
+  #   # Define trait variables to compare.
+  #   gtrait <- meanData[meanData$Treatment == "Grp", traitlist]
+  #   itrait <- meanData[meanData$Treatment == "Iso", traitlist]
+  #
+  #   df <- itrait - gtrait
+  #
+  #   # Rename the columns for better clarity.
+  #   colnames(df) <- c("Sleepchange_All", "Sleepchange_L", "Sleepchange_D", "nBoutschange_L",
+  #                     "nBoutschange_D", "Boutlenchange_L", "Boutlenchange_D")
+  #
+  #   meta <-  meanData[meanData$Treatment == "Iso", c("Sex", "Genotype", "Temperature",
+  #              "Treatment", "Environment","Light", "aPrioriConditions")]
+  #   traits <- c("Sleepchange_All", "Sleepchange_L", "Sleepchange_D", "nBoutschange_L",
+  #               "nBoutschange_D", "Boutlenchange_L", "Boutlenchange_D")
+  if(!is.null(condition1) && !is.null(condition2)){
+    condition_cols <- meanData[, c("Sex","Genotype","Temperature","Treatment",
+                                  "Environment","Light")]    c1_col <- names(condition_cols)[
+      sapply(condition_cols, function(column) any(grepl(condition1, column)))
+    ]
+    c2_col <- names(condition_cols)[
+      sapply(condition_cols, function(column) any(grepl(condition2, column)))
+    ]
+    if(length(c1_col) == 0 | length(c2_col) == 0){
+      stop("'condition1' and/or 'condition2' is not found inside the data. Please check the spelling. Also check that one of the conditions was not removed via the parameter subsetting option in this function.")
+    }
+    if(c1_col != c2_col){
+      stop("'condition1' and condition2' are not within the same parameter.")
+    }
+    c1trait <- meanData[meanData[[c1_col]] == condition1, traitlist]
+    c2trait <- meanData[meanData[[c2_col]] == condition2, traitlist]
+    if(length(c1trait) != length(c2trait)){
+      stop("There is an uneven number of 'condition1' and 'condition2' populations within the current subset of parameters. Please ensure there are no unpaired populations/monitors for 'condition1' and 'condition2'.")
+    }
+    df <- (c1trait-c2trait)
     # Rename the columns for better clarity.
-    colnames(df) <- c("Sleepchange_All", "Sleepchange_L", "Sleepchange_D", "nBoutschange_L",
+    colnames(df) <- traits <- c("Sleepchange_All", "Sleepchange_L", "Sleepchange_D", "nBoutschange_L",
                       "nBoutschange_D", "Boutlenchange_L", "Boutlenchange_D")
+    titlee <- trimws(paste0(titlee, " ", condition1, "-", condition2))
+    meta <-  meanData[meanData[[c1_col]] == condition1, c("Sex", "Genotype", "Temperature",
+              "Treatment", "Environment","Light", "aPrioriConditions")]
 
-    meta <-  meanData[meanData$Treatment == "Iso", c("Sex", "Genotype", "Temperature",
-               "Treatment", "Environment","Light", "aPrioriConditions")]
-    traits <- c("Sleepchange_All", "Sleepchange_L", "Sleepchange_D", "nBoutschange_L",
-                "nBoutschange_D", "Boutlenchange_L", "Boutlenchange_D")
   } else {
     df <- meanData[, c(traitlist, c("Sex", "Genotype", "Temperature",
-                                      "Treatment", "Environment","Light", "Batch",
+                                      "Treatment", "Environment","Light",
                                       "aPrioriConditions"))]
     # Rename the columns for better clarity.
-    colnames(df) <- c("Sleeptime_All", "Sleeptime_L", "Sleeptime_D", "NBouts_L",
+    colnames(df) <- traits <- c("Sleeptime_All", "Sleeptime_L", "Sleeptime_D", "NBouts_L",
                       "NBouts_D", "Boutlen_L", "Boutlen_D")
-    traits <- c("Sleeptime_All", "Sleeptime_L", "Sleeptime_D", "NBouts_L",
-                "NBouts_D", "Boutlen_L", "Boutlen_D")
+    meta <-  meanData[,c("Sex", "Genotype", "Temperature","Treatment", "Environment", "Light", "aPrioriConditions")]
   }
 
   # Function to compute within-cluster sum of squares
@@ -189,8 +217,8 @@ kmeansCluster <- function(x = NULL, y = NULL, sex = NULL, geno = NULL,
 
 
   # Creating a correlation plot colored by clusters and aPrioriConditions
-  clustered_plot<- function(data,font, legend = FALSE){
-  p<- ggplot2::ggplot(data, ggplot2::aes(x = data[,1], y = data[,2])) +
+  clustered_plot<- function(data, font, legend = FALSE){
+  p<- ggplot2::ggplot(data, ggplot2::aes(x = data[[1]], y = data[[2]])) +
     ggplot2::geom_point(size = 1, stroke = .5, alpha = 2/3,
                         ggplot2::aes(shape = aPrioriConditions,
                                      color = cluster,
@@ -249,6 +277,7 @@ kmeansCluster <- function(x = NULL, y = NULL, sex = NULL, geno = NULL,
     # Add cluster assignment to the original data for plotting
     data$cluster <- as.factor(km_res$cluster)
     data$aPrioriConditions <- meta$aPrioriConditions
+    data$aPrioriVariable <- meta[[aPrioriVariable]]
 
     myplot <- clustered_plot(data, font, TRUE)
     ggplot2::ggsave(paste0("kmeanscluster", titlee, y, x, ".pdf"), myplot, height = 5, width = 5)
@@ -256,7 +285,8 @@ kmeansCluster <- function(x = NULL, y = NULL, sex = NULL, geno = NULL,
     # Write the file which labels the cluster each Genotype is in
     data.table::fwrite(data, paste0("clusters_", titlee, y, "~", x, ".csv"))
 
-    } else {
+    }
+  else {
   for (i in seq_along(traits)) {
     for (j in 1:i) {
       if (i == j) {
@@ -292,6 +322,7 @@ kmeansCluster <- function(x = NULL, y = NULL, sex = NULL, geno = NULL,
   # Add cluster assignment to the original data for plotting
   data$cluster <- as.factor(km_res$cluster)
   data$aPrioriConditions <- meta$aPrioriConditions
+  data$aPrioriVariable <- meta[[aPrioriVariable]]
 
   #make all the plots
   plots[[paste0("plot_", i, "_", j)]] <- clustered_plot(data, font)
