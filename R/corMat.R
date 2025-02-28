@@ -2,6 +2,8 @@
 #'
 #' Computes the relative sleep changes between two Treatments and generates a correlation matrix plot with significance annotations.
 #'
+#' @param condition1 A string specifying a condition within one of the experimental parameters. The difference is calculated as: `condition1`-`condition2`
+#' @param condition2 A string specifying a condition within the same experimental parameter as `condition1` that is associated with the difference seen in sleep.
 #' @param sex A string specifying a Sex condition to subset the data by.
 #' @param geno A string specifying a Genotype condition to subset the data by.
 #' @param temp A string specifying a Temperature condition to subset the data by.
@@ -17,12 +19,12 @@
 #' @return None. Plots are saved as PDF files, while p-values are saved as csv files.
 #'
 #' @export
-corMat <- function(sex = NULL, geno = NULL,
+corMat <- function(condition1 = NULL, condition2 = NULL, sex = NULL, geno = NULL,
                    temp = NULL, treat = NULL, enviro = NULL,
                    Lights = NULL, font = "plain"){
-  # Check if 'all_batches_summary.csv' exists in the current directory, and if not, stop execution.
-  if (!file.exists("all_batches_summary.csv")) {
-    stop("The file 'all_batches_summary.csv' is missing from the current directory.
+  # Check if 'all_batches_stat.csv' exists in the current directory, and if not, stop execution.
+  if (!file.exists("all_batches_stat.csv")) {
+    stop("The file 'all_batches_stat.csv' is missing from the current directory.
          Please run 'RunAllBatches' before attempting to run 'CorMat'")
   }
 
@@ -31,7 +33,7 @@ corMat <- function(sex = NULL, geno = NULL,
   }
 
   # Read in the combined data from the CSV file.
-  combined_data <- read.csv("all_batches_summary.csv")
+  combined_data <- read.csv("all_batches_stat.csv")
   combined_data$Light <- gsub("\"", "", combined_data$Light)
   data.table::setDT(combined_data)
 
@@ -78,7 +80,6 @@ corMat <- function(sex = NULL, geno = NULL,
     }
     titlee <- trimws(paste(titlee, geno))
   }
-  titlee <- c("")
   if(!is.null(sex)){
     combined_data <- combined_data[combined_data$Sex == sex,]
 
@@ -103,19 +104,40 @@ corMat <- function(sex = NULL, geno = NULL,
   )
 
   # Define sleep time variables.
-  traitlist <- c("mean_Sleep_Time_All", "mean_Sleep_Time_L", "mean_Sleep_Time_D",
-                 "mean_n_Bouts_L", "mean_n_Bouts_D", "mean_mean_Bout_Length_L",
-                 "mean_mean_Bout_Length_D")
+  traitlist <- c("Sleep_Time_All_mean", "Sleep_Time_L_mean", "Sleep_Time_D_mean",
+                 "n_Bouts_L_mean", "n_Bouts_D_mean", "mean_Bout_Length_L_mean",
+                 "mean_Bout_Length_D_mean")
 
-  if("Grp" %in% meanData$Treatment && "Iso" %in% meanData$Treatment){
-   # Define additional trait variables to compare.
-    gtrait <- meanData[meanData$Treatment == "Grp", traitlist]
-    itrait <- meanData[meanData$Treatment == "Iso", traitlist]
-    traitchange <- (itrait - gtrait)
-    df <- cbind(traitchange)
+  # if("Grp" %in% meanData$Treatment && "Iso" %in% meanData$Treatment){
+  #  # Define additional trait variables to compare.
+  #   gtrait <- meanData[meanData$Treatment == "Grp", traitlist]
+  #   itrait <- meanData[meanData$Treatment == "Iso", traitlist]
+  #   traitchange <- (itrait - gtrait)
+  if(!is.null(condition1) && !is.null(condition2)){
+    condition_cols <- meanData[, c("Sex","Genotype","Temperature","Treatment",
+                                  "Environment","Light")]    c1_col <- names(condition_cols)[
+      sapply(condition_cols, function(column) any(grepl(condition1, column)))
+    ]
+    c2_col <- names(condition_cols)[
+      sapply(condition_cols, function(column) any(grepl(condition2, column)))
+    ]
+    if(length(c1_col) == 0 | length(c2_col) == 0){
+      stop("'condition1' and/or 'condition2' is not found inside the data. Please check the spelling. Also check that one of the conditions was not removed via the parameter subsetting option in this function.")
+    }
+  if(c1_col != c2_col){
+    stop("'condition1' and condition2' are not within the same parameter.")
+  }
+    c1trait <- meanData[meanData[[c1_col]] == condition1, traitlist]
+    c2trait <- meanData[meanData[[c2_col]] == condition2, traitlist]
+    if(length(c1trait) != length(c2trait)){
+      stop("There is an uneven number of 'condition1' and 'condition2' populations within the current subset of parameters. Please ensure there are no unpaired populations/monitors for 'condition1' and 'condition2'.")
+    }
+    df <- (c1trait-c2trait)
+
     # Rename the columns for better clarity.
     colnames(df) <- c("Sleepchange_All", "Sleepchange_L", "Sleepchange_D", "nBoutschange_L",
                       "nBoutschange_D", "Boutlenchange_L", "Boutlenchange_D")
+    titlee <- trimws(paste0(titlee, " ", condition1, "-", condition2))
   } else {
     df <- meanData[, c(traitlist)]
     # Rename the columns for better clarity.

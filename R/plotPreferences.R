@@ -13,26 +13,26 @@
 #'
 plotPreferences <- function(run = "all"){
   # activityAndSleep.R #17-34 & #40-57
-  r1 <- menu(c("Yes", "No"), title="Do you want to generate each monitor's sleep and activity profile?")
+  r1 <- menu(c("Yes", "No"), title="Do you want to generate each monitor's 'Activity and Sleep Actograms'?")
 
   # manualDeadRemoval.R #42
-  r2 <- menu(c("Yes", "No"), title="Do you want to generate population plots? (i.e. Each unique condition)")
+  r2 <- menu(c("Yes", "No"), title="Do you want to generate 'Individual Sleep Profiles'? (i.e. Each unique condition)")
 
   # manualDeadRemoval.R #68
-  r3 <- menu(c("Yes", "No"), title="Do you want to generate population plot overlays? (i.e. Each condition overlayed according to your first entry in 'Divisions')")
+  r3 <- menu(c("Yes", "No"), title="Do you want to generate 'Overlaid Sleep Profiles'? (i.e. Each condition overlayed according to your first entry in 'Divisions')")
 
   # cleanSummary.R #45
-  r4 <- menu(c("Yes", "No"), title="Do you want to generate sleep bout plots grouped by batch?")
+  r4 <- menu(c("Yes", "No"), title="Do you want to generate 'Overlaid Sleep Bout Profiles'?")
 
   # cleanSummary.R #92
-  r5 <- menu(c("Yes", "No"), title="Do you want to generate quantitative sleep plots grouped by batch?")
+  r5 <- menu(c("Yes", "No"), title="Do you want to generate 'Quantifications of Sleep Traits'?")
 
   # runOneBatch.R #53 (run genotypePlots())
-  r6 <- menu(c("Yes", "No"), title="Do you want to generate all plots grouped by genotype, within batches?")
+  r6 <- menu(c("Yes", "No"), title="Do you want to generate 'Combined Plots (Within Batches)'?(i.e. All plots grouped by unique combination of variable conditions)")
 
   if (run == "all"){
   # runAllBatches.R #117 (run concatGenotypePlots())
-  r7 <- menu(c("Yes", "No"), title="Do you want to generate all plots grouped by genotype, summarized accross batches?")
+  r7 <- menu(c("Yes", "No"), title="Do you want to generate 'Combined Plots (Across Batches)'? (i.e. All plots grouped by unique combination of variable conditions)")
   }
   if (run =="one"){
   results <- rbind(r1, r2, r3, r4, r5, r6, "2")

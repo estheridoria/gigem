@@ -23,7 +23,7 @@
 #' @keywords internal
 
 concatGenotypePlots <- function(combined_sleepdata, combined_sleepmeta, summary_dt_final, font) {
-  summary_dt_final <- summary_dt_final[, Light := gsub("\"", "", Light)]
+  data.table::set(summary_dt_final, j = "Light", value = gsub("\"", "", summary_dt_final$Light))
 
   #link metadata and behavr data
   data.table::setkey(combined_sleepdata, id)
@@ -31,7 +31,10 @@ concatGenotypePlots <- function(combined_sleepdata, combined_sleepmeta, summary_
   dt_curated_final <- behavr::behavr(combined_sleepdata, combined_sleepmeta)
 
   ExperimentData <- new("ExperimentData",
-                        Batch = "MultiBatch")
+                        Batch = "MultiBatch",
+                        monitorlist = list(),
+                        genotypelist = list(),
+                        loadinginfo = data.table::data.table())
 
   genotypePlots(ExperimentData, dt_curated_final, summary_dt_final, font)
 }

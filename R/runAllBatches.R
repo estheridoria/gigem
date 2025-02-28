@@ -128,6 +128,7 @@ each_dir <- list.dirs(original_wd, full.names = FALSE, recursive = FALSE)
   # Concatenate all summaries and combine them into one
   # save in this parent (current) directory.
 
+# norm summary concatenate
   all_tables <- list()
 
   # Iterate over each batch directory and read the summary files
@@ -139,9 +140,10 @@ each_dir <- list.dirs(original_wd, full.names = FALSE, recursive = FALSE)
   combined_data <- do.call(rbind, all_tables[1:9])
 
   # Save the combined data frame to a CSV file in the parent directory
-  output_file <- file.path(parent_dir, "all_batches_norm_summary.csv")
+  output_file <- file.path(original_wd, "all_batches_norm_summary.csv")
   data.table::fwrite(combined_data, output_file, row.names = FALSE)
 
+# regular summary concatenate
   all_tables <- list()
 
   # Iterate over each batch directory and read the summary files
@@ -154,9 +156,26 @@ each_dir <- list.dirs(original_wd, full.names = FALSE, recursive = FALSE)
   data.table::setDT(combined_data)
 
   # Save the combined data frame to a CSV file in the parent directory
-  output_file <- file.path(parent_dir, "all_batches_summary.csv")
+  output_file <- file.path(original_wd, "all_batches_summary.csv")
   data.table::fwrite(combined_data, output_file, row.names = FALSE)
 
+# stat concatenate
+  all_tables <- list()
+
+  # Iterate over each batch directory and read the summary files
+  for (batch_dir in batch_dirs) {
+    all_tables <- concatenate(batch_dir, all_tables, "^stat_Batch[0-9_a-zA-Z]*\\.csv$")
+  }
+
+  # Concatenate all data frames into one large data frame
+  combined_data <- do.call(rbind, all_tables)
+  data.table::setDT(combined_data)
+
+  # Save the combined data frame to a CSV file in the parent directory
+  output_file <- file.path(original_wd, "all_batches_stat.csv")
+  data.table::fwrite(combined_data, output_file, row.names = FALSE)
+
+# concatenated sleepdata & metadata --> genotypePlots
 if (pref[7] == 1){
   #concatenate all behavr data tables
   all_tables <- list()
@@ -171,7 +190,7 @@ if (pref[7] == 1){
   data.table::setDT(combined_sleepdata)
 
   # Save the combined data frame to a CSV file in the parent directory
-  output_file <- file.path(parent_dir, "all_sleepdata.csv")
+  output_file <- file.path(original_wd, "all_sleepdata.csv")
   data.table::fwrite(combined_sleepdata, output_file, row.names = FALSE)
 
 
@@ -188,7 +207,7 @@ if (pref[7] == 1){
   data.table::setDT(combined_sleepmeta)
 
   # Save the combined data frame to a CSV file in the parent directory
-  output_file <- file.path(parent_dir, "all_sleepmeta.csv")
+  output_file <- file.path(original_wd, "all_sleepmeta.csv")
   data.table::fwrite(combined_sleepmeta, output_file, row.names = FALSE)
 
   concatGenotypePlots(combined_sleepdata, combined_sleepmeta, combined_data, font)
