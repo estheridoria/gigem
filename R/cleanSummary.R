@@ -40,7 +40,7 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
 
   if(pref[4] == 1){
   # Plot bout duration by time of day
-  pdf(paste0(ExperimentData@Batch, '_population_sleep_bout_wrap', '.pdf'),
+  pdf(paste0(ExperimentData@Batch, '_Overlaid_Sleep_Bout_Profiles.pdf'),
       width = 5*length(unique(info[[divisions[3]]]))+2,
       height = 3*length(unique(info[[divisions[2]]]))+2)
     suppressWarnings(print(
@@ -88,8 +88,8 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
   summary_dt_final <- merge(summary_dt_final, summary_bout_L, by = "id")
   summary_dt_final <- merge(summary_dt_final, summary_bout_D, by = "id")
 
-  LightCol <- summary_dt_final[,Light]
-  summary_dt_final[, Light := paste0('"', Light, '"')]
+  # LightCol <- summary_dt_final[,Light]
+  # summary_dt_final[, Light := paste0('"', Light, '"')]
 
   summary_dt_final<- data.table::data.table(summary_dt_final[,1:13], Batch = ExperimentData@Batch, summary_dt_final[,14:ncol(summary_dt_final)])
 
@@ -99,8 +99,7 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
     paste0("summary_", ExperimentData@Batch, ".csv"),
     quote = TRUE
   )
-  summary_dt_final[, Light := LightCol]
-
+  # summary_dt_final[, Light := LightCol]
   if(pref[5] ==1){
   # Helper function to create sleep plots for specified metrics
   create_sleeptime_plot <- function(plot_data, yParam,Yname, divisions, limits, geom) {

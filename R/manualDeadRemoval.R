@@ -51,8 +51,11 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref, fon
   if(pref[2]==1){
   # Generate population plots
   create_population_plot <- function(filename, plot_data, divisions, numb_days = num_days, wrap_time = NULL) {
-    pdf(filename, width = 5*numb_days+2,
-        height = 3*prod(sapply(divisions[1:3], function(col) length(unique(info[[col]]))))+2)
+    pdf(filename,
+        # width = 5*numb_days+2,
+        # height = 3*prod(sapply(divisions[1:3], function(col) length(unique(info[[col]]))))+2)
+        width = 5*numb_days*length(unique(info[[divisions[3]]]))+2,
+        height = 3*length(unique(info[[divisions[2]]]))*length(unique(info[[divisions[1]]]))+2)
     pop_sleep_plot <- ggetho::ggetho(plot_data, ggplot2::aes(y = asleep, colour = .data[[divisions[1]]]), time_wrap = wrap_time) +
       ggetho::stat_pop_etho() +
       ggetho::stat_ld_annotations() +
@@ -60,9 +63,12 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref, fon
       ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
 
       ggprism::theme_prism(base_fontface = font) +
+      # ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[1]),
+      #                                          !!rlang::sym(divisions[2]),
+      #                                          !!rlang::sym(divisions[3])))+
       ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[1]),
-                                               !!rlang::sym(divisions[2]),
-                                               !!rlang::sym(divisions[3])))+
+                                               !!rlang::sym(divisions[2])),
+                          cols = ggplot2::vars(!!rlang::sym(divisions[3]))) + #added
       ggplot2::labs(y = "% Flies Sleeping") +
       ggplot2::scale_y_continuous(limits = c(0,1), labels = scales::percent) +
       ggplot2::theme(axis.title.x = ggplot2::element_text(size = 20),
@@ -76,16 +82,17 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref, fon
   }
 
   suppressWarnings(
-  create_population_plot(paste0(ExperimentData@Batch, '_population_sleep.pdf'), dt_curated_final, divisions))
+  create_population_plot(paste0(ExperimentData@Batch, '_Individual_Sleep_Profiles.pdf'), dt_curated_final, divisions))
   suppressWarnings(
-  create_population_plot(paste0(ExperimentData@Batch, '_population_sleep_wrap.pdf'), dt_curated_final, divisions, numb_days = 1, wrap_time = behavr::hours(24)))
+  create_population_plot(paste0(ExperimentData@Batch, '_Individual_Sleep_Profiles_Wrap.pdf'), dt_curated_final, divisions, numb_days = 1, wrap_time = behavr::hours(24)))
 
 }
 
   if(pref[3]==1){
   # Generate overlay plots
   create_overlay_plot <- function(filename, plot_data, divisions, numb_days = num_days, wrap_time = NULL) {
-    pdf(filename,width = 5*numb_days*length(unique(info[[divisions[3]]]))+2,
+    pdf(filename,
+        width = 5*numb_days*length(unique(info[[divisions[3]]]))+2,
         height = 3*length(unique(info[[divisions[2]]]))+2)
     pop_sleep_plot <- ggetho::ggetho(plot_data, ggplot2::aes(y = asleep, colour = .data[[divisions[1]]]), time_wrap = wrap_time) +
       ggetho::stat_pop_etho() +
@@ -107,9 +114,9 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref, fon
     dev.off()
   }
   suppressWarnings(
-  create_overlay_plot(paste0(ExperimentData@Batch, '_sleep_overlay.pdf'), dt_curated_final, divisions, numb_days = num_days))
+  create_overlay_plot(paste0(ExperimentData@Batch, '_Overlaid_Sleep_Profile.pdf'), dt_curated_final, divisions, numb_days = num_days))
   suppressWarnings(
-  create_overlay_plot(paste0(ExperimentData@Batch, '_sleep_wrap_overlay.pdf'), dt_curated_final, divisions, numb_days = 1, wrap_time = behavr::hours(24)))
+  create_overlay_plot(paste0(ExperimentData@Batch, '_Overlaid_Sleep_Profile_Wrap.pdf'), dt_curated_final, divisions, numb_days = 1, wrap_time = behavr::hours(24)))
 
 }
 

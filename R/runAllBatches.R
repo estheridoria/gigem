@@ -1,4 +1,4 @@
-#' Run All Batches Analysis
+#' Run All Batches' Analyses (Export)
 #'
 #' This function processes all batch directories by sourcing the necessary R files, running
 #' the analysis for each batch, and combining the summary results into a single CSV file for all batches.
@@ -6,6 +6,7 @@
 #' both normalized and general summary statistics from each batch into a final report.
 #'
 #' @param control A character string specifying the control from one of the variables in the Main.r file.
+#' @param num_days A numerical value specifying the number of days to be used in analysis.
 #' @param font A string variable determining the font style of the produced plots.
 #'
 #' @return This function does not return a value, but generates and saves two CSV files:
@@ -42,8 +43,19 @@
 #' 3. It concatenates the normalized and general summary statistics for each batch into separate CSV files.
 #' 4. The final CSV files, \code{all_batches_norm_summary.csv} and \code{all_batches_summary.csv},
 #'    are saved in the parent directory, containing combined results for all batches.
-runAllBatches <- function(control, font = "plain") {
+runAllBatches <- function(control, num_days, font = "plain") {
   # Warnings
+  #divisions warnings/setting
+  if(missing(divisions)){
+    print("Please select the fascetting divisions for each plot type from the following parameters: 'Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment', or 'Light'.")
+    d1 <- readline(prompt = "Enter the parameter for the Sleep plots, overlay and color: ")
+    d2 <- readline(prompt = "Enter the parameter for the Sleep plots, rows: ")
+    d3 <- readline(prompt = "Enter the parameter for the Sleep plots, columns: ")
+    d4 <- readline(prompt = "Enter the parameter for the Point plot, overlay and color: ")
+    d5 <- readline(prompt = "Enter the parameter for the Point plot, rows: ")
+    d6 <- readline(prompt = "Enter the parameter for the Point plot, columns: ")
+    divisions<- c(d1,d2,d3,d4,d5,d6)
+  }
   if(any(!(divisions[1:6] %in% c("Sex", "Genotype", "Temperature", "Treatment","Environment","Light")))){
     stop("'divisions' entries must be from the parameter list: 'Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment', or 'Light'")
   }
@@ -54,6 +66,10 @@ runAllBatches <- function(control, font = "plain") {
   if (missing(control)){
     stop("'control' must be specified")
   }
+  if (missing(num_days) || !is.numeric(num_days)){
+    stop("'num_days' must be specified as a whole number.")
+    }
+
   #ask user which plots they want
   pref <- plotPreferences("all")
 
@@ -108,7 +124,12 @@ combine_with_warning_check <- function(dt_list) {
            Please ensure all parameters are present and named correctly in all Main.R files.")
       }
   })
-    return()
+  if(!any(unique(combined[,get(divisions[1])]) == control)){
+    stop("'control' must be a condition within the divisions[1] variable for all batches.")
+  } ## doesn't check for each row and column separation.
+
+  return()
+
 }
 
 setwd(original_wd)
@@ -117,8 +138,10 @@ each_dir <- list.dirs(original_wd, full.names = FALSE, recursive = FALSE)
 
   # Iterate over each batch directory and run the R files to run each batch
   for (oneBatch in each_dir){
-    runOneBatch(control, oneBatch, font, pref)
+    run_r_files_in_dir(batch_dir)
+    runEachBatch(control, num_days, oneBatch, font, pref)
   }
+setwd(original_wd)
 
 
 #-------------------------------------------------------------------------------
@@ -210,7 +233,7 @@ if (pref[7] == 1){
   output_file <- file.path(original_wd, "all_sleepmeta.csv")
   data.table::fwrite(combined_sleepmeta, output_file, row.names = FALSE)
 
-  concatGenotypePlots(combined_sleepdata, combined_sleepmeta, combined_data, font)
+  concatGenotypePlots(combined_sleepdata, combined_sleepmeta, combined_data, control, font)
 }
   setwd(original_wd)
 }

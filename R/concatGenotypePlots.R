@@ -7,6 +7,7 @@
 #' @param combined_sleepmeta A `data.table` summarized accross all batches containing the metadata associated with combined_sleepdata.
 #' @param summary_dt_final A `data.table` containing summary statistics with columns including `Light`, `Environment`,
 #'   `Genotype`, `Treatment`, `Sex` and various sleep metrics.
+#' @param control A character string specifying the control from `divisions[1]`.
 #' @param font A character string variable determining the font style of the produced plots.
 #'
 #' @details
@@ -22,8 +23,8 @@
 #' @return None. Plots are saved as PDF files.
 #' @keywords internal
 
-concatGenotypePlots <- function(combined_sleepdata, combined_sleepmeta, summary_dt_final, font) {
-  data.table::set(summary_dt_final, j = "Light", value = gsub("\"", "", summary_dt_final$Light))
+concatGenotypePlots <- function(combined_sleepdata, combined_sleepmeta, summary_dt_final, control, font) {
+  # data.table::set(summary_dt_final, j = "Light", value = gsub("\"", "", summary_dt_final$Light))
 
   #link metadata and behavr data
   data.table::setkey(combined_sleepdata, id)
@@ -36,6 +37,6 @@ concatGenotypePlots <- function(combined_sleepdata, combined_sleepmeta, summary_
                         genotypelist = list(),
                         loadinginfo = data.table::data.table())
 
-  genotypePlots(ExperimentData, dt_curated_final, summary_dt_final, font)
+  genotypePlots(ExperimentData, dt_curated_final, summary_dt_final, control, font)
 }
 

@@ -20,3 +20,12 @@
   }
 
 }
+# setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+#
+#   # Get the list of R files in the directory
+#   r_files <- list.files(getwd(), pattern = "\\.R$", full.names = TRUE)
+#   r_files <- r_files[1:20]
+#   # Source each R file
+#   for (r_file in r_files) {
+#     source(r_file) # should I take this out? and reformat it to remove source()?
+#   }

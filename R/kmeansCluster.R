@@ -37,7 +37,7 @@ kmeansCluster <- function(x = NULL, y = NULL, condition1 = NULL, condition2 = NU
 
   # Read the normalized data from CSV file
   combined_data <- read.csv("all_batches_stat.csv")
-  combined_data$Light <- gsub("\"", "", combined_data$Light)
+  # combined_data$Light <- gsub("\"", "", combined_data$Light)
 
   data.table::setDT(combined_data)
 
@@ -165,7 +165,8 @@ kmeansCluster <- function(x = NULL, y = NULL, condition1 = NULL, condition2 = NU
   #               "nBoutschange_D", "Boutlenchange_L", "Boutlenchange_D")
   if(!is.null(condition1) && !is.null(condition2)){
     condition_cols <- meanData[, c("Sex","Genotype","Temperature","Treatment",
-                                  "Environment","Light")]    c1_col <- names(condition_cols)[
+                                  "Environment","Light")]
+    c1_col <- names(condition_cols)[
       sapply(condition_cols, function(column) any(grepl(condition1, column)))
     ]
     c2_col <- names(condition_cols)[
@@ -280,6 +281,7 @@ kmeansCluster <- function(x = NULL, y = NULL, condition1 = NULL, condition2 = NU
     data$aPrioriVariable <- meta[[aPrioriVariable]]
 
     myplot <- clustered_plot(data, font, TRUE)
+    titlee <- gsub(":", ".", titlee)
     ggplot2::ggsave(paste0("kmeanscluster", titlee, y, x, ".pdf"), myplot, height = 5, width = 5)
 
     # Write the file which labels the cluster each Genotype is in
@@ -425,6 +427,7 @@ kmeansCluster <- function(x = NULL, y = NULL, condition1 = NULL, condition2 = NU
       )
 
       titlee <- gsub(" ", "", titlee)
+      titlee <- gsub(":", ".", titlee)
 
       ggplot2::ggsave(paste0("kmeanstraits", titlee, ".pdf"), final_plot, height = 14, width = 15.5)
   }

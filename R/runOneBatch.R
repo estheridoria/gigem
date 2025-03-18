@@ -1,58 +1,64 @@
-#' Run the Complete Batch Analysis (Export)
+#' Run the Complete Single Batch Analysis (Export)
 #'
 #' This function processes data for a single batch by performing various steps including data cleaning,
 #' generating activity and sleep plots, trimming dead animals, calculating summary statistics, and
 #' generating normalized statistics.
 #'
-#' @param control A character string specifying the control.
 #' @param oneBatch A character string of the Batch folder to be analyzed.
+#' @param control A character string specifying the control.
+#' @param num_days A numerical value specifying the number of days to be used in analysis.
 #' @param font A string variable determining the font style of the produced plots.
-#' @param pref A vector of preferences for generating specific plots (e.g., whether to generate concatenated plots).
 #' @export
 #'
 #' @return This function does not return a value but performs a series of steps to process the data,
 #' generate plots, and calculate statistics.
 #'
-#' @details
-#' This function executes the following steps:
-#' 1. Initializes an `ExperimentData` object containing metadata for the batch.
-#' 2. Writes the loading metadata to a CSV file.
-#' 3. Generates activity and sleep plots based on the input data.
-#' 4. Trims out animals identified as dead using the `aliveVsDead` and `manualDeadRemoval` functions.
-#' 5. Creates a final summary of the bout data and latency statistics.
-#' 6. Optionally, generates concatenated genotype plots.
-#' 7. Computes summary statistics and normalized statistics for sleep time for all groups.
-#' 8. Writes relevant output files, including the final summary and normalized statistics.
 #'
 #' @keywords export
-runOneBatch <- function(control, oneBatch, font = "plain", pref = NULL) {
+runOneBatch <- function(oneBatch, control, num_days, font = "plain") {
 
 #warn thy user
-    if (!(font %in% c("plain", "bold", "italic","bold.italic"))){
-    stop("'font' must be 'plain', 'bold', 'italic', or 'bold.italic'")
-    }
+
+  #divisions warnings/setting
+  if(!exists("divisions", envir = .GlobalEnv)){
+    print("Please select the fascetting divisions for each plot type from the following parameters: 'Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment', or 'Light'.")
+    d1 <- readline(prompt = "Enter the parameter for the Sleep plots, overlay and color: ")
+    d2 <- readline(prompt = "Enter the parameter for the Sleep plots, rows: ")
+    d3 <- readline(prompt = "Enter the parameter for the Sleep plots, columns: ")
+    d4 <- readline(prompt = "Enter the parameter for the Point plot, overlay and color: ")
+    d5 <- readline(prompt = "Enter the parameter for the Point plot, rows: ")
+    d6 <- readline(prompt = "Enter the parameter for the Point plot, columns: ")
+    divisions<- c(d1,d2,d3,d4,d5,d6)
+  }
     if(any(!(divisions[1:6] %in% c("Sex", "Genotype", "Temperature", "Treatment","Environment","Light")))){
       stop("'divisions' entries must be from the parameter list: 'Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment', or 'Light'")
     }
+
+  if (missing(oneBatch)){
+    stop("'oneBatch' must be specified")
+  }
+
     if (missing(control)){
       stop("'control' must be specified")
     }
 
-# conditionally run set up for singlet batches
-                  if (is.null(pref)){
-                    #add more warnings copying runAllBatches
+  if (missing(num_days) || !is.numeric(num_days)){
+    stop("'num_days' must be specified as a whole number.")
+  }
 
-                    pref<- plotPreferences("one")
+  if (!(font %in% c("plain", "bold", "italic","bold.italic"))){
+    stop("'font' must be 'plain', 'bold', 'italic', or 'bold.italic'")
+  }
 
-                    # Get the list of all sub directories
-                    all_dirs <- list.dirs(getwd(), full.names = FALSE, recursive = FALSE)
-                    if (length(grep(oneBatch, all_dirs)) != 1){
-                      stop("The 'oneBatch' specified is not a subdirectory inside the current working directory. Please make sure your current directory is correct.")
-                    }
-                    #
-                    # #setwd & check that 'Batch' is valid
-                    # singlet <- TRUE
-                   }
+  #ask user which plots they want
+  pref<- plotPreferences("one")
+
+  # Get the list of all sub directories
+  all_dirs <- list.dirs(getwd(), full.names = FALSE, recursive = FALSE)
+  if (length(grep(oneBatch, all_dirs)) != 1){
+    stop("The 'oneBatch' specified is not a subdirectory inside the current working directory. Please make sure your current directory is correct.")
+  }
+
 original_wd <- getwd()
 
 # set the stage
@@ -67,57 +73,11 @@ original_wd <- getwd()
     source(r_file)
   }
 
+  if(!any(unique(info[,get(divisions[1])]) == control)){
+    stop("'control' must be a condition within the divisions[1] variable.")
+  } ## doesn't check for each row and column separation.
 
-  # Create an object that contains all of your inputs
-  ExperimentData <- new("ExperimentData",
-                              Batch = Title,
-                              monitorlist = as.list(unique(info$monitor)),
-                              genotypelist = as.list(unique(info$genotype)),
-                              loadinginfo = info)
+    runEachBatch(control, num_days, oneBatch, font, pref)
 
-  # Store this as a CSV file, used to curate summary tables
-  loading_metadata <- writeLoading(ExperimentData)
-
-  # Create activity plots and sleep plots of each monitor at time t
-  dt_activity <- activityAndSleep(ExperimentData, loading_metadata, pref)
-
-  # Create activity plots before and after removing "dead", providing list of IDs removed from first trimming
-  dt_curated <- aliveVsDead(ExperimentData, dt_activity)
-
-  # Further removal and trimming of animals that died before specified time, providing list of IDs removed
-  dt_final <- manualDeadRemoval(ExperimentData, dt_curated, num_days, divisions, pref, font)
-
-  # Write bout length pdf, and calculate bout and latency stats
-  dt_finalSummary <- cleanSummary(ExperimentData, dt = dt_final, num_days, loadinginfo_linked =loading_metadata, divisions, pref, font)
-
-  if (pref[6] == 1){
-  # Generate concatenated plots
-  genotypePlots(ExperimentData, dt_final, dt_finalSummary, font)
-  }
-
-  # Define input column names for normalized statistics
-  groups <- c("Sleep_Time_All",
-              "Sleep_Time_L",
-              "Sleep_Time_D",
-              "n_Bouts_L",
-              "mean_Bout_Length_L",
-              "n_Bouts_D",
-              "mean_Bout_Length_D")
-
-  # Calculate the normalization factor for statistics
-  norm_factor <- dt_finalSummary[, lapply(.SD, mean),
-                                 by = .(Sex, Genotype, Temperature, Treatment,Environment,Light, Batch),
-                                 .SDcols = groups]
-
-  # Summary of statistics for sleep time for all groups
-  stat_summary <- statsSummary(ExperimentData, dt_finalSummary, groups, norm_factor)
-
-if (any(dt_finalSummary[,Treatment] == "Grp") & any(dt_finalSummary[,Treatment ] == "Iso")){
-  # Calculate normalized sleep loss statistics for all groups
-  norm_summary <- normSummary(ExperimentData, dt_finalSummary, groups,
-                              norm_factor,control)
-}
-  # if(exists("singlet") & singlet == TRUE) {
-    setwd(original_wd)
-    # }
+  setwd(original_wd)
 }

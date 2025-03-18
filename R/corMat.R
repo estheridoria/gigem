@@ -34,7 +34,7 @@ corMat <- function(condition1 = NULL, condition2 = NULL, sex = NULL, geno = NULL
 
   # Read in the combined data from the CSV file.
   combined_data <- read.csv("all_batches_stat.csv")
-  combined_data$Light <- gsub("\"", "", combined_data$Light)
+  # combined_data$Light <- gsub("\"", "", combined_data$Light)
   data.table::setDT(combined_data)
 
   # subset by only selecting rows with condition(s) specified
@@ -115,7 +115,8 @@ corMat <- function(condition1 = NULL, condition2 = NULL, sex = NULL, geno = NULL
   #   traitchange <- (itrait - gtrait)
   if(!is.null(condition1) && !is.null(condition2)){
     condition_cols <- meanData[, c("Sex","Genotype","Temperature","Treatment",
-                                  "Environment","Light")]    c1_col <- names(condition_cols)[
+                                  "Environment","Light")]
+    c1_col <- names(condition_cols)[
       sapply(condition_cols, function(column) any(grepl(condition1, column)))
     ]
     c2_col <- names(condition_cols)[
@@ -163,9 +164,11 @@ corMat <- function(condition1 = NULL, condition2 = NULL, sex = NULL, geno = NULL
 
   # Step 5: Convert the adjusted p-value matrix into a data frame
   p.df <- as.data.frame(p_adjusted_matrix)
+  titleee <- gsub(" ", "", titlee)
+  titleee <- gsub(":", ".", titleee)
 
   # Save the p-value matrix as a CSV file.
-  data.table::fwrite(p.df, paste0("Correlation_pValues", titlee, ".csv"))
+  data.table::fwrite(p.df, paste0("Correlation_pValues", titleee, ".csv"))
 
   # Define a function to assign significance labels (e.g., "*" for p-values < 0.05).
   labs.function <- function(x){
@@ -210,8 +213,7 @@ corMat <- function(condition1 = NULL, condition2 = NULL, sex = NULL, geno = NULL
     ggplot2::geom_text(ggplot2::aes(x = p.labs$Var1, y = p.labs$Var2),
                        label = p.labs$lab, nudge_y = 0.25, size = 5)
 
-  titlee <- gsub(" ", "_", titlee)
   # Save the plot as a PDF file.
-  ggplot2::ggsave(paste0("Correlation", titlee, ".pdf"), cor.plot.labs, height = 7, width = 7)
+  ggplot2::ggsave(paste0("Correlation", titleee, ".pdf"), cor.plot.labs, height = 7, width = 7)
 
 }

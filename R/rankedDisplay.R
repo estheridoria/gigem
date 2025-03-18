@@ -43,7 +43,7 @@ rankedDisplay <- function(x, control = NULL, condition1 = NULL, condition2 = NUL
 
   # Read the normalized data from CSV file
   dataset <- read.csv("all_batches_stat.csv")
-  dataset$Light <- gsub("\"", "", dataset$Light)
+  # dataset$Light <- gsub("\"", "", dataset$Light)
   titlee <- c("")
   if(!is.null(treat)){
     dataset <- dataset[dataset$Treatment == treat,]
@@ -239,6 +239,7 @@ rankedDisplay <- function(x, control = NULL, condition1 = NULL, condition2 = NUL
                      length(unique(df_con$Batch)) / 8 + .85), 6),
       rel_heights = rep(3,6)
     )
+    titleee <- gsub(":", ".", titleee)
     ggplot2::ggsave(paste0("RankedSleep_", paste0(titleee, control), "_", names[i],".pdf"),
                     combined_plot, width = (length(unique(df_nc[, x])) / 8 +
                                               length(unique(df_con$Batch)) / 8 + 1.7), height = (9))

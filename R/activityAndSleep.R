@@ -21,7 +21,7 @@ activityAndSleep <- function(ExperimentData, loadinginfo_linked, pref) {
   if(pref[1] == 1){
     # Plot anomaly files and save as PDFs.
     for(i in ExperimentData@monitorlist) {
-      pdf_file <- paste0(ExperimentData@Batch,'_activity_by_monitor',i,'.pdf')
+      pdf_file <- paste0(ExperimentData@Batch,'_Activity_Actogram_monitor',i,'.pdf')
       pdf(pdf_file)
 
       # Create plot
@@ -43,7 +43,7 @@ activityAndSleep <- function(ExperimentData, loadinginfo_linked, pref) {
   if(pref[1] == 1){
     # Plot sleep data based on monitors and save individual PDFs
     for(i in ExperimentData@monitorlist){
-      pdf_file <- paste0(ExperimentData@Batch,'_sleep_by_monitor',i,'.pdf')
+      pdf_file <- paste0(ExperimentData@Batch,'_Sleep_Actogram_monitor',i,'.pdf')
       pdf(pdf_file)
       # Create plot
         sleep_by_monitor <- ggetho::ggetho(dt[behavr::xmv(monitor) == i], ggplot2::aes(z=asleep)) +

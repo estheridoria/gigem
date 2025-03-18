@@ -12,7 +12,7 @@
 #' @return A data.table containing the summary statistics, which is also saved as a CSV file.
 #' @keywords internal
 statsSummary <- function(ExperimentData, dt, groups, norm_factor) {
-dt[, Light := paste0('"', Light, '"')]
+# dt[, Light := paste0('"', Light, '"')]
   # Generate summary statistics for specified groups
   summary <- generateSE(dt,
                         groups,
