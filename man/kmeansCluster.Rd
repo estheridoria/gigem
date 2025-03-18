@@ -7,6 +7,8 @@
 kmeansCluster(
   x = NULL,
   y = NULL,
+  condition1 = NULL,
+  condition2 = NULL,
   sex = NULL,
   geno = NULL,
   temp = NULL,
@@ -14,7 +16,7 @@ kmeansCluster(
   enviro = NULL,
   Lights = NULL,
   aPrioriConditions,
-  aPrioriParameter,
+  aPrioriVariable,
   font = "plain"
 )
 }
@@ -22,6 +24,10 @@ kmeansCluster(
 \item{x}{A string specifying the x-axis parameter of the cluster plot as written in 'all_batches_norm_summary.csv' (e.g., "norm_Sleep_Time_All"). Default is NULL.}
 
 \item{y}{A string specifying the y-axis parameter of the cluster plot as written in 'all_batches_norm_summary.csv' (e.g., "norm_mean_Bout_length_L"). Default is NULL.}
+
+\item{condition1}{A string specifying a condition within one of the experimental parameters. The difference is calculated as: \code{condition1}-\code{condition2}}
+
+\item{condition2}{A string specifying a condition within the same experimental parameter as \code{condition1} that is associated with the difference seen in sleep.}
 
 \item{sex}{A string specifying a Sex condition to subset the data by.}
 
@@ -37,7 +43,7 @@ kmeansCluster(
 
 \item{aPrioriConditions}{A vector of (partial spellings of the) conditions (e.g., c("L1", "L2", "S1", "S2", "CS")) in one of the experimental parameters.}
 
-\item{aPrioriParameter}{A string specifying the parameter of the aPrioriConditions.}
+\item{aPrioriVariable}{A string specifying the parameter of the aPrioriConditions.}
 
 \item{font}{A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")}
 }

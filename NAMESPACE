@@ -2,10 +2,9 @@
 
 export(corMat)
 export(kmeansCluster)
-export(normDisplay)
-export(normSummary)
 export(plotPreferences)
 export(processDays)
+export(rankedDisplay)
 export(runAllBatches)
 export(runOneBatch)
 export(setStatus)

@@ -5,6 +5,8 @@
 \title{Correlation Matrix for Sleep Data (Exported)}
 \usage{
 corMat(
+  condition1 = NULL,
+  condition2 = NULL,
   sex = NULL,
   geno = NULL,
   temp = NULL,
@@ -15,6 +17,10 @@ corMat(
 )
 }
 \arguments{
+\item{condition1}{A string specifying a condition within one of the experimental parameters. The difference is calculated as: \code{condition1}-\code{condition2}}
+
+\item{condition2}{A string specifying a condition within the same experimental parameter as \code{condition1} that is associated with the difference seen in sleep.}
+
 \item{sex}{A string specifying a Sex condition to subset the data by.}
 
 \item{geno}{A string specifying a Genotype condition to subset the data by.}

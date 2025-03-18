@@ -2,18 +2,18 @@
 % Please edit documentation in R/runOneBatch.R
 \name{runOneBatch}
 \alias{runOneBatch}
-\title{Run the Complete Batch Analysis (Export)}
+\title{Run the Complete Single Batch Analysis (Export)}
 \usage{
-runOneBatch(control, oneBatch, font = "plain", pref = NULL)
+runOneBatch(oneBatch, control, num_days, font = "plain")
 }
 \arguments{
-\item{control}{A character string specifying the control.}
-
 \item{oneBatch}{A character string of the Batch folder to be analyzed.}
 
-\item{font}{A string variable determining the font style of the produced plots.}
+\item{control}{A character string specifying the control.}
 
-\item{pref}{A vector of preferences for generating specific plots (e.g., whether to generate concatenated plots).}
+\item{num_days}{A numerical value specifying the number of days to be used in analysis.}
+
+\item{font}{A string variable determining the font style of the produced plots.}
 }
 \value{
 This function does not return a value but performs a series of steps to process the data,
@@ -23,18 +23,5 @@ generate plots, and calculate statistics.
 This function processes data for a single batch by performing various steps including data cleaning,
 generating activity and sleep plots, trimming dead animals, calculating summary statistics, and
 generating normalized statistics.
-}
-\details{
-This function executes the following steps:
-\enumerate{
-\item Initializes an \code{ExperimentData} object containing metadata for the batch.
-\item Writes the loading metadata to a CSV file.
-\item Generates activity and sleep plots based on the input data.
-\item Trims out animals identified as dead using the \code{aliveVsDead} and \code{manualDeadRemoval} functions.
-\item Creates a final summary of the bout data and latency statistics.
-\item Optionally, generates concatenated genotype plots.
-\item Computes summary statistics and normalized statistics for sleep time for all groups.
-\item Writes relevant output files, including the final summary and normalized statistics.
-}
 }
 \keyword{export}

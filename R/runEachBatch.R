@@ -24,7 +24,7 @@
 #' 7. Computes summary statistics and normalized statistics for sleep time for all groups.
 #' 8. Writes relevant output files, including the final summary and normalized statistics.
 #'
-#' @keywords
+#' @keywords Internal
 runEachBatch <- function(control, num_days, oneBatch, font = "plain", pref) {
 
   # Create an object that contains all of your inputs

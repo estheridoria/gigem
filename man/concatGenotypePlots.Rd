@@ -8,6 +8,7 @@ concatGenotypePlots(
   combined_sleepdata,
   combined_sleepmeta,
   summary_dt_final,
+  control,
   font
 )
 }
@@ -18,6 +19,8 @@ concatGenotypePlots(
 
 \item{summary_dt_final}{A \code{data.table} containing summary statistics with columns including \code{Light}, \code{Environment},
 \code{Genotype}, \code{Treatment}, \code{Sex} and various sleep metrics.}
+
+\item{control}{A character string specifying the control from \code{divisions[1]}.}
 
 \item{font}{A character string variable determining the font style of the produced plots.}
 }

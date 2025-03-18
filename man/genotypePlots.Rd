@@ -4,7 +4,13 @@
 \alias{genotypePlots}
 \title{Generate Combined Genotype Plots (Internal)}
 \usage{
-genotypePlots(ExperimentData, dt_curated_final, summary_dt_final, font)
+genotypePlots(
+  ExperimentData,
+  dt_curated_final,
+  summary_dt_final,
+  control,
+  font
+)
 }
 \arguments{
 \item{ExperimentData}{An S4 object containing experiment metadata.}
@@ -13,6 +19,8 @@ genotypePlots(ExperimentData, dt_curated_final, summary_dt_final, font)
 
 \item{summary_dt_final}{A \code{data.table} containing summary statistics with columns including \code{Light}, \code{Environment},
 \code{Genotype}, \code{Treatment}, \code{Sex} and various sleep metrics.}
+
+\item{control}{A character string specifying the control from \code{divisions[1]}.}
 
 \item{font}{A character string variable determining the font style of the produced plots.}
 }

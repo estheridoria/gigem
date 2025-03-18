@@ -2,12 +2,14 @@
 % Please edit documentation in R/runAllBatches.R
 \name{runAllBatches}
 \alias{runAllBatches}
-\title{Run All Batches Analysis}
+\title{Run All Batches' Analyses (Export)}
 \usage{
-runAllBatches(control, font = "plain")
+runAllBatches(control, num_days, font = "plain")
 }
 \arguments{
 \item{control}{A character string specifying the control from one of the variables in the Main.r file.}
+
+\item{num_days}{A numerical value specifying the number of days to be used in analysis.}
 
 \item{font}{A string variable determining the font style of the produced plots.}
 }
