@@ -131,7 +131,7 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
                            axis.text.y = ggplot2::element_text(size = 16),
                            legend.text = ggplot2::element_text(size = 16, face = font))
             if(length(unique(plot_subdata2[[divisions[1]]])) <= 2){
-              p1 <- p1 + ggplot2::theme(legend.position.inside = c(0.8,0.15))} ###continued warning about legend position inside
+              p1 <- p1 + ggplot2::theme(legend.position = c(0.8,0.15))} ###continued warning about legend position inside
 
     #-------------
     yParams<- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
