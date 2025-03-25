@@ -20,9 +20,10 @@
 #' @importFrom ggbeeswarm geom_beeswarm
 #' @importFrom ggcorrplot cor_pmat ggcorrplot
 #' @importFrom ggetho ggetho stat_bar_tile_etho scale_x_days stat_ld_annotations stat_pop_etho
-#' @importFrom ggplot2 theme facet_grid aes margin mean_cl_boot vars scale_y_continuous element_rect ggplot geom_errorbar geom_point scale_fill_viridis_d ggtitle scale_x_discrete geom_text ggsave scale_color_manual scale_fill_manual labs stat_summary geom_violin ylim geom_smooth scale_shape_manual scale_color_viridis_c coord_cartesian annotate
+#' @importFrom ggplot2 aes annotate coord_cartesian element_rect facet_grid geom_errorbar geom_point geom_smooth geom_text geom_violin ggplot ggsave ggtitle guide_legend labs margin mean_cl_boot override.aes scale_color_manual scale_color_viridis_c scale_fill_manual scale_fill_viridis_d scale_shape_manual scale_x_discrete scale_y_continuous stat_summary theme vars ylim
 #' @importFrom ggprism theme_prism
 #' @importFrom grDevices dev.off pdf
+#' @importFrom grid gpar textgrob
 #' @importFrom gridExtra grid.arrange
 #' @import Hmisc
 #' @importFrom magrittr `%>%`
@@ -30,8 +31,8 @@
 #' @importFrom plyr ddply
 #' @importFrom reshape2 melt
 #' @importFrom rlang "!!" sym is_string
-#' @importFrom scales percent alpha
-#' @importFrom sleepr curate_dead_animals bout_analysis
+#' @importFrom scales alpha percent pretty_breaks
+#' @importFrom sleepr bout_analysis curate_dead_animals
 #' @importFrom stats kmeans cor dist p.adjust qt sd t.test
 #' @importFrom utils menu read.csv write.csv
 #' @export
