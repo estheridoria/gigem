@@ -1,11 +1,11 @@
-#' Run All Batches' Analyses (Export)
+#' Run All Batches' Analyses
 #'
 #' This function processes all batch directories by sourcing the necessary R files, running
 #' the analysis for each batch, and combining the summary results into a single CSV file for all batches.
 #' It iterates through directories matching the batch pattern, executes relevant R files, and combines
 #' both normalized and general summary statistics from each batch into a final report.
 #'
-#' @param control A character string specifying the control from one of the variables in the Main.r file.
+#' @param control A character string specifying the control condition from divisions[1] (the sleep plot overlay & color parameter).
 #' @param num_days A numerical value specifying the number of days to be used in analysis.
 #' @param font A string variable determining the font style of the produced plots.
 #'
@@ -46,7 +46,7 @@
 runAllBatches <- function(control, num_days, font = "plain") {
   # Warnings
   #divisions warnings/setting
-  if(missing(divisions)){
+ if (!exists("divisions", where = .GlobalEnv)) {
     print("Please select the fascetting divisions for each plot type from the following parameters: 'Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment', or 'Light'.")
     d1 <- readline(prompt = "Enter the parameter for the Sleep plots, overlay and color: ")
     d2 <- readline(prompt = "Enter the parameter for the Sleep plots, rows: ")
@@ -141,8 +141,6 @@ each_dir <- list.dirs(original_wd, full.names = FALSE, recursive = FALSE)
     run_r_files_in_dir(batch_dir)
     runEachBatch(control, num_days, oneBatch, font, pref)
   }
-setwd(original_wd)
-
 
 #-------------------------------------------------------------------------------
   # Restore the original working directory
@@ -151,20 +149,20 @@ setwd(original_wd)
   # Concatenate all summaries and combine them into one
   # save in this parent (current) directory.
 
-# norm summary concatenate
-  all_tables <- list()
-
-  # Iterate over each batch directory and read the summary files
-  for (batch_dir in batch_dirs) {
-    all_tables <- concatenate(batch_dir, all_tables, "^norm_summary_Batch[0-9_a-zA-Z]*\\.csv$")
-  }
-
-  # Concatenate all data frames into one large data frame
-  combined_data <- do.call(rbind, all_tables[1:9])
-
-  # Save the combined data frame to a CSV file in the parent directory
-  output_file <- file.path(original_wd, "all_batches_norm_summary.csv")
-  data.table::fwrite(combined_data, output_file, row.names = FALSE)
+# # norm summary concatenate
+#   all_tables <- list()
+#
+#   # Iterate over each batch directory and read the summary files
+#   for (batch_dir in batch_dirs) {
+#     all_tables <- concatenate(batch_dir, all_tables, "^norm_summary_Batch[0-9_a-zA-Z]*\\.csv$")
+#   }
+#
+#   # Concatenate all data frames into one large data frame
+#   combined_data <- do.call(rbind, all_tables[1:9])
+#
+#   # Save the combined data frame to a CSV file in the parent directory
+#   output_file <- file.path(original_wd, "all_batches_norm_summary.csv")
+#   data.table::fwrite(combined_data, output_file, row.names = FALSE)
 
 # regular summary concatenate
   all_tables <- list()
