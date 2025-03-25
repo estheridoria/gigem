@@ -1,11 +1,11 @@
-#' Run the Complete Single Batch Analysis (Export)
+#' Run the Complete Single Batch Analysis
 #'
 #' This function processes data for a single batch by performing various steps including data cleaning,
 #' generating activity and sleep plots, trimming dead animals, calculating summary statistics, and
 #' generating normalized statistics.
 #'
 #' @param oneBatch A character string of the Batch folder to be analyzed.
-#' @param control A character string specifying the control.
+#' @param control A character string specifying the control condition from divisions[1] (the sleep plot overlay & color parameter).
 #' @param num_days A numerical value specifying the number of days to be used in analysis.
 #' @param font A string variable determining the font style of the produced plots.
 #' @export
