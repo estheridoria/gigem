@@ -1,4 +1,4 @@
-#' Correlation Matrix for Sleep Data (Exported)
+#' Correlation Matrix for Sleep Data
 #'
 #' Computes the relative sleep changes between two Treatments and generates a correlation matrix plot with significance annotations.
 #'
@@ -96,9 +96,9 @@ corMat <- function(condition1 = NULL, condition2 = NULL, sex = NULL, geno = NULL
       Sex, Genotype, Temperature, Treatment, Environment, Light
     ),
     dplyr::across(
-      Sleep_Fraction_All:mean_Bout_Length_D,
+      Sleep_Time_All_mean:mean_Bout_Length_D_ci,
       ~mean(., na.rm = TRUE),
-      .names = "mean_{.col}"
+      .names = "{.col}"
     ),
     .groups = "keep"
   )
@@ -107,6 +107,8 @@ corMat <- function(condition1 = NULL, condition2 = NULL, sex = NULL, geno = NULL
   traitlist <- c("Sleep_Time_All_mean", "Sleep_Time_L_mean", "Sleep_Time_D_mean",
                  "n_Bouts_L_mean", "n_Bouts_D_mean", "mean_Bout_Length_L_mean",
                  "mean_Bout_Length_D_mean")
+  metalist <- c("Sex", "Genotype", "Temperature", "Treatment", "Environment",
+                "Light")
 
   # if("Grp" %in% meanData$Treatment && "Iso" %in% meanData$Treatment){
   #  # Define additional trait variables to compare.
@@ -114,8 +116,7 @@ corMat <- function(condition1 = NULL, condition2 = NULL, sex = NULL, geno = NULL
   #   itrait <- meanData[meanData$Treatment == "Iso", traitlist]
   #   traitchange <- (itrait - gtrait)
   if(!is.null(condition1) && !is.null(condition2)){
-    condition_cols <- meanData[, c("Sex","Genotype","Temperature","Treatment",
-                                  "Environment","Light")]
+    condition_cols <- meanData[, metalist]
     c1_col <- names(condition_cols)[
       sapply(condition_cols, function(column) any(grepl(condition1, column)))
     ]
@@ -140,7 +141,7 @@ corMat <- function(condition1 = NULL, condition2 = NULL, sex = NULL, geno = NULL
                       "nBoutschange_D", "Boutlenchange_L", "Boutlenchange_D")
     titlee <- trimws(paste0(titlee, " ", condition1, "-", condition2))
   } else {
-    df <- meanData[, c(traitlist)]
+    df <- meanData[, traitlist]
     # Rename the columns for better clarity.
     colnames(df) <- c("Sleeptime_All", "Sleeptime_L", "Sleeptime_D", "NBouts_L",
                       "NBouts_D", "Boutlen_L", "Boutlen_D")
