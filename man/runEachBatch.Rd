@@ -4,7 +4,7 @@
 \alias{runEachBatch}
 \title{Run the Each Batch Analysis (Internal)}
 \usage{
-runEachBatch(control, num_days, oneBatch, font = "plain", pref)
+runEachBatch(control, num_days, oneBatch, font, pref)
 }
 \arguments{
 \item{control}{A character string specifying the control.}

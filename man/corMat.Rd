@@ -2,7 +2,7 @@
 % Please edit documentation in R/corMat.R
 \name{corMat}
 \alias{corMat}
-\title{Correlation Matrix for Sleep Data (Exported)}
+\title{Correlation Matrix for Sleep Data}
 \usage{
 corMat(
   condition1 = NULL,

@@ -12,11 +12,12 @@ rankedDisplay(
   treat = NULL,
   temp = NULL,
   enviro = NULL,
+  sex = NULL,
   Lights = NULL,
   geno = NULL,
   ranking = NULL,
   font = "plain",
-  limits = c(-0.75, 0.25)
+  limits = c(-100, 1500)
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ rankedDisplay(
 
 \item{enviro}{A string specifying a Environment condition to subset the data by.}
 
+\item{sex}{A string specifying a sex condition to subset the data by.}
+
 \item{Lights}{A string specifying a Light condition to subset the data by.}
 
 \item{geno}{A string specifying a Genotype condition to subset the data by.}
@@ -42,7 +45,7 @@ rankedDisplay(
 
 \item{font}{A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")}
 
-\item{limits}{A list of two numerics to be the upper and lower limits on the plot. Default is c(-0.75, 0.25)}
+\item{limits}{A list of two numerics to be the upper and lower limits on the plot. Default is c(-100, 1500)}
 }
 \value{
 conditional. If the ranking is NULL (default), then the ranking used in the plots will be returned to be used as the ranking in subsequent rankedDisplay plots. Otherwise, no return. Saves the plots as a PDF file labeled \code{RankedSleep...}

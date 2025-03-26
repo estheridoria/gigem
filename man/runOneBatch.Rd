@@ -2,14 +2,14 @@
 % Please edit documentation in R/runOneBatch.R
 \name{runOneBatch}
 \alias{runOneBatch}
-\title{Run the Complete Single Batch Analysis (Export)}
+\title{Run the Complete Single Batch Analysis}
 \usage{
 runOneBatch(oneBatch, control, num_days, font = "plain")
 }
 \arguments{
 \item{oneBatch}{A character string of the Batch folder to be analyzed.}
 
-\item{control}{A character string specifying the control.}
+\item{control}{A character string specifying the control condition from divisions\link{1} (the sleep plot overlay & color parameter).}
 
 \item{num_days}{A numerical value specifying the number of days to be used in analysis.}
 

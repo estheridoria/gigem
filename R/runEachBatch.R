@@ -25,7 +25,7 @@
 #' 8. Writes relevant output files, including the final summary and normalized statistics.
 #'
 #' @keywords Internal
-runEachBatch <- function(control, num_days, oneBatch, font = "plain", pref) {
+runEachBatch <- function(control, num_days, oneBatch, font, pref) {
 
   # Create an object that contains all of your inputs
   ExperimentData <- new("ExperimentData",

@@ -17,6 +17,7 @@ kmeansCluster(
   Lights = NULL,
   aPrioriConditions,
   aPrioriVariable,
+  lbf = TRUE,
   font = "plain"
 )
 }
@@ -45,13 +46,15 @@ kmeansCluster(
 
 \item{aPrioriVariable}{A string specifying the parameter of the aPrioriConditions.}
 
+\item{lbf}{Add the line of best fit onto the plot. Default is TRUE}
+
 \item{font}{A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")}
 }
 \value{
 None. Saves the plot as a PDF file and outputs a CSV file with cluster assignments.
 }
 \description{
-This function reads in a CSV file (\code{all_batches_norm_summary.csv}) containing summarized and relativized data, performs K-means clustering to identify optimal clusters based on the Elbow Method, Silhouette Score, and Gap Statistic, and creates a plot of sleep trends with clustering information.
+This function reads in a CSV file (\code{all_batches_stat.csv}) containing summarized and relativized data, performs K-means clustering to identify optimal clusters based on the Elbow Method, Silhouette Score, and Gap Statistic, and creates a plot of sleep trends with clustering information.
 The user can provide a list of aPrioriConditions (e.g., Genotype categories) which visually differentiates them from each other in the plots.
 If the data does not have "Grp" and "Iso" Treatments, the 'all_batches_norm_summary.csv' will not be produced by 'runAllBatches' and this function will not run.
 }

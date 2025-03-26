@@ -24,7 +24,7 @@
 #' @keywords internal
 
 concatGenotypePlots <- function(combined_sleepdata, combined_sleepmeta, summary_dt_final, control, font) {
-  # data.table::set(summary_dt_final, j = "Light", value = gsub("\"", "", summary_dt_final$Light))
+  # data.table::setDT(summary_dt_final)
 
   #link metadata and behavr data
   data.table::setkey(combined_sleepdata, id)

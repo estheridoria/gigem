@@ -2,12 +2,12 @@
 % Please edit documentation in R/runAllBatches.R
 \name{runAllBatches}
 \alias{runAllBatches}
-\title{Run All Batches' Analyses (Export)}
+\title{Run All Batches' Analyses}
 \usage{
 runAllBatches(control, num_days, font = "plain")
 }
 \arguments{
-\item{control}{A character string specifying the control from one of the variables in the Main.r file.}
+\item{control}{A character string specifying the control condition from divisions\link{1} (the sleep plot overlay & color parameter).}
 
 \item{num_days}{A numerical value specifying the number of days to be used in analysis.}
 

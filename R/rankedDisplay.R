@@ -14,11 +14,12 @@
 #' @param treat A string specifying a Treatment to subset the data by.
 #' @param temp A string specifying a Temperature condition to subset the data by.
 #' @param enviro A string specifying a Environment condition to subset the data by.
+#' @param sex A string specifying a sex condition to subset the data by.
 #' @param Lights A string specifying a Light condition to subset the data by.
 #' @param geno A string specifying a Genotype condition to subset the data by.
 #' @param ranking A tibble of one column containing the order of conditions displayed in the plot from parameter x
 #' @param font A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")
-#' @param limits A list of two numerics to be the upper and lower limits on the plot. Default is c(-0.75, 0.25)
+#' @param limits A list of two numerics to be the upper and lower limits on the plot. Default is c(-100, 1500)
 #'
 #'
 #' @return conditional. If the ranking is NULL (default), then the ranking used in the plots will be returned to be used as the ranking in subsequent rankedDisplay plots. Otherwise, no return. Saves the plots as a PDF file labeled `RankedSleep...`
@@ -26,8 +27,8 @@
 #'
 #' @keywords internal
 rankedDisplay <- function(x, control = NULL, condition1 = NULL, condition2 = NULL, treat = NULL,
-                          temp = NULL, enviro = NULL, Lights = NULL, geno = NULL, ranking = NULL,
-                          font = "plain", limits = c(-0.75,0.25)) {
+                          temp = NULL, enviro = NULL, sex = NULL, Lights = NULL, geno = NULL, ranking = NULL,
+                          font = "plain", limits = c(-100, 1500)) {
 
   if (!file.exists("all_batches_stat.csv")) {
     stop("'all_batches_stat.csv' is not found in the current directory. Please run 'runAllBatches' before attempting to run 'kmeansCluster'. If you have already run it, ")
@@ -69,6 +70,14 @@ rankedDisplay <- function(x, control = NULL, condition1 = NULL, condition2 = NUL
       stop("The 'enviro' specified is not included in the data within the 'Environment' parameter")
     }
     titlee <- trimws(paste(titlee, enviro))
+  }
+  if(!is.null(sex)){
+    dataset <- dataset[dataset$Sex == sex,]
+    # warning if condition is invalid
+    if (nrow(dataset) == 0) {
+      stop("The 'sex' specified is not included in the data within the 'Sex' parameter")
+    }
+    titlee <- trimws(paste(titlee, sex))
   }
   if(!is.null(Lights)){
     dataset <- dataset[dataset$Light == Lights,]

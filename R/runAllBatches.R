@@ -20,10 +20,10 @@
 #' @importFrom ggbeeswarm geom_beeswarm
 #' @importFrom ggcorrplot cor_pmat ggcorrplot
 #' @importFrom ggetho ggetho stat_bar_tile_etho scale_x_days stat_ld_annotations stat_pop_etho
-#' @importFrom ggplot2 aes annotate coord_cartesian element_rect facet_grid geom_errorbar geom_point geom_smooth geom_text geom_violin ggplot ggsave ggtitle guide_legend labs margin mean_cl_boot override.aes scale_color_manual scale_color_viridis_c scale_fill_manual scale_fill_viridis_d scale_shape_manual scale_x_discrete scale_y_continuous stat_summary theme vars ylim
+#' @importFrom ggplot2 aes annotate coord_cartesian element_rect facet_grid geom_errorbar geom_point geom_smooth geom_text geom_violin ggplot ggsave ggtitle guide_legend labs margin mean_cl_boot scale_color_manual scale_color_viridis_c scale_fill_manual scale_fill_viridis_d scale_shape_manual scale_x_discrete scale_y_continuous stat_summary theme vars ylim
 #' @importFrom ggprism theme_prism
 #' @importFrom grDevices dev.off pdf
-#' @importFrom grid gpar textgrob
+#' @importFrom grid gpar
 #' @importFrom gridExtra grid.arrange
 #' @import Hmisc
 #' @importFrom magrittr `%>%`
@@ -139,7 +139,8 @@ each_dir <- list.dirs(original_wd, full.names = FALSE, recursive = FALSE)
 
   # Iterate over each batch directory and run the R files to run each batch
   for (oneBatch in each_dir){
-    run_r_files_in_dir(batch_dir)
+    thisBatch <- grep(oneBatch, batch_dirs, value = TRUE)
+    run_r_files_in_dir(thisBatch)
     runEachBatch(control, num_days, oneBatch, font, pref)
   }
 
@@ -165,6 +166,22 @@ each_dir <- list.dirs(original_wd, full.names = FALSE, recursive = FALSE)
 #   output_file <- file.path(original_wd, "all_batches_norm_summary.csv")
 #   data.table::fwrite(combined_data, output_file, row.names = FALSE)
 
+# stat concatenate
+all_tables <- list()
+
+# Iterate over each batch directory and read the summary files
+for (batch_dir in batch_dirs) {
+  all_tables <- concatenate(batch_dir, all_tables, "^stat_Batch[0-9_a-zA-Z]*\\.csv$")
+}
+
+# Concatenate all data frames into one large data frame
+combined_data <- do.call(rbind, all_tables)
+data.table::setDT(combined_data)
+
+# Save the combined data frame to a CSV file in the parent directory
+output_file <- file.path(original_wd, "all_batches_stat.csv")
+data.table::fwrite(combined_data, output_file, row.names = FALSE)
+
 # regular summary concatenate
   all_tables <- list()
 
@@ -179,22 +196,6 @@ each_dir <- list.dirs(original_wd, full.names = FALSE, recursive = FALSE)
 
   # Save the combined data frame to a CSV file in the parent directory
   output_file <- file.path(original_wd, "all_batches_summary.csv")
-  data.table::fwrite(combined_data, output_file, row.names = FALSE)
-
-# stat concatenate
-  all_tables <- list()
-
-  # Iterate over each batch directory and read the summary files
-  for (batch_dir in batch_dirs) {
-    all_tables <- concatenate(batch_dir, all_tables, "^stat_Batch[0-9_a-zA-Z]*\\.csv$")
-  }
-
-  # Concatenate all data frames into one large data frame
-  combined_data <- do.call(rbind, all_tables)
-  data.table::setDT(combined_data)
-
-  # Save the combined data frame to a CSV file in the parent directory
-  output_file <- file.path(original_wd, "all_batches_stat.csv")
   data.table::fwrite(combined_data, output_file, row.names = FALSE)
 
 # concatenated sleepdata & metadata --> genotypePlots
