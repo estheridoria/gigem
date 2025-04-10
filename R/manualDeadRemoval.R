@@ -6,7 +6,7 @@
 #' @param ExperimentData An S4 object containing experiment metadata, including `Batch` for output filenames.
 #' @param dt A `data.table` containing experimental results, including columns `id` and `t` (time).
 #' @param num_days Numeric, the minimum lifespan (in days) required for an animal to be retained.
-#' @param divisions A character vector defining grouping variables for plot facets.
+#' @param divisions A list of grouping columns used for facetting plots.
 #' @param pref A numeric vector specifying whether to generate population plots (`pref[2] == 1`) and overlay plots (`pref[3] == 1`).
 #' @param font A character string variable determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")
 #'

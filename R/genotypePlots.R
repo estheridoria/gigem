@@ -9,6 +9,7 @@
 #'   `Genotype`, `Treatment`, `Sex` and various sleep metrics.
 #' @param control A character string specifying the control from `divisions[1]`.
 #' @param font A character string variable determining the font style of the produced plots.
+#' @param divisions A list of grouping columns used for facetting plots.
 #'
 #' @details
 #' The function iterates through all unique combinations of `Light`, `Environment`, `Treatment`, `Sex`, and `Genotype`.
@@ -25,10 +26,20 @@
 #' @return None. Plots are saved as PDF files.
 #' @keywords internal
 
-genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, control, font) {
+genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, control, font, divisions) {
   #Dynamically exclude columns where the value is equal to divisions[1] &
   columns_to_consider <- c("Sex", "Genotype", "Temperature", "Treatment", "Environment", "Light")
   condition_combinations <- unique(summary_dt_final[,.SD,.SDcols = columns_to_consider[columns_to_consider != divisions[1]]])
+  condition_combinations[, p1title := trimws(paste0(
+    if (divisions[1] != "Genotype" && length(unique(Genotype)) > 1) paste0(Genotype, " ") else "",
+    if (divisions[1] != "Light"    && length(unique(Light))    > 1) paste0(Light, " ")    else "",
+    if (divisions[1] != "Treatment" && length(unique(Treatment)) > 1) paste0(Treatment, " ") else "",
+    if (divisions[1] != "Temperature" && length(unique(Temperature)) > 1) paste0(Temperature, " ") else "",
+    if (divisions[1] != "Sex" && length(unique(Sex)) > 1) paste0(Sex, " ") else "",
+    if (divisions[1] != "Environment" && length(unique(Environment)) > 1) paste0(Environment, " ") else ""
+  ))]
+
+
 
   # find out if there is a control for each combination of conditions
   all_conditions <- unique(summary_dt_final[,.SD,.SDcols = columns_to_consider])
@@ -106,14 +117,15 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
           }}))]
     # Curate data for plotting
     plot_subdata <- dt_curated_final[id %in% plot_subdata2$id]
+#
+#     p1title <- trimws(paste0(
+#       if (divisions[1] != "Genotype" && length(unique(Genotype))>1) {paste0(Genotype, " ")} else "",
+#       if (divisions[1] != "Light" && length(unique(Light))>1) {paste0(Light, " ")} else "",
+#       if (divisions[1] != "Treatment" && length(unique(Treatment))>1) {paste0(Treatment, " ")} else "",
+#       if (divisions[1] != "Temperature" && length(unique(Temperature))>1) {paste0(Temperature, " ")} else "",
+#       if (divisions[1] != "Sex" && length(unique(Sex))>1) {paste0(Sex, " ")} else "",
+#       if (divisions[1] != "Environment" && length(unique(Environment))>1) {paste0(Environment, " ")} else ""))
 
-    p1title <- trimws(paste(
-      if (divisions[1] != "Genotype" && length(unique(condition_combinations$Genotype))>1) {Genotype},
-      if (divisions[1] != "Light" && length(unique(condition_combinations$Light))>1) {Light},
-      if (divisions[1] != "Treatment" && length(unique(condition_combinations$Treatment))>1) {Treatment},
-      if (divisions[1] != "Temperature" && length(unique(condition_combinations$Temperature))>1) {Temperature},
-      if (divisions[1] != "Sex" && length(unique(condition_combinations$Sex))>1) {Sex},
-      if (divisions[1] != "Environment" && length(unique(condition_combinations$Environment))>1) {Environment}))
 
         # Create overlay sleep plot--------------
           p1 <- ggetho::ggetho(plot_subdata, ggplot2::aes(y = asleep, colour = .data[[divisions[1]]]), time_wrap = behavr::hours(24)) +
@@ -121,7 +133,7 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
             ggetho::stat_ld_annotations() +
             ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
             ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
-            ggplot2::labs(title = p1title[length(p1title)], y= "Sleep (%)") +
+            ggplot2::labs(title = p1title, y= "Sleep (%)") +
             ggplot2::scale_y_continuous(limits = c(0,1), labels = scales::percent)+
             ggprism::theme_prism(base_fontface = font) +
             ggplot2::theme(title = ggplot2::element_text(size = 22),
@@ -136,52 +148,52 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
     #-------------
     yParams<- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
 
-    #p-value statements!!
-    # find out if there is a control for each combination of conditions
-    if(control %in% plot_subdata2[,get(divisions[1])]){
-    #
-    #
-    # all_condition_combinations_compare <- all_condition_combinations[,.SD,.SDcols = columns_to_consider[columns_to_consider != divisions[1]]]
-    # if(any(condition_combinations != all_condition_combinations_compare)){
-    #   stop("the 'control' specified is not included in all possible combinations of experimental variables")
-    # }
-    #
-
-      # Perform t-test if the 'divisions[1]'  has 'control'
-      all_conditions <- unique(plot_subdata2[,.SD,.SDcols = columns_to_consider])
-      t.test_y_vars <- all_conditions[get(divisions[1]) != control, get(divisions[1])]
-
-      p_value <- matrix(, nrow = length(t.test_y_vars), ncol = length(yParams))
-      p_vals <- list()
-
-      for(j in seq_along(yParams)){
-        for (i in seq_along(t.test_y_vars)){
-          t_test_result <- t.test(plot_subdata2[get(divisions[1]) == control, get(yParams[j])], # needs to be generalized
-                                  plot_subdata2[get(divisions[1]) == t.test_y_vars[i], get(yParams[j])])
-          p_value[i,j] <- t_test_result$p.value
-        }
-
-      }
-      p1title <- gsub(" ", "_", p1title)
-      p1title <- gsub(":", ".", p1title)
-
-      if(length(p_value) >1){
-      colnames(p_value) <- yParams
-      rownames(p_value) <- t.test_y_vars
-      write.csv(p_value, paste0("pValues(unadjusted)_", p1title, "_", ExperimentData@Batch, ".csv"))
-      }
+    # #p-value statements!!
+    # # find out if there is a control for each combination of conditions
+    # if(control %in% plot_subdata2[,get(divisions[1])]){
+    # #
+    # #
+    # # all_condition_combinations_compare <- all_condition_combinations[,.SD,.SDcols = columns_to_consider[columns_to_consider != divisions[1]]]
+    # # if(any(condition_combinations != all_condition_combinations_compare)){
+    # #   stop("the 'control' specified is not included in all possible combinations of experimental variables")
+    # # }
+    # #
+#
+      # # Perform t-test if the 'divisions[1]'  has 'control'
+      # all_conditions <- unique(plot_subdata2[,.SD,.SDcols = columns_to_consider])
+      # t.test_y_vars <- all_conditions[get(divisions[1]) != control, get(divisions[1])]
+      #
+      # p_value <- matrix(, nrow = length(t.test_y_vars), ncol = length(yParams))
+      # p_vals <- list()
+      #
+      # for(j in seq_along(yParams)){
+      #   for (i in seq_along(t.test_y_vars)){
+      #     t_test_result <- t.test(plot_subdata2[get(divisions[1]) == control, get(yParams[j])], # needs to be generalized
+      #                             plot_subdata2[get(divisions[1]) == t.test_y_vars[i], get(yParams[j])])
+      #     p_value[i,j] <- t_test_result$p.value
+      #   }
+      #
+      # }
+      # p1title <- gsub(" ", "_", p1title)
+      # p1title <- gsub(":", ".", p1title)
+#
+      # if(length(p_value) >1){
+      # colnames(p_value) <- yParams
+      # rownames(p_value) <- t.test_y_vars
+      # write.csv(p_value, paste0("pValues(unadjusted)_", p1title, "_", ExperimentData@Batch, ".csv"))
+      # }
 
       # p_values[, get("p1title") := p_value]
       # p_v<- unlist(p_value)
-}
+#}
         # Generate sleep duration plots
         p2 <- create_sleeptime_plot(plot_subdata2, yParams[1], "Total Sleep (min)", 1500, "bar", font)#, p_value[,1])
         p3 <- create_sleeptime_plot(plot_subdata2, yParams[2], "Daytime Sleep (min)", 1000, "bar", font)#, p_value[,2])
         p4 <- create_sleeptime_plot(plot_subdata2, yParams[3], "Nighttime Sleep (min)", 1000, "bar", font)#, p_value[,3])
         p5 <- create_sleeptime_plot(plot_subdata2, yParams[4], "# Daytime Sleep Bouts", 80, "violin", font)#, p_value[,4])
         p6 <- create_sleeptime_plot(plot_subdata2, yParams[5], "# Nighttime Sleep Bouts", 80, "violin", font)#, p_value[,5])
-        p7 <- create_sleeptime_plot(plot_subdata2, yParams[6], "Daytime Bout Length", 250, "violin", font)#, p_value[,6])
-        p8 <- create_sleeptime_plot(plot_subdata2, yParams[7], "Nighttime Bout Length", 250, "violin", font)#, p_value[,7])
+        p7 <- create_sleeptime_plot(plot_subdata2, yParams[6], "Daytime Bout Length", 100, "violin", font)#, p_value[,6])
+        p8 <- create_sleeptime_plot(plot_subdata2, yParams[7], "Nighttime Bout Length", 150, "violin", font)#, p_value[,7])
 
       # # Generate sleep duration plots without p-values
       # p2 <- create_sleeptime_plot(plot_subdata2, yParams[1], "Total Sleep (min)", 1500, "bar", font)#, p_value = "No")
@@ -197,9 +209,10 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
           combined_plot <- cowplot::plot_grid(p1, p2, p3, p4, p5, p6, p7, p8, ncol = 8, align = "h", axis = "tb",
                                    rel_widths = c(6, u, u, u, u, u, u, u))
          )
-
+p1titlee <- gsub(" ", "_", p1title)
+p1titlee <- gsub(":", ".", p1titlee)
         # Save combined plot
-        ggplot2::ggsave(paste0("CombinedPlots", p1title, ExperimentData@Batch, ".pdf"), combined_plot, width = (6 + u * 7 + 1.45), height = 4)
+        ggplot2::ggsave(paste0("CombinedPlots", p1titlee, ExperimentData@Batch, ".pdf"), combined_plot, width = (6 + u * 7 + 1.45), height = 4)
 
 }, by = 1:nrow(condition_combinations)]
 

@@ -103,12 +103,12 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
   if(pref[5] ==1){
   # Helper function to create sleep plots for specified metrics
   create_sleeptime_plot <- function(plot_data, yParam,Yname, divisions, limits, geom) {
-    pdf(paste0(ExperimentData@Batch, '_', yParam, '.pdf'), width = (prod(sapply(divisions[c(4,6)], function(col) length(unique(info[[col]]))))*1.5+2), ## swapped 6 and 5 between this line and the next
-        height = length(unique(info[[divisions[5]]]))*3.7 +2)
-    sleeptime_plot <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data[[divisions[4]]],
+    pdf(paste0(ExperimentData@Batch, '_', yParam, '.pdf'), width = (prod(sapply(divisions[c(1,3)], function(col) length(unique(info[[col]]))))*1.5+2), ## swapped 6 and 5 between this line and the next
+        height = length(unique(info[[divisions[2]]]))*3.7 +2)
+    sleeptime_plot <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data[[divisions[1]]],
                                                      y = .data[[yParam]]))+
-      ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[5])),
-                          cols = ggplot2::vars(!!rlang::sym(divisions[6])))
+      ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[2])),
+                          cols = ggplot2::vars(!!rlang::sym(divisions[3])))
       if(geom == "bar"){
         sleeptime_plot <- sleeptime_plot +
           ggplot2::stat_summary(fun = "mean", geom = geom, width = .5, fill="grey90")}

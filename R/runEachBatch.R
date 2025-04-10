@@ -9,7 +9,7 @@
 #' @param oneBatch A character string of the Batch folder to be analyzed.
 #' @param font A string variable determining the font style of the produced plots.
 #' @param pref A vector of preferences for generating specific plots (e.g., whether to generate concatenated plots).
-#'
+#' @param divisions A vector of meta variables to use the conditions within for fasceting plots
 #' @return This function does not return a value but performs a series of steps to process the data,
 #' generate plots, and calculate statistics.
 #'
@@ -25,7 +25,7 @@
 #' 8. Writes relevant output files, including the final summary and normalized statistics.
 #'
 #' @keywords Internal
-runEachBatch <- function(control, num_days, oneBatch, font, pref) {
+runEachBatch <- function(control, num_days, oneBatch, font, pref, divisions) {
 
   # Create an object that contains all of your inputs
   ExperimentData <- new("ExperimentData",
@@ -51,7 +51,7 @@ runEachBatch <- function(control, num_days, oneBatch, font, pref) {
 
   if (pref[6] == 1){
     # Generate concatenated plots
-    genotypePlots(ExperimentData, dt_final, dt_finalSummary, control, font)
+    genotypePlots(ExperimentData, dt_final, dt_finalSummary, control, font, divisions)
   }
 
   # Define input column names for normalized statistics

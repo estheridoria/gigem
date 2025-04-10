@@ -47,17 +47,33 @@
 runAllBatches <- function(control, num_days, font = "plain") {
   # Warnings
   #divisions warnings/setting
- if (!exists("divisions", where = .GlobalEnv)) {
-    print("Please select the fascetting divisions for each plot type from the following parameters: 'Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment', or 'Light'.")
-    d1 <- readline(prompt = "Enter the parameter for the Sleep plots, overlay and color: ")
-    d2 <- readline(prompt = "Enter the parameter for the Sleep plots, rows: ")
-    d3 <- readline(prompt = "Enter the parameter for the Sleep plots, columns: ")
-    d4 <- readline(prompt = "Enter the parameter for the Point plot, overlay and color: ")
-    d5 <- readline(prompt = "Enter the parameter for the Point plot, rows: ")
-    d6 <- readline(prompt = "Enter the parameter for the Point plot, columns: ")
-    divisions<- c(d1,d2,d3,d4,d5,d6)
+  #divisions warnings/setting
+  if(!exists("divisions", envir = .GlobalEnv)){
+    # print("Please select the fascetting divisions for each plot type from the following parameters: 'Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment', or 'Light'.")
+    # d1 <- readline(prompt = "Enter the parameter for the Sleep plots, overlay and color: ")
+    # d2 <- readline(prompt = "Enter the parameter for the Sleep plots, rows: ")
+    # d3 <- readline(prompt = "Enter the parameter for the Sleep plots, columns: ")
+    # d4 <- readline(prompt = "Enter the parameter for the Point plot, overlay and color: ")
+    # d5 <- readline(prompt = "Enter the parameter for the Point plot, rows: ")
+    # d6 <- readline(prompt = "Enter the parameter for the Point plot, columns: ")
+    # divisions<- c(d1,d2,d3,d4,d5,d6)
+    # }
+    d1 <- menu(c('Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment','Light'),
+               title="Please select the variable
+             for determining the plots' OVERLAY and COLOR: ")
+    d2 <- menu(c('Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment','Light'),
+               title="Please select the variable
+             for determining the plots' COLUMNS:")
+    d3 <- menu(c('Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment','Light'),
+               title="Please select the variable
+             for determining the plots' ROWS:")
+    divisions<- c(d1,d2,d3)
+
+    labels <- c("Sex", "Genotype", "Temperature", "Treatment", "Environment", "Light")
+    # Map the numeric values to the corresponding labels
+    divisions <- sapply(divisions, function(x) labels[x])
   }
-  if(any(!(divisions[1:6] %in% c("Sex", "Genotype", "Temperature", "Treatment","Environment","Light")))){
+  if(any(!(divisions[1:3] %in% c("Sex", "Genotype", "Temperature", "Treatment","Environment","Light")))){
     stop("'divisions' entries must be from the parameter list: 'Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment', or 'Light'")
   }
 
@@ -141,7 +157,7 @@ each_dir <- list.dirs(original_wd, full.names = FALSE, recursive = FALSE)
   for (oneBatch in each_dir){
     thisBatch <- grep(oneBatch, batch_dirs, value = TRUE)
     run_r_files_in_dir(thisBatch)
-    runEachBatch(control, num_days, oneBatch, font, pref)
+    runEachBatch(control, num_days, oneBatch, font, pref, divisions)
   }
 
 #-------------------------------------------------------------------------------
