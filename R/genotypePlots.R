@@ -49,8 +49,11 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
   #   stop("the 'control' specified is not included in all possible combinations of experimental variables")
   # }
 
-  u <- length(unique(summary_dt_final[[divisions[1]]])) # Dynamic width adjustment of combined plot
-  # p_values <- data.table::data.table()
+  # u <- length(unique(summary_dt_final[[divisions[1]]])) # Dynamic width adjustment of combined plot
+  # if(u<2){
+  #   u<-2
+  # }
+    # p_values <- data.table::data.table()
   # p1title <- list()
 
   # Function to create sleep duration plots
@@ -117,7 +120,7 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
           }}))]
     # Curate data for plotting
     plot_subdata <- dt_curated_final[id %in% plot_subdata2$id]
-#
+    u <- length(unique(plot_subdata2[[divisions[1]]]))
 #     p1title <- trimws(paste0(
 #       if (divisions[1] != "Genotype" && length(unique(Genotype))>1) {paste0(Genotype, " ")} else "",
 #       if (divisions[1] != "Light" && length(unique(Light))>1) {paste0(Light, " ")} else "",
@@ -143,7 +146,11 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
                            axis.text.y = ggplot2::element_text(size = 16),
                            legend.text = ggplot2::element_text(size = 16, face = font))
             if(length(unique(plot_subdata2[[divisions[1]]])) <= 2){
-              p1 <- p1 + ggplot2::theme(legend.position = c(0.8,0.15))} ###continued warning about legend position inside
+              p1 <- p1 + ggplot2::theme(legend.position = c(0.8,0.15)) ###continued warning about legend position inside
+              addedspace <- 6
+            } else {
+                addedspace <- 8
+              }
 
     #-------------
     yParams<- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
@@ -190,10 +197,10 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
         p2 <- create_sleeptime_plot(plot_subdata2, yParams[1], "Total Sleep (min)", 1500, "bar", font)#, p_value[,1])
         p3 <- create_sleeptime_plot(plot_subdata2, yParams[2], "Daytime Sleep (min)", 1000, "bar", font)#, p_value[,2])
         p4 <- create_sleeptime_plot(plot_subdata2, yParams[3], "Nighttime Sleep (min)", 1000, "bar", font)#, p_value[,3])
-        p5 <- create_sleeptime_plot(plot_subdata2, yParams[4], "# Daytime Sleep Bouts", 80, "violin", font)#, p_value[,4])
-        p6 <- create_sleeptime_plot(plot_subdata2, yParams[5], "# Nighttime Sleep Bouts", 80, "violin", font)#, p_value[,5])
-        p7 <- create_sleeptime_plot(plot_subdata2, yParams[6], "Daytime Bout Length", 100, "violin", font)#, p_value[,6])
-        p8 <- create_sleeptime_plot(plot_subdata2, yParams[7], "Nighttime Bout Length", 150, "violin", font)#, p_value[,7])
+        p5 <- create_sleeptime_plot(plot_subdata2, yParams[4], "# Daytime Sleep Bouts", ceiling(max(plot_subdata2[,get(yParams[4])])/50)*50, "violin", font)#, p_value[,4])
+        p6 <- create_sleeptime_plot(plot_subdata2, yParams[5], "# Nighttime Sleep Bouts", ceiling(max(plot_subdata2[,get(yParams[5])])/50)*50, "violin", font)#, p_value[,5])
+        p7 <- create_sleeptime_plot(plot_subdata2, yParams[6], "Daytime Bout Length", ceiling(max(plot_subdata2[,get(yParams[6])])/50)*50, "violin", font)#, p_value[,6])
+        p8 <- create_sleeptime_plot(plot_subdata2, yParams[7], "Nighttime Bout Length", ceiling(max(plot_subdata2[,get(yParams[7])])/50)*50, "violin", font)#, p_value[,7])
 
       # # Generate sleep duration plots without p-values
       # p2 <- create_sleeptime_plot(plot_subdata2, yParams[1], "Total Sleep (min)", 1500, "bar", font)#, p_value = "No")
@@ -205,14 +212,20 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
       # p8 <- create_sleeptime_plot(plot_subdata2, yParams[7], "Nighttime Bout Length", 250, "violin", font)#, p_value = "No")
       #
         # Combine plots
+        rel_width <- 1 + (u / 2) + ((u - 1) * 0.1)
+
          suppressWarnings(
           combined_plot <- cowplot::plot_grid(p1, p2, p3, p4, p5, p6, p7, p8, ncol = 8, align = "h", axis = "tb",
-                                   rel_widths = c(6, u, u, u, u, u, u, u))
+                                              rel_widths = c(addedspace, rep(rel_width, 7)))
          )
+
+total_width <- addedspace + 7 * rel_width
+
 p1titlee <- gsub(" ", "_", p1title)
 p1titlee <- gsub(":", ".", p1titlee)
         # Save combined plot
-        ggplot2::ggsave(paste0("CombinedPlots", p1titlee, ExperimentData@Batch, ".pdf"), combined_plot, width = (6 + u * 7 + 1.45), height = 4)
+        ggplot2::ggsave(paste0("CombinedPlots", p1titlee, ExperimentData@Batch, ".pdf"),
+                        combined_plot, width = total_width, height = 4)
 
 }, by = 1:nrow(condition_combinations)]
 
