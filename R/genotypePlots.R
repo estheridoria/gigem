@@ -211,15 +211,75 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
       # p7 <- create_sleeptime_plot(plot_subdata2, yParams[6], "Daytime Bout Length", 250, "violin", font)#, p_value = "No")
       # p8 <- create_sleeptime_plot(plot_subdata2, yParams[7], "Nighttime Bout Length", 250, "violin", font)#, p_value = "No")
       #
+        
+        # bout distributions
+        
+        # take treatment, genotype, and phase, subsetting the bout_min table, make frequency counts, write to a table
+        nightdf<-daydf<- data.frame()
+        
+        bout_dt_min <- sleepr::bout_analysis(asleep, plot_subdata)[, .(
+          id, duration = duration / 60, t = t / 60,
+          phase = ifelse(t %% behavr::hours(24) < behavr::hours(12), "L", "D")
+        )][duration >= 5]
+        
+        for (phasee in c("L", "D")) {
+          pdat<- bout_dt_min[phase==phasee]
+              for (i in unique(behavr::meta(pdat)[[divisions[1]]])) {
+                gd1 <- behavr::meta(pdat)[get(divisions[1]) == i, id]
+                a <- pdat[pdat$id %in% gd1]
+                amax<-max(a[,duration])
+                factor<-factor(a[,duration],levels=1:amax)
+                out <- as.data.frame(table(factor))
+                out <- transform(out, cumFreq = cumsum(Freq), relative = prop.table(Freq))
+                out <- transform(out, cumProp = cumsum(relative))
+                out<-tibble::rownames_to_column(out)
+                out$d1 <- i
+                if(phasee == "L"){
+                  daydf<- rbind(daydf, out)
+                }
+                if(phasee == "D"){
+                  nightdf<- rbind(nightdf, out)
+                }
+              }}
+        # remove all bout lengths with frequency of 0
+        daydf2<- daydf[daydf$Freq !=0,]
+        daydf2 <- daydf2[base::order(daydf2$d1), ]
+        nightdf2 <- nightdf[nightdf$Freq !=0,]
+        nightdf2 <- nightdf2[base::order(nightdf2$d1), ]
+        
+        #function for plots
+        boutDist.fun<- function(data, phase){
+          bout_plot<- ggplot2::ggplot(data = data, ggplot2::aes(x = as.numeric(factor), 
+                                                                y = cumProp, color = d1))+
+            ggplot2::geom_point(shape = 1, size = 3, alpha = 1/2)+
+            ggplot2::scale_color_manual(values = c("blue", "red", "pink", "green", "#008B8B", "#808080", "#FFA500")) +
+            ggprism::theme_prism(base_fontface = font) +
+            ggplot2::scale_x_log10(limits = c(1,1500), labels = scales::label_number(accuracy = 1)) +
+            ggplot2::scale_y_continuous(limits = c(0.05,1.01), breaks = seq(0.1,1.0, by = 0.9)) +
+            ggplot2::annotation_logticks(sides = "b", mid = grid::unit(0.1, "cm"), long = grid::unit(0, "cm"),) +
+            ggplot2::labs(y = "Cumulative relative\nfrequency",
+                          x = paste(phase, "time sleep bout\nduration (min)"))+
+            ggplot2::theme(axis.title.x = ggplot2::element_text(size = 16),
+                           axis.title.y = ggplot2::element_text(size = 16, vjust = -5),
+                           axis.text.x = ggplot2::element_text(size = 14),
+                           axis.text.y = ggplot2::element_text(size = 16),
+                           plot.margin = ggplot2::unit(c(0.05, 0.2, 0, -0.25), #top right bottom left
+                                                       "inches"),
+                           legend.position = "none")
+          return(bout_plot)
+        }
+        p9 <- boutDist.fun(daydf2, "Day")
+        p10<- boutDist.fun(nightdf2, "Night")
+        
         # Combine plots
         rel_width <- 1 + (u / 2) + ((u - 1) * 0.1)
 
          suppressWarnings(
-          combined_plot <- cowplot::plot_grid(p1, p2, p3, p4, p5, p6, p7, p8, ncol = 8, align = "h", axis = "tb",
-                                              rel_widths = c(addedspace, rep(rel_width, 7)))
+          combined_plot <- cowplot::plot_grid(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, ncol = 10, align = "h", axis = "tb",
+                                              rel_widths = c(addedspace, rep(rel_width, 7), 3,3))
          )
 
-total_width <- addedspace + 7 * rel_width
+total_width <- addedspace + 7 * rel_width + 6
 
 p1titlee <- gsub(" ", "_", p1title)
 p1titlee <- gsub(":", ".", p1titlee)

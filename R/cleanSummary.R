@@ -68,6 +68,7 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
   summary_dt_final <- processDays(num_days, bout_dt, summary_dt_final)
 
   # Calculate bout lengths during Light (L) and dark (D) phases, filtering by duration
+
   bout_dt_min <- sleepr::bout_analysis(asleep, dt)[, .(
     id, duration = duration / 60, t = t / 60,
     phase = ifelse(t %% behavr::hours(24) < behavr::hours(12), "L", "D")
@@ -146,6 +147,86 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
   create_sleeptime_plot(summary_dt_final, "n_Bouts_D", "# Nighttime Sleep Bouts", divisions, 80, "violin")
   create_sleeptime_plot(summary_dt_final, "mean_Bout_Length_L", "Daytime Bout Length", divisions, 250, "violin")
   create_sleeptime_plot(summary_dt_final, "mean_Bout_Length_D", "Nighttime Bout Length", divisions, 250, "violin")
+  
+  }
+if(pref[8] == 1){  
+  # bout distributions
+  
+  # take treatment, genotype, and phase, subsetting the bout_min table, make frequency counts, write to a table
+  nightdf<-daydf<- data.frame()
+  for (phasee in c("L", "D")) {
+    pdat<- bout_dt_min[phase==phasee]
+    
+    for (h in unique(behavr::meta(pdat)[[divisions[3]]]))
+    {
+      gd3 <- behavr::meta(pdat)[get(divisions[3]) == h, id]
+      d3dat <- pdat[pdat$id %in% gd3]
+    
+    for (j in unique(behavr::meta(d3dat)[[divisions[2]]]))
+    {
+      gd2 <- behavr::meta(d3dat)[get(divisions[2]) == j, id]
+      d2dat <- d3dat[d3dat$id %in% gd2]
+      
+      for (i in unique(behavr::meta(d2dat)[[divisions[1]]])) {
+        gd1 <- behavr::meta(d2dat)[get(divisions[1]) == i, id]
+        a <- d2dat[d2dat$id %in% gd1]
+        amax<-max(a[,duration])
+        factor<-factor(a[,duration],levels=1:amax)
+        out <- as.data.frame(table(factor))
+        out <- transform(out, cumFreq = cumsum(Freq), relative = prop.table(Freq))
+        out <- transform(out, cumProp = cumsum(relative))
+        out<-tibble::rownames_to_column(out)
+        out$d1 <- i
+        out$d2 <- j
+        out$d3 <- h
+        out<- out[5:nrow(out),] ## removes min 1-4 since they are 0 by definition
+        if(phasee == "L"){
+          daydf<- rbind(daydf, out)
+        }
+        if(phasee == "D"){
+          nightdf<- rbind(nightdf, out)
+        }
+        }}}}
+  data.table::fwrite(daydf, paste0(ExperimentData@Batch, "_DayTimeDistribution.csv"))
+  data.table::fwrite(nightdf, paste0(ExperimentData@Batch, "_NightTimeDistribution.csv"))
+
+  daydf2 <- daydf
+  daydf2 <- daydf2[base::order(daydf2$d1), ]
+  
+  nightdf2 <- nightdf
+  nightdf2 <- nightdf2[base::order(nightdf2$d1), ]
+  
+  #function for plots
+  boutDist.fun<- function(data, phase){
+    pdf(paste0(ExperimentData@Batch, '_cumRelFreq_', phase, '.pdf'), 
+        width = (length(unique(info[[divisions[3]]]))*2.5),
+        height = length(unique(info[[divisions[2]]]))*3)
+    bout_plot<- ggplot2::ggplot(data = data, ggplot2::aes(x = as.numeric(factor), 
+                                y = cumProp, color = d1))+
+      ggplot2::facet_grid(rows = ggplot2::vars(d2),
+                          cols = ggplot2::vars(d3))+
+      ggplot2::geom_point(shape = 1, size = 3, alpha = 1/2)+
+      ggplot2::scale_color_manual(values = c("blue", "red", "pink", "green", "#008B8B", "#808080", "#FFA500")) +
+      ggprism::theme_prism(base_fontface = font) +
+      ggplot2::scale_x_log10(limits = c(1,1500), labels = scales::label_number(accuracy = 1)) +
+      ggplot2::scale_y_continuous(breaks = seq(0.1,1.0, by = 0.9)) +
+      ggplot2::annotation_logticks(sides = "b", mid = grid::unit(0.1, "cm"), long = grid::unit(0, "cm"),) +
+      ggplot2::labs(y = "Cumulative relative\nfrequency",
+                    x = paste(phase, "time sleep bout\nduration (min)"))+
+      ggplot2::theme(axis.title.x = ggplot2::element_text(size = 16),
+                     axis.title.y = ggplot2::element_text(size = 16, vjust = -5),
+                     axis.text.x = ggplot2::element_text(size = 14),
+                     axis.text.y = ggplot2::element_text(size = 16),
+                     legend.text = ggplot2::element_text(size = 16, face = font),
+                     plot.margin = ggplot2::unit(c(0.05, 0.2, 0, -0.25), #top right bottom left
+                                        "inches"))
+    print(bout_plot)
+    dev.off()
+  }
+  
+  boutDist.fun(daydf2, "Day")
+  boutDist.fun(nightdf2, "Night")
+  
 }
   # Return the final summary table
   return(summary_dt_final)
