@@ -37,6 +37,6 @@ concatGenotypePlots <- function(combined_sleepdata, combined_sleepmeta, summary_
                         genotypelist = list(),
                         loadinginfo = data.table::data.table())
 
-  genotypePlots(ExperimentData, dt_curated_final, summary_dt_final, control, font)
+  genotypePlots(ExperimentData, dt_curated_final, summary_dt_final, control, font, divisions)
 }
 

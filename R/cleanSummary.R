@@ -148,15 +148,12 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
   create_sleeptime_plot(summary_dt_final, "mean_Bout_Length_L", "Daytime Bout Length", divisions, 250, "violin")
   create_sleeptime_plot(summary_dt_final, "mean_Bout_Length_D", "Nighttime Bout Length", divisions, 250, "violin")
   
-  }
-if(pref[8] == 1){  
   # bout distributions
-  
   # take treatment, genotype, and phase, subsetting the bout_min table, make frequency counts, write to a table
   nightdf<-daydf<- data.frame()
   for (phasee in c("L", "D")) {
     pdat<- bout_dt_min[phase==phasee]
-    
+    #adf.save<- data.frame()
     for (h in unique(behavr::meta(pdat)[[divisions[3]]]))
     {
       gd3 <- behavr::meta(pdat)[get(divisions[3]) == h, id]
@@ -171,6 +168,8 @@ if(pref[8] == 1){
         gd1 <- behavr::meta(d2dat)[get(divisions[1]) == i, id]
         a <- d2dat[d2dat$id %in% gd1]
         amax<-max(a[,duration])
+        #adf<- data.frame(a[,duration], i, j, h)
+        #adf.save<- rbind(adf.save, adf)
         factor<-factor(a[,duration],levels=1:amax)
         out <- as.data.frame(table(factor))
         out <- transform(out, cumFreq = cumsum(Freq), relative = prop.table(Freq))
@@ -186,7 +185,34 @@ if(pref[8] == 1){
         if(phasee == "D"){
           nightdf<- rbind(nightdf, out)
         }
-        }}}}
+      }}}
+    # colnames(adf.save) <-  c("bout_lengths", "d1","d2","d3")
+    # ddat<-adf.save
+    # # data.table::fwrite(adf.save, paste0(ExperimentData@Batch, "_RawFrequencyData_", phasee, ".csv"))
+    # save<- data.frame()
+    # for (h in unique(ddat$d2)){
+    #   for (j in unique(ddat$d3)){
+    #     ks_result<- ks.test(ddat[ddat$d1 == "Iso" & ddat$d2 == h & ddat$d3 == j, "bout_lengths"],
+    #                         ddat[ddat$d1 == "Grp" & ddat$d2 == h & ddat$d3 == j, "bout_lengths"])
+    #     statistic <- ks_result$statistic
+    #     p_value <- ks_result$p.value
+    #     method <- ks_result$method
+    #     data_name <- ks_result$data.name
+    # 
+    #     output_df <- data.frame(
+    #       Statistic = statistic,
+    #       P_value = p_value,
+    #       Method = method,
+    #       Data = paste0("Iso-Grp_", h, "_", j, phasee),
+    #       Batch = ExperimentData@Batch
+    #     )
+    # 
+    #     save<- rbind(save, output_df)
+    #   }
+    # }
+    # 
+    # write.csv(save,paste0(ExperimentData@Batch, "_ks.results_", phasee,".csv"))
+}
   data.table::fwrite(daydf, paste0(ExperimentData@Batch, "_DayTimeDistribution.csv"))
   data.table::fwrite(nightdf, paste0(ExperimentData@Batch, "_NightTimeDistribution.csv"))
 

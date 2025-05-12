@@ -213,6 +213,32 @@ data.table::fwrite(combined_data, output_file, row.names = FALSE)
   # Save the combined data frame to a CSV file in the parent directory
   output_file <- file.path(original_wd, "all_batches_summary.csv")
   data.table::fwrite(combined_data, output_file, row.names = FALSE)
+# # regular ksresults concatenate
+#   all_tables <- list()
+#   # Iterate over each batch directory and read the summary files
+#   for (batch_dir in batch_dirs) {
+#     all_tables <- concatenate(batch_dir, all_tables, "ks.results_L.csv$")
+#     }
+#   # Concatenate all data frames into one large data frame
+#   combined_data <- do.call(rbind, all_tables)
+#   data.table::setDT(combined_data)
+#   # Save the combined data frame to a CSV file in the parent directory
+#   output_file <- file.path(original_wd, "all_batches_ks.result_L.csv")
+#   data.table::fwrite(combined_data, output_file, row.names = FALSE)
+#   # regular ksresults concatenate
+#   all_tables <- list()
+#   # Iterate over each batch directory and read the summary files
+#   for (batch_dir in batch_dirs) {
+#     all_tables <- concatenate(batch_dir, all_tables, "ks.results_D.csv$")
+#   }
+#   # Concatenate all data frames into one large data frame
+#   combined_data <- do.call(rbind, all_tables)
+#   data.table::setDT(combined_data)
+#   # Save the combined data frame to a CSV file in the parent directory
+#   output_file <- file.path(original_wd, "all_batches_ks.result_D.csv")
+#   data.table::fwrite(combined_data, output_file, row.names = FALSE)
+#   
+  
 
 # concatenated sleepdata & metadata --> genotypePlots
 if (pref[7] == 1){
