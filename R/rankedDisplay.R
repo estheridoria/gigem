@@ -7,17 +7,17 @@
 #' One plot contains only the `control` entry in `x` while the other plot contains every entry except `control`.
 #' The plots are saved as PDFs labeled, "NormalizedSleepLoss...".
 #'
-#' @param x The name of a parameter in "all_batches_norm_summary.csv" to be used as the x-axis in the plot.
-#' @param control The name of the control within the parameter x
-#' @param condition1 A string specifying a condition within one of the experimental parameters. The percent difference is calculated as: (`condition1`-`condition2`) / `condition2`
-#' @param condition2 A string specifying a condition within the same experimental parameter as `condition1` that is associated with the percent difference seen in sleep.
+#' @param x The name of a variable in "all_batches_norm_summary.csv" to be used as the x-axis in the plot.
+#' @param control The name of the control within the variable x
+#' @param condition1 A string specifying a condition within one of the experimental variables. The percent difference is calculated as: (`condition1`-`condition2`) / `condition2`
+#' @param condition2 A string specifying a condition within the same experimental variable as `condition1` that is associated with the percent difference seen in sleep.
 #' @param treat A string specifying a Treatment to subset the data by.
 #' @param temp A string specifying a Temperature condition to subset the data by.
 #' @param enviro A string specifying a Environment condition to subset the data by.
 #' @param sex A string specifying a sex condition to subset the data by.
 #' @param Lights A string specifying a Light condition to subset the data by.
 #' @param geno A string specifying a Genotype condition to subset the data by.
-#' @param ranking A tibble of one column containing the order of conditions displayed in the plot from parameter x
+#' @param ranking A tibble of one column containing the order of conditions displayed in the plot from variable x
 #' @param font A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")
 #' @param limits A list of two numerics to be the upper and lower limits on the plot. Default is c(-100, 1500)
 #'
@@ -51,7 +51,7 @@ rankedDisplay <- function(x, control = NULL, condition1 = NULL, condition2 = NUL
 
     # warning if condition is invalid
     if (nrow(dataset) == 0) {
-      stop("The 'treat' specified is not included in the data within the 'Treatment' parameter")
+      stop("The 'treat' specified is not included in the data within the 'Treatment' variable")
     }
     titlee <- trimws(paste(titlee, treat))
   }
@@ -59,7 +59,7 @@ rankedDisplay <- function(x, control = NULL, condition1 = NULL, condition2 = NUL
     dataset <- dataset[dataset$Temperature == temp,]
     # warning if condition is invalid
     if (nrow(dataset) == 0) {
-      stop("The 'temp' specified is not included in the data within the 'Temperature' parameter")
+      stop("The 'temp' specified is not included in the data within the 'Temperature' variable")
     }
     titlee <- trimws(paste(titlee, temp))
   }
@@ -67,7 +67,7 @@ rankedDisplay <- function(x, control = NULL, condition1 = NULL, condition2 = NUL
     dataset <- dataset[dataset$Environment == enviro,]
     # warning if condition is invalid
     if (nrow(dataset) == 0) {
-      stop("The 'enviro' specified is not included in the data within the 'Environment' parameter")
+      stop("The 'enviro' specified is not included in the data within the 'Environment' variable")
     }
     titlee <- trimws(paste(titlee, enviro))
   }
@@ -75,7 +75,7 @@ rankedDisplay <- function(x, control = NULL, condition1 = NULL, condition2 = NUL
     dataset <- dataset[dataset$Sex == sex,]
     # warning if condition is invalid
     if (nrow(dataset) == 0) {
-      stop("The 'sex' specified is not included in the data within the 'Sex' parameter")
+      stop("The 'sex' specified is not included in the data within the 'Sex' variable")
     }
     titlee <- trimws(paste(titlee, sex))
   }
@@ -83,7 +83,7 @@ rankedDisplay <- function(x, control = NULL, condition1 = NULL, condition2 = NUL
     dataset <- dataset[dataset$Light == Lights,]
     # warning if condition is invalid
     if (nrow(dataset) == 0) {
-      stop("The 'Lights' specified is not included in the data within the 'Light' parameter")
+      stop("The 'Lights' specified is not included in the data within the 'Light' variable")
     }
     titlee <- trimws(paste(titlee, Lights))
   }
@@ -91,13 +91,13 @@ rankedDisplay <- function(x, control = NULL, condition1 = NULL, condition2 = NUL
     dataset <- dataset[dataset$Genotype == geno,]
     # warning if condition is invalid
     if (nrow(dataset) == 0) {
-      stop("The 'geno' specified is not included in the data within the 'Genotype' parameter")
+      stop("The 'geno' specified is not included in the data within the 'Genotype' variable")
     }
     titlee <- trimws(paste(titlee, geno))
   }
 
   # dataset <- data.table::setDT(dataset)
-  traitlist <- c("Sleep_Time_All_mean", "Sleep_Time_L_mean", "Sleep_Time_D_mean",
+  parameterlist <- c("Sleep_Time_All_mean", "Sleep_Time_L_mean", "Sleep_Time_D_mean",
                  "n_Bouts_L_mean", "n_Bouts_D_mean", "mean_Bout_Length_L_mean",
                  "mean_Bout_Length_D_mean")
   if(!is.null(condition1) && !is.null(condition2)){
@@ -110,32 +110,32 @@ rankedDisplay <- function(x, control = NULL, condition1 = NULL, condition2 = NUL
       sapply(condition_cols, function(column) any(grepl(condition2, column)))
     ]
     if(length(c1_col) == 0 | length(c2_col) == 0){
-      stop("'condition1' and/or 'condition2' is not found inside the data. Please check the spelling. Also check that one of the conditions was not removed via the parameter subsetting option in this function.")
+      stop("'condition1' and/or 'condition2' is not found inside the data. Please check the spelling. Also check that one of the conditions was not removed via the variable subsetting option in this function.")
     }
     if(c1_col != c2_col){
-      stop("'condition1' and condition2' are not within the same parameter.")
+      stop("'condition1' and condition2' are not within the same variable.")
     } #else{condition_cols <- condition_cols[!(names(condition_cols) %in% c(c1_col))]}
-    c1trait <- dataset[dataset[[c1_col]] == condition1, c(traitlist, names(condition_cols))]
+    c1parameter <- dataset[dataset[[c1_col]] == condition1, c(parameterlist, names(condition_cols))]
 
-    c2trait <- dataset[dataset[[c2_col]] == condition2, c(traitlist, names(condition_cols))]
-    if(length(c1trait) != length(c2trait)){
-      stop("There is an uneven number of 'condition1' and 'condition2' populations within the current subset of parameters. Please ensure there are no unpaired populations/monitors for 'condition1' and 'condition2'.")
+    c2parameter <- dataset[dataset[[c2_col]] == condition2, c(parameterlist, names(condition_cols))]
+    if(length(c1parameter) != length(c2parameter)){
+      stop("There is an uneven number of 'condition1' and 'condition2' populations within the current subset of variables. Please ensure there are no unpaired populations/monitors for 'condition1' and 'condition2'.")
     }
 
-    # Make sure we sort based on parameters
-    c1trait_sorted <- c1trait[order(c1trait$Sex, c1trait$Genotype, c1trait$Temperature,
-                                    c1trait$Treatment, c1trait$Environment, c1trait$Light),]
-    c2trait_sorted<- c2trait[order(c2trait$Sex, c2trait$Genotype, c2trait$Temperature,
-                                   c2trait$Treatment, c2trait$Environment, c2trait$Light),]
+    # Make sure we sort based on variables
+    c1parameter_sorted <- c1parameter[order(c1parameter$Sex, c1parameter$Genotype, c1parameter$Temperature,
+                                    c1parameter$Treatment, c1parameter$Environment, c1parameter$Light),]
+    c2parameter_sorted<- c2parameter[order(c2parameter$Sex, c2parameter$Genotype, c2parameter$Temperature,
+                                   c2parameter$Treatment, c2parameter$Environment, c2parameter$Light),]
 
-    non_numeric_cols <- c1trait[!sapply(c1trait, is.numeric)]
+    non_numeric_cols <- c1parameter[!sapply(c1parameter, is.numeric)]
     non_numeric_cols_noc1col <- non_numeric_cols[!(names(non_numeric_cols) %in% c(c1_col))]
-    numeric_cols <- c1trait[sapply(c1trait_sorted, is.numeric)]
+    numeric_cols <- c1parameter[sapply(c1parameter_sorted, is.numeric)]
 
-    # df <- (c1trait-c2trait)/c2trait -- Perform the calculation only on the numeric columns
-    pre_df <- (c1trait_sorted[, names(numeric_cols)] - c2trait_sorted[, names(numeric_cols)]) / c2trait_sorted[, names(numeric_cols)]
+    # df <- (c1parameter-c2parameter)/c2parameter -- Perform the calculation only on the numeric columns
+    pre_df <- (c1parameter_sorted[, names(numeric_cols)] - c2parameter_sorted[, names(numeric_cols)]) / c2parameter_sorted[, names(numeric_cols)]
 
-    df <- cbind(pre_df, c1trait_sorted[, names(non_numeric_cols_noc1col), drop = FALSE])
+    df <- cbind(pre_df, c1parameter_sorted[, names(non_numeric_cols_noc1col), drop = FALSE])
 
 
     # Rename the columns for better clarity.
@@ -162,11 +162,11 @@ rankedDisplay <- function(x, control = NULL, condition1 = NULL, condition2 = NUL
 
     y<- "Change in Sleep (%)"
   } else {
-    save_cols<- c(traitlist, c("Sex", "Genotype", "Temperature",
+    save_cols<- c(parameterlist, c("Sex", "Genotype", "Temperature",
                                "Treatment", "Environment", "Light", "Batch"))
     df <- dataset[,save_cols]
     # Rename the columns for better clarity.
-    colnames(df) <- traits <- c("TotalSleepTime", "DaySleepTime", "NightSleepTime", "DayNBouts",
+    colnames(df) <- parameters <- c("TotalSleepTime", "DaySleepTime", "NightSleepTime", "DayNBouts",
                                 "NightNBouts", "DayBoutLength", "NightBoutLength", "Sex", "Genotype", "Temperature",
                                 "Treatment", "Environment", "Light", "Batch")
     if(is.null(ranking)){
@@ -189,7 +189,7 @@ rankedDisplay <- function(x, control = NULL, condition1 = NULL, condition2 = NUL
 
     y <- "Sleep (min)"
   }
-  #separate control & noncontrol x parameter conditions
+  #separate control & noncontrol x variable conditions
   if(!is.null(control)){
 
     if(any(grep(control, df[,x]))){
@@ -198,7 +198,7 @@ rankedDisplay <- function(x, control = NULL, condition1 = NULL, condition2 = NUL
 
       df_nc <- df[df[,x] != control,]
     } else{
-      stop("The 'control' condition is not within parameter 'x'")
+      stop("The 'control' condition is not within variable 'x'")
     }
   }else{
     df_nc <- df

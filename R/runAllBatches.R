@@ -5,7 +5,7 @@
 #' It iterates through directories matching the batch pattern, executes relevant R files, and combines
 #' both normalized and general summary statistics from each batch into a final report.
 #'
-#' @param control A character string specifying the control condition from divisions[1] (the sleep plot overlay & color parameter).
+#' @param control A character string specifying the control condition for normalization (ex. Canton S Vs to SIP-L1-1).
 #' @param num_days A numerical value specifying the number of days to be used in analysis.
 #' @param font A string variable determining the font style of the produced plots.
 #'
@@ -46,16 +46,19 @@
 #'    are saved in the parent directory, containing combined results for all batches.
 runAllBatches <- function(control, num_days, font = "plain") {
   # Warnings
+
+  tryCatch({
   #divisions warnings/setting
-  #divisions warnings/setting
+
+
   if(!exists("divisions", envir = .GlobalEnv)){
-    # print("Please select the fascetting divisions for each plot type from the following parameters: 'Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment', or 'Light'.")
-    # d1 <- readline(prompt = "Enter the parameter for the Sleep plots, overlay and color: ")
-    # d2 <- readline(prompt = "Enter the parameter for the Sleep plots, rows: ")
-    # d3 <- readline(prompt = "Enter the parameter for the Sleep plots, columns: ")
-    # d4 <- readline(prompt = "Enter the parameter for the Point plot, overlay and color: ")
-    # d5 <- readline(prompt = "Enter the parameter for the Point plot, rows: ")
-    # d6 <- readline(prompt = "Enter the parameter for the Point plot, columns: ")
+    # print("Please select the fascetting divisions for each plot type from the following variables: 'Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment', or 'Light'.")
+    # d1 <- readline(prompt = "Enter the variable for the Sleep plots, overlay and color: ")
+    # d2 <- readline(prompt = "Enter the variable for the Sleep plots, rows: ")
+    # d3 <- readline(prompt = "Enter the variable for the Sleep plots, columns: ")
+    # d4 <- readline(prompt = "Enter the variable for the Point plot, overlay and color: ")
+    # d5 <- readline(prompt = "Enter the variable for the Point plot, rows: ")
+    # d6 <- readline(prompt = "Enter the variable for the Point plot, columns: ")
     # divisions<- c(d1,d2,d3,d4,d5,d6)
     # }
     d1 <- menu(c('Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment','Light'),
@@ -74,7 +77,7 @@ runAllBatches <- function(control, num_days, font = "plain") {
     divisions <- sapply(divisions, function(x) labels[x])
   }
   if(any(!(divisions[1:3] %in% c("Sex", "Genotype", "Temperature", "Treatment","Environment","Light")))){
-    stop("'divisions' entries must be from the parameter list: 'Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment', or 'Light'")
+    stop("'divisions' entries must be from the variable list: 'Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment', or 'Light'")
   }
 
   if (!(font %in% c("plain", "bold", "italic","bold.italic"))){
@@ -131,19 +134,19 @@ combine_with_warning_check <- function(dt_list) {
   }, warning = function(w) {
     # Check if the warning contains the specific message
     if (grepl("Item .* has .* rows but longest item has .*; recycled with remainder", conditionMessage(w))) {
-      stop("Error: One or more parameters in one or more of your
-           Main.R files has a different number of conditions than the other parameters.
-           Please ensure each parameter has an equal number of conditions within
+      stop("Error: One or more variables in one or more of your
+           Main.R files has a different number of conditions than the other variables.
+           Please ensure each variable has an equal number of conditions within
            the respective Main.R file(s).")
     }
     if (grepl("Column .* of item .* is missing", conditionMessage(w))) {
-      stop("Error: One or more parameters is missing from some of your data tables.
-           Please ensure all parameters are present and named correctly in all Main.R files.")
+      stop("Error: One or more variables is missing from some of your data tables.
+           Please ensure all variables are present and named correctly in all Main.R files.")
       }
   })
-  if(!any(unique(combined[,get(divisions[1])]) == control)){
-    stop("'control' must be a condition within the divisions[1] variable for all batches.")
-  } ## doesn't check for each row and column separation.
+  # if(!any(unique(combined[,get(divisions[1])]) == control)){
+  #   stop("'control' must be a condition within the divisions[1] variable for all batches.")
+  # } ## doesn't check for each row and column separation.
 
   return()
 
@@ -167,20 +170,20 @@ each_dir <- list.dirs(original_wd, full.names = FALSE, recursive = FALSE)
   # Concatenate all summaries and combine them into one
   # save in this parent (current) directory.
 
-# # norm summary concatenate
-#   all_tables <- list()
-#
-#   # Iterate over each batch directory and read the summary files
-#   for (batch_dir in batch_dirs) {
-#     all_tables <- concatenate(batch_dir, all_tables, "^norm_summary_Batch[0-9_a-zA-Z]*\\.csv$")
-#   }
-#
-#   # Concatenate all data frames into one large data frame
-#   combined_data <- do.call(rbind, all_tables[1:9])
-#
-#   # Save the combined data frame to a CSV file in the parent directory
-#   output_file <- file.path(original_wd, "all_batches_norm_summary.csv")
-#   data.table::fwrite(combined_data, output_file, row.names = FALSE)
+# relative summary concatenate
+  all_tables <- list()
+
+  # Iterate over each batch directory and read the summary files
+  for (batch_dir in batch_dirs) {
+    all_tables <- concatenate(batch_dir, all_tables, "^relative_summary_Batch[0-9_a-zA-Z]*\\.csv$")
+  }
+
+  # Concatenate all data frames into one large data frame
+  combined_data <- do.call(rbind, all_tables[1:9])
+
+  # Save the combined data frame to a CSV file in the parent directory
+  output_file <- file.path(original_wd, "all_batches_relative_summary.csv")
+  data.table::fwrite(combined_data, output_file, row.names = FALSE)
 
 # stat concatenate
 all_tables <- list()
@@ -274,8 +277,12 @@ if (pref[7] == 1){
   # Save the combined data frame to a CSV file in the parent directory
   output_file <- file.path(original_wd, "all_sleepmeta.csv")
   data.table::fwrite(combined_sleepmeta, output_file, row.names = FALSE)
-
-  concatGenotypePlots(combined_sleepdata, combined_sleepmeta, combined_data, control, font)
+  concatGenotypePlots(combined_sleepdata, combined_sleepmeta, combined_data, control, font, divisions)
 }
   setwd(original_wd)
+
+  }, error = function(e) {
+    message("An error occurred: ", e$message)
+    message("Working directory is: ", getwd())})
+
 }

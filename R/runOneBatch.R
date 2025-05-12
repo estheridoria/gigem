@@ -5,7 +5,7 @@
 #' generating normalized statistics.
 #'
 #' @param oneBatch A character string of the Batch folder to be analyzed.
-#' @param control A character string specifying the control condition from divisions[1] (the sleep plot overlay & color parameter).
+#' @param control A character string specifying the control condition for normalization (ex. Canton S Vs to SIP-L1-1).
 #' @param num_days A numerical value specifying the number of days to be used in analysis.
 #' @param font A string variable determining the font style of the produced plots.
 #' @export
@@ -18,16 +18,16 @@
 runOneBatch <- function(oneBatch, control, num_days, font = "plain") {
 
 #warn thy user
-
+  tryCatch({
   #divisions warnings/setting
   if(!exists("divisions", envir = .GlobalEnv)){
-    # print("Please select the fascetting divisions for each plot type from the following parameters: 'Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment', or 'Light'.")
-    # d1 <- readline(prompt = "Enter the parameter for the Sleep plots, overlay and color: ")
-    # d2 <- readline(prompt = "Enter the parameter for the Sleep plots, rows: ")
-    # d3 <- readline(prompt = "Enter the parameter for the Sleep plots, columns: ")
-    # d4 <- readline(prompt = "Enter the parameter for the Point plot, overlay and color: ")
-    # d5 <- readline(prompt = "Enter the parameter for the Point plot, rows: ")
-    # d6 <- readline(prompt = "Enter the parameter for the Point plot, columns: ")
+    # print("Please select the fascetting divisions for each plot type from the following variables: 'Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment', or 'Light'.")
+    # d1 <- readline(prompt = "Enter the variable for the Sleep plots, overlay and color: ")
+    # d2 <- readline(prompt = "Enter the variable for the Sleep plots, rows: ")
+    # d3 <- readline(prompt = "Enter the variable for the Sleep plots, columns: ")
+    # d4 <- readline(prompt = "Enter the variable for the Point plot, overlay and color: ")
+    # d5 <- readline(prompt = "Enter the variable for the Point plot, rows: ")
+    # d6 <- readline(prompt = "Enter the variable for the Point plot, columns: ")
     # divisions<- c(d1,d2,d3,d4,d5,d6)
     # }
   d1 <- menu(c('Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment','Light'),
@@ -46,7 +46,7 @@ runOneBatch <- function(oneBatch, control, num_days, font = "plain") {
   divisions <- sapply(divisions, function(x) labels[x])
 }
     if(any(!(divisions[1:3] %in% c("Sex", "Genotype", "Temperature", "Treatment","Environment","Light")))){
-      stop("'divisions' entries must be from the parameter list: 'Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment', or 'Light'")
+      stop("'divisions' entries must be from the variable list: 'Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment', or 'Light'")
     }
 
   if (missing(oneBatch)){
@@ -88,11 +88,15 @@ original_wd <- getwd()
     source(r_file)
   }
 
-  if(!any(unique(info[,get(divisions[1])]) == control)){
-    stop("'control' must be a condition within the divisions[1] variable.")
-  } ## doesn't check for each row and column separation.
+  # if(!any(unique(info[,get(divisions[1])]) == control)){
+  #   stop("'control' must be a condition within the divisions[1] variable.")
+  # } ## doesn't check for each row and column separation.
 
     runEachBatch(control, num_days, oneBatch, font, pref, divisions)
 
   setwd(original_wd)
+}, error = function(e) {
+  message("An error occurred: ", e$message)
+  message("Working directory is: ", getwd())})
+
 }

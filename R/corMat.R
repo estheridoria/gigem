@@ -2,8 +2,8 @@
 #'
 #' Computes the relative sleep changes between two Treatments and generates a correlation matrix plot with significance annotations.
 #'
-#' @param condition1 A string specifying a condition within one of the experimental parameters. The difference is calculated as: `condition1`-`condition2`
-#' @param condition2 A string specifying a condition within the same experimental parameter as `condition1` that is associated with the difference seen in sleep.
+#' @param condition1 A string specifying a condition within one of the experimental variables. The difference is calculated as: `condition1`-`condition2`
+#' @param condition2 A string specifying a condition within the same experimental variable as `condition1` that is associated with the difference seen in sleep.
 #' @param sex A string specifying a Sex condition to subset the data by.
 #' @param geno A string specifying a Genotype condition to subset the data by.
 #' @param temp A string specifying a Temperature condition to subset the data by.
@@ -22,29 +22,44 @@
 corMat <- function(condition1 = NULL, condition2 = NULL, sex = NULL, geno = NULL,
                    temp = NULL, treat = NULL, enviro = NULL,
                    Lights = NULL, font = "plain"){
-  # Check if 'all_batches_stat.csv' exists in the current directory, and if not, stop execution.
-  if (!file.exists("all_batches_stat.csv")) {
-    stop("The file 'all_batches_stat.csv' is missing from the current directory.
-         Please run 'RunAllBatches' before attempting to run 'CorMat'")
+  if(relValues){
+    # Check if 'all_batches_summary.csv' exists in the current directory, and if not, stop execution.
+    if (!file.exists("all_batches_relative_summary.csv")) {
+      stop("'all_batches_relative_summary.csv' is not found in the current directory. Please run 'runAllBatches' before attempting to run 'kmeansCluster'. If you have already run it, reset the working directory and run kmeansCluster again.")
+    }
+    combined_raw_data<-read.csv("all_batches_relative_summary.csv")
+    combined_data <- combined_raw_data[, lapply(.SD, mean),
+                                       by = .(Sex, Genotype, Temperature, Treatment, Environment, Light, Batch),
+                                       .SDcols = c("Sleep_Time_All", "Sleep_Time_L",
+                                                   "Sleep_Time_D", "n_Bouts_L", "mean_Bout_Length_L",
+                                                   "n_Bouts_D", "mean_Bout_Length_D")]
+  }else{
+    # Read the data from CSV file
+    # Check if 'all_batches_summary.csv' exists in the current directory, and if not, stop execution.
+    if (!file.exists("all_batches_stat.csv")) {
+      stop("'all_batches_stat.csv' is not found in the current directory. Please run 'runAllBatches' before attempting to run 'kmeansCluster'. If you have already run it, reset the working directory and run kmeansCluster again.")
+    }
+    combined_data <- read.csv("all_batches_stat.csv")
   }
+
+  data.table::setDT(combined_data)
 
   if (!(font %in% c("plain", "bold", "italic","bold.italic"))){
     stop("'font' must be 'plain', 'bold', 'italic', or 'bold.italic'")
   }
 
-  # Read in the combined data from the CSV file.
-  combined_data <- read.csv("all_batches_stat.csv")
-  # combined_data$Light <- gsub("\"", "", combined_data$Light)
-  data.table::setDT(combined_data)
-
   # subset by only selecting rows with condition(s) specified
-  titlee <- c("")
+  if(relValues){
+    titlee <- c("Relative")
+  }else{
+    titlee<- c("")
+  }
   if(!is.null(treat)){
     combined_data <- combined_data[combined_data$Treatment == treat,]
 
     # warning if condition is invalid
     if (nrow(combined_data) == 0) {
-      stop("The 'treat' specified is not included in the data within the 'Treatment' parameter")
+      stop("The 'treat' specified is not included in the data within the 'Treatment' variable")
     }
     titlee <- trimws(paste(titlee, treat))
   }
@@ -52,7 +67,7 @@ corMat <- function(condition1 = NULL, condition2 = NULL, sex = NULL, geno = NULL
     combined_data <- combined_data[combined_data$Temperature == temp,]
     # warning if condition is invalid
     if (nrow(combined_data) == 0) {
-      stop("The 'temp' specified is not included in the data within the 'Temperature' parameter")
+      stop("The 'temp' specified is not included in the data within the 'Temperature' variable")
     }
     titlee <- trimws(paste(titlee, temp))
   }
@@ -60,7 +75,7 @@ corMat <- function(condition1 = NULL, condition2 = NULL, sex = NULL, geno = NULL
     combined_data <- combined_data[combined_data$Environment == enviro,]
     # warning if condition is invalid
     if (nrow(combined_data) == 0) {
-      stop("The 'enviro' specified is not included in the data within the 'Environment' parameter")
+      stop("The 'enviro' specified is not included in the data within the 'Environment' variable")
     }
     titlee <- trimws(paste(titlee, enviro))
   }
@@ -68,7 +83,7 @@ corMat <- function(condition1 = NULL, condition2 = NULL, sex = NULL, geno = NULL
     combined_data <- combined_data[combined_data$Light == Lights,]
     # warning if condition is invalid
     if (nrow(combined_data) == 0) {
-      stop("The 'Lights' specified is not included in the data within the 'Light' parameter")
+      stop("The 'Lights' specified is not included in the data within the 'Light' variable")
     }
     titlee <- trimws(paste(titlee, Lights))
   }
@@ -76,7 +91,7 @@ corMat <- function(condition1 = NULL, condition2 = NULL, sex = NULL, geno = NULL
     combined_data <- combined_data[combined_data$Genotype == geno,]
     # warning if condition is invalid
     if (nrow(combined_data) == 0) {
-      stop("The 'geno' specified is not included in the data within the 'Genotype' parameter")
+      stop("The 'geno' specified is not included in the data within the 'Genotype' variable")
     }
     titlee <- trimws(paste(titlee, geno))
   }
@@ -85,7 +100,7 @@ corMat <- function(condition1 = NULL, condition2 = NULL, sex = NULL, geno = NULL
 
     # warning if condition is invalid
     if (nrow(combined_data) == 0) {
-      stop("The 'sex' specified is not included in the data within the 'Sex' parameter")
+      stop("The 'sex' specified is not included in the data within the 'Sex' variable")
     }
     titlee <- trimws(paste(titlee, sex))
   }
@@ -104,17 +119,17 @@ corMat <- function(condition1 = NULL, condition2 = NULL, sex = NULL, geno = NULL
   )
 
   # Define sleep time variables.
-  traitlist <- c("Sleep_Time_All_mean", "Sleep_Time_L_mean", "Sleep_Time_D_mean",
+  parameterlist <- c("Sleep_Time_All_mean", "Sleep_Time_L_mean", "Sleep_Time_D_mean",
                  "n_Bouts_L_mean", "n_Bouts_D_mean", "mean_Bout_Length_L_mean",
                  "mean_Bout_Length_D_mean")
   metalist <- c("Sex", "Genotype", "Temperature", "Treatment", "Environment",
                 "Light")
 
   # if("Grp" %in% meanData$Treatment && "Iso" %in% meanData$Treatment){
-  #  # Define additional trait variables to compare.
-  #   gtrait <- meanData[meanData$Treatment == "Grp", traitlist]
-  #   itrait <- meanData[meanData$Treatment == "Iso", traitlist]
-  #   traitchange <- (itrait - gtrait)
+  #  # Define additional parameter variables to compare.
+  #   gparameter <- meanData[meanData$Treatment == "Grp", parameterlist]
+  #   iparameter <- meanData[meanData$Treatment == "Iso", parameterlist]
+  #   parameterchange <- (iparameter - gparameter)
   if(!is.null(condition1) && !is.null(condition2)){
     condition_cols <- meanData[, metalist]
     c1_col <- names(condition_cols)[
@@ -124,24 +139,24 @@ corMat <- function(condition1 = NULL, condition2 = NULL, sex = NULL, geno = NULL
       sapply(condition_cols, function(column) any(grepl(condition2, column)))
     ]
     if(length(c1_col) == 0 | length(c2_col) == 0){
-      stop("'condition1' and/or 'condition2' is not found inside the data. Please check the spelling. Also check that one of the conditions was not removed via the parameter subsetting option in this function.")
+      stop("'condition1' and/or 'condition2' is not found inside the data. Please check the spelling. Also check that one of the conditions was not removed via the variable subsetting option in this function.")
     }
   if(c1_col != c2_col){
-    stop("'condition1' and condition2' are not within the same parameter.")
+    stop("'condition1' and condition2' are not within the same variable.")
   }
-    c1trait <- meanData[meanData[[c1_col]] == condition1, traitlist]
-    c2trait <- meanData[meanData[[c2_col]] == condition2, traitlist]
-    if(length(c1trait) != length(c2trait)){
-      stop("There is an uneven number of 'condition1' and 'condition2' populations within the current subset of parameters. Please ensure there are no unpaired populations/monitors for 'condition1' and 'condition2'.")
+    c1parameter <- meanData[meanData[[c1_col]] == condition1, parameterlist]
+    c2parameter <- meanData[meanData[[c2_col]] == condition2, parameterlist]
+    if(length(c1parameter) != length(c2parameter)){
+      stop("There is an uneven number of 'condition1' and 'condition2' populations within the current subset of variables. Please ensure there are no unpaired populations/monitors for 'condition1' and 'condition2'.")
     }
-    df <- (c1trait-c2trait)
+    df <- (c1parameter-c2parameter)
 
     # Rename the columns for better clarity.
     colnames(df) <- c("Sleepchange_All", "Sleepchange_L", "Sleepchange_D", "nBoutschange_L",
                       "nBoutschange_D", "Boutlenchange_L", "Boutlenchange_D")
     titlee <- trimws(paste0(titlee, " ", condition1, "-", condition2))
   } else {
-    df <- meanData[, traitlist]
+    df <- meanData[, parameterlist]
     # Rename the columns for better clarity.
     colnames(df) <- c("Sleeptime_All", "Sleeptime_L", "Sleeptime_D", "NBouts_L",
                       "NBouts_D", "Boutlen_L", "Boutlen_D")
