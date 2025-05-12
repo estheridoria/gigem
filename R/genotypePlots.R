@@ -60,7 +60,7 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
   # p1title <- list()
 
   # Function to create sleep duration plots
-  create_sleeptime_plot <- function(plot_data, yParam, Yname, limits, geom, font, p_value) { #,p_value
+  create_sleeptime_plot <- function(plot_data, yParam, Yname, limits, geom, font, p_value) {
     pointplot<- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data[[divisions[1]]], y = .data[[yParam]]))
     if(geom == "bar"){
       pointplot <- pointplot +
@@ -159,7 +159,8 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
 
     #p-value statements!!
     # find out if there is a control for each combination of conditions
-    if(control %in% plot_subdata2[,get(divisions[1])]){
+    controlee<-"Grp"
+    if(controlee %in% plot_subdata2[,get(divisions[1])]){
 
 
     # all_condition_combinations_compare <- all_condition_combinations[,.SD,.SDcols = columns_to_consider[columns_to_consider != divisions[1]]]
@@ -170,14 +171,14 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
 
       # Perform t-test if the 'divisions[1]'  has 'control'
       all_conditions <- unique(plot_subdata2[,.SD,.SDcols = columns_to_consider])
-      t.test_y_vars <- all_conditions[get(divisions[1]) != control, get(divisions[1])]
+      t.test_y_vars <- all_conditions[get(divisions[1]) != controlee, get(divisions[1])]
 
       p_value <- matrix(, nrow = length(t.test_y_vars), ncol = length(yParams))
       p_vals <- list()
 
       for(j in seq_along(yParams)){
         for (i in seq_along(t.test_y_vars)){
-          t_test_result <- t.test(plot_subdata2[get(divisions[1]) == control, get(yParams[j])], # needs to be generalized
+          t_test_result <- t.test(plot_subdata2[get(divisions[1]) == controlee, get(yParams[j])], # needs to be generalized
                                   plot_subdata2[get(divisions[1]) == t.test_y_vars[i], get(yParams[j])])
           p_value[i,j] <- t_test_result$p.value
         }
@@ -209,23 +210,22 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
       # p2 <- create_sleeptime_plot(plot_subdata2, yParams[1], "Total Sleep (min)", 1500, "bar", font)#, p_value = "No")
       # p3 <- create_sleeptime_plot(plot_subdata2, yParams[2], "Daytime Sleep (min)", 1000, "bar", font)#, p_value = "No")
       # p4 <- create_sleeptime_plot(plot_subdata2, yParams[3], "Nighttime Sleep (min)", 1000, "bar", font)#, p_value = "No")
-<<<<<<< Updated upstream
       # p5 <- create_sleeptime_plot(plot_subdata2, yParams[4], "# Daytime Sleep Bouts", 80, "violin", font)#, p_value = "No")
       # p6 <- create_sleeptime_plot(plot_subdata2, yParams[5], "# Nighttime Sleep Bouts", 80, "violin", font)#, p_value = "No")
       # p7 <- create_sleeptime_plot(plot_subdata2, yParams[6], "Daytime Bout Length", 250, "violin", font)#, p_value = "No")
       # p8 <- create_sleeptime_plot(plot_subdata2, yParams[7], "Nighttime Bout Length", 250, "violin", font)#, p_value = "No")
       #
-        
+
         # bout distributions
-        
+
         # take treatment, genotype, and phase, subsetting the bout_min table, make frequency counts, write to a table
         nightdf<-daydf<- data.frame()
-        
+
         bout_dt_min <- sleepr::bout_analysis(asleep, plot_subdata)[, .(
           id, duration = duration / 60, t = t / 60,
           phase = ifelse(t %% behavr::hours(24) < behavr::hours(12), "L", "D")
         )][duration >= 5]
-        
+
         for (phasee in c("L", "D")) {
           pdat<- bout_dt_min[phase==phasee]
               for (i in unique(behavr::meta(pdat)[[divisions[1]]])) {
@@ -250,12 +250,12 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
         daydf2 <- daydf2[base::order(daydf2$d1), ]
         nightdf2 <- nightdf[nightdf$Freq !=0,]
         nightdf2 <- nightdf2[base::order(nightdf2$d1), ]
-        
+
         #function for plots
         boutDist.fun<- function(data, phase){
-          bout_plot<- ggplot2::ggplot(data = data, ggplot2::aes(x = as.numeric(factor), 
+          bout_plot<- ggplot2::ggplot(data = data, ggplot2::aes(x = as.numeric(factor),
                                                                 y = cumProp, color = d1))+
-            ggplot2::geom_point(shape = 1, size = 3, alpha = 1/2)+
+            ggplot2::geom_point(shape = 1, size = 2, alpha = 1/2)+
             ggplot2::scale_color_manual(values = c("blue", "red", "pink", "green", "#008B8B", "#808080", "#FFA500")) +
             ggprism::theme_prism(base_fontface = font) +
             ggplot2::scale_x_log10(limits = c(1,1500), labels = scales::label_number(accuracy = 1)) +
@@ -274,14 +274,12 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
         }
         p9 <- boutDist.fun(daydf2, "Day")
         p10<- boutDist.fun(nightdf2, "Night")
-        
-=======
+
       # p5 <- create_sleeptime_plot(plot_subdata2, yParams[4], "# Daytime Sleep Bouts", ceiling(max(plot_subdata2[,get(yParams[4])])/50)*50, "violin", font)#, p_value = "No")
       # p6 <- create_sleeptime_plot(plot_subdata2, yParams[5], "# Nighttime Sleep Bouts", ceiling(max(plot_subdata2[,get(yParams[5])])/50)*50, "violin", font)#, p_value = "No")
       # p7 <- create_sleeptime_plot(plot_subdata2, yParams[6], "Daytime Bout Length", ceiling(max(plot_subdata2[,get(yParams[6])])/50)*50, "violin", font)#, p_value = "No")
       # p8 <- create_sleeptime_plot(plot_subdata2, yParams[7], "Nighttime Bout Length", ceiling(max(plot_subdata2[,get(yParams[7])])/50)*50, "violin", font)#, p_value = "No")
       # #
->>>>>>> Stashed changes
         # Combine plots
         rel_width <- 1 + (u / 2) + ((u - 1) * 0.1)
 

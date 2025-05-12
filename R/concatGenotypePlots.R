@@ -23,7 +23,7 @@
 #' @return None. Plots are saved as PDF files.
 #' @keywords internal
 
-concatGenotypePlots <- function(combined_sleepdata, combined_sleepmeta, summary_dt_final, control, font) {
+concatGenotypePlots <- function(combined_sleepdata, combined_sleepmeta, summary_dt_final, control, font, divisions) {
   # data.table::setDT(summary_dt_final)
 
   #link metadata and behavr data
