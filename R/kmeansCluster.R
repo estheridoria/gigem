@@ -58,15 +58,23 @@ kmeansCluster <- function(x = NULL, y = NULL, condition1 = NULL, condition2 = NU
   }
 
   data.table::setDT(combined_data)
-
+xylist<- c("mean_Bout_Length_D", "mean_Bout_Length_L", "n_Bouts_D", "n_Bouts_L", "Sleep_Time_D", "Sleep_Time_L")
   # Validate that y is valid.
   if(!is.null(y) && !any(grep(y, colnames(combined_data)))){
-    stop("'y' is invalid")
+    menu("'y' is invalid")
+    yy <- menu(c("mean_Bout_Length_D", "mean_Bout_Length_L", "n_Bouts_D", "n_Bouts_L", "Sleep_Time_D", "Sleep_Time_L"), title="The 'y' specified is invalid. please select a y variable from this list to use instead:")
+    Y <- xylist[yy]
+  } else {
+    Y<- y
   }
 
   # Validate that x is valid.
   if(!is.null(x) && !any(grep(x, colnames(combined_data)[15:30]))){
-    stop("'x' is invalid")
+    menu("'y' is invalid")
+    xx <- menu(c("mean_Bout_Length_D", "mean_Bout_Length_L", "n_Bouts_D", "n_Bouts_L", "Sleep_Time_D", "Sleep_Time_L"), title="The 'x' specified is invalid. please select a x variable from this list to use instead:")
+    X <- xylist[xx]
+  } else {
+    X<- x
   }
 
   if (missing(aPrioriVariable) || !(aPrioriVariable %in% c( "Sex", "Genotype", "Temperature", "Treatment", "Environment", "Light"))) {
@@ -163,9 +171,9 @@ kmeansCluster <- function(x = NULL, y = NULL, condition1 = NULL, condition2 = NU
                  "mean_Bout_Length_D_mean")
   metalist <- c("Sex", "Genotype", "Temperature", "Treatment", "Environment",
                 "Light", "aPrioriConditions")
-  if (!is.null(y) && !is.null(x)){ ### ??? what does this supposed to do???
-  colx <- grep(x, parameterlist)
-  coly <- grep(y, parameterlist)
+  if (!is.null(Y) && !is.null(X)){ ### ??? what does this supposed to do???
+  colx <- grep(X, parameterlist)
+  coly <- grep(Y, parameterlist)
   dat_cols <- c(colx, coly)
   }
 
@@ -274,7 +282,7 @@ kmeansCluster <- function(x = NULL, y = NULL, condition1 = NULL, condition2 = NU
   # Create an empty list to store plots
   plots <- list()
 
-  if (!is.null(y) && !is.null(x)){
+  if (!is.null(Y) && !is.null(X)){
 
     #subset data
     data <- df[,dat_cols]
@@ -308,10 +316,10 @@ kmeansCluster <- function(x = NULL, y = NULL, condition1 = NULL, condition2 = NU
 
     myplot <- clustered_plot(data, font, ptsize = 2, title = titlee, x = names(df)[colx], y = names(df)[coly],lbf = lbf, TRUE)
     titlee <- gsub(":", ".", titlee)
-    ggplot2::ggsave(paste0("kmeanscluster", titlee, y, x, ".pdf"), myplot, height = 5, width = 5)
+    ggplot2::ggsave(paste0("kmeanscluster", titlee,Y,X, ".pdf"), myplot, height = 5, width = 5)
 
     # Write the file which labels the cluster each Genotype is in
-    data.table::fwrite(data, paste0("clusters_", titlee, y, "~", x, ".csv"))
+    data.table::fwrite(data, paste0("clusters_", titlee,Y, "~",X, ".csv"))
 
     } else {
   for (i in seq_along(parameters)) {

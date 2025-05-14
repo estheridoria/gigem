@@ -8,18 +8,18 @@
 #' The plots are saved as PDFs labeled, "NormalizedSleepLoss...".
 #'
 #' @param x The name of a variable in "all_batches_norm_summary.csv" to be used as the x-axis in the plot.
-#' @param control The name of the control within the variable x
-#' @param condition1 A string specifying a condition within one of the experimental variables. The percent difference is calculated as: (`condition1`-`condition2`) / `condition2`
-#' @param condition2 A string specifying a condition within the same experimental variable as `condition1` that is associated with the percent difference seen in sleep.
-#' @param treat A string specifying a Treatment to subset the data by.
-#' @param temp A string specifying a Temperature condition to subset the data by.
-#' @param enviro A string specifying a Environment condition to subset the data by.
-#' @param sex A string specifying a sex condition to subset the data by.
-#' @param Lights A string specifying a Light condition to subset the data by.
-#' @param geno A string specifying a Genotype condition to subset the data by.
-#' @param ranking A tibble of one column containing the order of conditions displayed in the plot from variable x
-#' @param font A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")
-#' @param limits A list of two numerics to be the upper and lower limits on the plot. Default is c(-100, 1500)
+#' @param control The name of the control within the variable x.  Default is NULL
+#' @param condition1 A string specifying a condition within one of the experimental variables. The percent difference is calculated as: (`condition1`-`condition2`) / `condition2`. Default is NULL
+#' @param condition2 A string specifying a condition within the same experimental variable as `condition1` that is associated with the percent difference seen in sleep. Default is NULL
+#' @param treat A string specifying a Treatment to subset the data by. Default is NULL
+#' @param temp A string specifying a Temperature condition to subset the data by. Default is NULL
+#' @param enviro A string specifying a Environment condition to subset the data by. Default is NULL
+#' @param sex A string specifying a sex condition to subset the data by. Default is NULL
+#' @param Lights A string specifying a Light condition to subset the data by. Default is NULL
+#' @param geno A string specifying a Genotype condition to subset the data by. Default is NULL
+#' @param ranking A tibble of one column containing the order of conditions displayed in the plot from variable x.
+#' @param font A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic"). Default is "plain"
+#' @param limits A list of two numerics to be the upper and lower limits of the plot. Default is c(-100, 1500)
 #'
 #'
 #' @return conditional. If the ranking is NULL (default), then the ranking used in the plots will be returned to be used as the ranking in subsequent rankedDisplay plots. Otherwise, no return. Saves the plots as a PDF file labeled `RankedSleep...`
