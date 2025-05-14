@@ -31,7 +31,7 @@ plotPreferences <- function(run = "all"){
   r1 <- menu(c("Yes", "No"), title="Do you want to generate each monitor's 'Activity and Sleep Actograms'?")
 
   # manualDeadRemoval.R #42
-  r2 <- menu(c("Yes", "No"), title="Do you want to generate 'Individual Sleep Profiles'? (i.e. Each unique condition)")
+  r2 <- menu(c("Yes", "No"), title="Do you want to generate 'Population Sleep Profiles'? (i.e. Each unique condition)")
 
   # manualDeadRemoval.R #68
   r3 <- menu(c("Yes", "No"), title="Do you want to generate 'Overlaid Sleep Profiles'? (i.e. Each condition overlayed according to your first entry in 'Divisions')")

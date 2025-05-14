@@ -63,9 +63,6 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref, fon
       ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
 
       ggprism::theme_prism(base_fontface = font) +
-      # ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[1]),
-      #                                          !!rlang::sym(divisions[2]),
-      #                                          !!rlang::sym(divisions[3])))+
       ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[1]),
                                                !!rlang::sym(divisions[2])),
                           cols = ggplot2::vars(!!rlang::sym(divisions[3]))) + #added
@@ -82,9 +79,9 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref, fon
   }
 
   suppressWarnings(
-  create_population_plot(paste0(ExperimentData@Batch, '_Individual_Sleep_Profiles.pdf'), dt_curated_final, divisions))
+  create_population_plot(paste0(ExperimentData@Batch, '_Population_Sleep_Profiles.pdf'), dt_curated_final, divisions))
   suppressWarnings(
-  create_population_plot(paste0(ExperimentData@Batch, '_Individual_Sleep_Profiles_Wrap.pdf'), dt_curated_final, divisions, numb_days = 1, wrap_time = behavr::hours(24)))
+  create_population_plot(paste0(ExperimentData@Batch, '_Population_Sleep_Profiles_Wrap.pdf'), dt_curated_final, divisions, numb_days = 1, wrap_time = behavr::hours(24)))
 
 }
 
