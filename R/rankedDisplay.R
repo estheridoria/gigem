@@ -8,7 +8,7 @@
 #' The plots are saved as PDFs labeled, "NormalizedSleepLoss...".
 #'
 #' @param x The name of a variable in "all_batches_norm_summary.csv" to be used as the x-axis in the plot.
-#' @param control The name of the control within the variable x.  Default is NULL
+#' @param control The name of the control within the variable x.
 #' @param condition1 A string specifying a condition within one of the experimental variables. The percent difference is calculated as: (`condition1`-`condition2`) / `condition2`. Default is NULL
 #' @param condition2 A string specifying a condition within the same experimental variable as `condition1` that is associated with the percent difference seen in sleep. Default is NULL
 #' @param treat A string specifying a Treatment to subset the data by. Default is NULL
@@ -26,12 +26,12 @@
 #' @export
 #'
 #' @keywords internal
-rankedDisplay <- function(x, control = NULL, condition1 = NULL, condition2 = NULL, treat = NULL,
+rankedDisplay <- function(x, control, condition1 = NULL, condition2 = NULL, treat = NULL,
                           temp = NULL, enviro = NULL, sex = NULL, Lights = NULL, geno = NULL, ranking = NULL,
                           font = "plain", limits = c(-100, 1500)) {
 
-  if (!file.exists("all_batches_stat.csv")) {
-    stop("'all_batches_stat.csv' is not found in the current directory. Please run 'runAllBatches' before attempting to run 'kmeansCluster'. If you have already run it, ")
+  if (!file.exists("all_batches_summary.csv")) {
+    stop("'all_batches_summary.csv' is not found in the current directory. Please run 'runAllBatches' before attempting to run 'kmeansCluster'. If you have already run it, ")
   }
   # Validate that x is provided and is a valid string.
   if(missing(x) || !rlang::is_string(x) || !(x %in% c("Temperature", "Sex", "Treatment", "Genotype", "Environment", "Light"))){
@@ -43,7 +43,7 @@ rankedDisplay <- function(x, control = NULL, condition1 = NULL, condition2 = NUL
 
 
   # Read the normalized data from CSV file
-  dataset <- read.csv("all_batches_stat.csv")
+  dataset <- read.csv("all_batches_summary.csv")
   # dataset$Light <- gsub("\"", "", dataset$Light)
   titlee <- c("")
   if(!is.null(treat)){
@@ -96,10 +96,68 @@ rankedDisplay <- function(x, control = NULL, condition1 = NULL, condition2 = NUL
     titlee <- trimws(paste(titlee, geno))
   }
 
+
+
+  #predicted values when controlling for the effects of stuffs
+
+  # List of your categorical variables
+  categorical_vars <- c("Sex", "Treatment", "Temperature", "Environment", "Batch", "Genotype", "Light")
+
+  # Initialize the formula string with the response variable
+  formula_string <- "Sleep_Time_All ~ "
+
+  varvars<- c()
+  # Loop through each categorical variable
+  for (var in categorical_vars) {
+    # Check if the variable exists as a column in 'dataset' and has more than one unique value
+    if (length(unique(dataset[[var]])) > 1) {
+      # If it's the first variable being added, don't add a "+" before it
+      if (formula_string == "Sleep_Time_All ~ ") {
+        formula_string <- paste0(formula_string, var)
+      } else {
+        formula_string <- paste0(formula_string, " + ", var)
+      }
+      varvars<- c(varvars, var)
+    }
+  }
+  # Convert the formula string to a formula object
+  formula <- as.formula(formula_string)
+  # Fit the linear model using dataset
+  fit <- lm(formula, data = dataset)
+  # You can now inspect the model summary
+  summary(fit)
+
+
+
+  # Create new_data for predictions
+  new_data_list <- list()
+  for (var in varvars) {
+    new_data_list[[var]] <- unique(dataset[[var]])
+  }
+  new_data_list[[x]] <- unique(dataset[[x]])
+
+  # If 'Batch' was in your model, and you want to fix it at the first level
+  if ("Batch" %in% varvars) {
+    new_data_list[["Batch"]] <- levels(as.factor(dataset$Batch))[1]
+  }
+
+  # Generate all combinations using expand.grid
+  new_data <- expand.grid(new_data_list)
+
+  # Predict using the model
+  new_data$predicted <- predict(fit, newdata = new_data)
+
+  # Assign to your 'dataset' variable
+  dataset <- new_data
+
+
+
+
+
+
+
   # dataset <- data.table::setDT(dataset)
-  parameterlist <- c("Sleep_Time_All_mean", "Sleep_Time_L_mean", "Sleep_Time_D_mean",
-                 "n_Bouts_L_mean", "n_Bouts_D_mean", "mean_Bout_Length_L_mean",
-                 "mean_Bout_Length_D_mean")
+  parameterlist <- c("Sleep_Time_All_mean", "Sleep_Time_L_mean", "Sleep_Time_D_mean")
   if(!is.null(condition1) && !is.null(condition2)){
     condition_cols <- dataset[c("Sex","Genotype","Temperature","Treatment",
                                 "Environment","Light","Batch")]
