@@ -7,6 +7,9 @@
 #' @param oneBatch A character string of the Batch folder to be analyzed.
 #' @param control A character string specifying the control condition for normalization (ex. Canton S Vs to SIP-L1-1).
 #' @param num_days A numerical value specifying the number of days to be used in analysis.
+#' @param overlayVar A character string specifying which variable to overlay and color plots by Default is "Treatment".
+#' @param rowVar A character string specifying which variable to facet rows in plots by. Default is "Genotype".
+#' @param columnVar A character string specifying which variable to facet columns in plots by. Default is "Environment".
 #' @param font A string variable determining the font style of the produced plots.
 #' @export
 #'
@@ -15,68 +18,40 @@
 #'
 #'
 #' @keywords export
-runOneBatch <- function(oneBatch, control, num_days, font = "plain") {
-
-#warn thy user
-  tryCatch({
-  #divisions warnings/setting
-  if(!exists("divisions", envir = .GlobalEnv)){
-    # print("Please select the fascetting divisions for each plot type from the following variables: 'Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment', or 'Light'.")
-    # d1 <- readline(prompt = "Enter the variable for the Sleep plots, overlay and color: ")
-    # d2 <- readline(prompt = "Enter the variable for the Sleep plots, rows: ")
-    # d3 <- readline(prompt = "Enter the variable for the Sleep plots, columns: ")
-    # d4 <- readline(prompt = "Enter the variable for the Point plot, overlay and color: ")
-    # d5 <- readline(prompt = "Enter the variable for the Point plot, rows: ")
-    # d6 <- readline(prompt = "Enter the variable for the Point plot, columns: ")
-    # divisions<- c(d1,d2,d3,d4,d5,d6)
-    # }
-  d1 <- menu(c('Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment','Light'),
-             title="Please select the variable
-             for determining the plots' OVERLAY and COLOR: ")
-  d2 <- menu(c('Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment','Light'),
-             title="Please select the variable
-             for determining the plots' ROWS:")
-  d3 <- menu(c('Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment','Light'),
-             title="Please select the variable
-             for determining the plots' COLUMNS:")
-  divisions<- c(d1,d2,d3)
-
-  labels <- c("Sex", "Genotype", "Temperature", "Treatment", "Environment", "Light")
-  # Map the numeric values to the corresponding labels
-  divisions <- sapply(divisions, function(x) labels[x])
-}
-    if(any(!(divisions[1:3] %in% c("Sex", "Genotype", "Temperature", "Treatment","Environment","Light")))){
-      stop("'divisions' entries must be from the variable list: 'Sex', 'Genotype', 'Temperature', 'Treatment', 'Environment', or 'Light'")
-    }
-
+runOneBatch <- function(oneBatch, control, num_days, 
+                        overlayVar = c("Treatment", "Sex", "Genotype", "Temperature", "Environment", "Light"), 
+                        rowVar = c("Genotype", "Sex", "Temperature", "Treatment", "Environment", "Light"), 
+                        columnVar = c("Environment", "Sex", "Genotype", "Temperature", "Treatment", "Light"), 
+                        font = c("plain", "bold", "italic", "bold.italic")) {
+  # Warnings/Errors-------------------------------------------------------------
   if (missing(oneBatch)){
     stop("'oneBatch' must be specified")
   }
-
-    if (missing(control)){
-      stop("'control' must be specified")
-    }
-
-  if (missing(num_days) || !is.numeric(num_days)){
-    stop("'num_days' must be specified as a whole number.")
-  }
-
-  if (!(font %in% c("plain", "bold", "italic","bold.italic"))){
-    stop("'font' must be 'plain', 'bold', 'italic', or 'bold.italic'")
-  }
-
-  #ask user which plots they want
-  pref<- plotPreferences("one")
-
-  # Get the list of all sub directories
   all_dirs <- list.dirs(getwd(), full.names = FALSE, recursive = FALSE)
   if (length(grep(oneBatch, all_dirs)) != 1){
     stop("The 'oneBatch' specified is not a subdirectory inside the current working directory. Please make sure your current directory is correct.")
   }
+  if (missing(control)){
+    stop("'control' must be specified")
+  }
+  if (missing(num_days) || !is.numeric(num_days)){
+    stop("'num_days' must be specified as a whole number.")
+  }
+  if(length(unique(c(overlayVar, rowVar, columnVar))) < 3){  # divisions for fascetting plots
+    stop("'overlayVar', rowVar, and columnVar cannot contain the same variable names.")
+  }
+  divisions<- list()
+  divisions[1]<- match.arg(overlayVar)
+  divisions[2]<- match.arg(rowVar)
+  divisions[3]<- match.arg(columnVar)
+  font<- match.arg(font)
+  
 
-original_wd <- getwd()
+  # Set the stage---------------------------------------------------------------
+  
+  # Save the current working directory
+  original_wd <- getwd() 
 
-# set the stage
   # Change to the target directory
   setwd(paste0(original_wd, "/", oneBatch))
 
@@ -87,16 +62,13 @@ original_wd <- getwd()
   for (r_file in r_files) {
     source(r_file)
   }
-
-  # if(!any(unique(info[,get(divisions[1])]) == control)){
-  #   stop("'control' must be a condition within the divisions[1] variable.")
-  # } ## doesn't check for each row and column separation.
-
-    runEachBatch(control, num_days, oneBatch, font, pref, divisions)
+  
+  # Ask user which plots they want
+  pref<- plotPreferences("one")
+  
+  # Analyze the batch
+  runEachBatch(control, num_days, oneBatch, font, pref, divisions)
 
   setwd(original_wd)
-}, error = function(e) {
-  message("An error occurred: ", e$message)
-  message("Working directory is: ", getwd())})
 
 }

@@ -15,10 +15,10 @@
 #' @param enviro A string specifying a Environment condition to subset the data by.
 #' @param Lights A string specifying a Light condition to subset the data by.
 #' @param aPrioriConditions A vector of (partial spellings of the) conditions (e.g., c("L1", "L2", "S1", "S2", "CS")) in one of the experimental variables.
-#' @param aPrioriVariable A string specifying the variable of the aPrioriConditions.
+#' @param aPrioriVariable A string specifying the variable of the aPrioriConditions. Default is "Sex".
 #' @param lbf Add the line of best fit onto the plot. Default is TRUE
 #' @param relValues TRUE or FALSE entry where TRUE means the data used will be the relative data based on the `control` specified when running `run__Batch()`. Default is FALSE
-#' @param font A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")
+#' @param font A character string determining the font style of the produced plots. Default is "plain".
 #'
 #' @details
 #' This function performs K-means clustering on sleep data for two comparison Treatment groups (`x` and `y`). It automatically determines the optimal number of clusters using three methods:
@@ -30,13 +30,21 @@
 #'
 #' @return None. Saves the plot as a PDF file and outputs a CSV file with cluster assignments.
 #' @export
-kmeansCluster <- function(x = NULL, y = NULL, condition1 = NULL, condition2 = NULL, sex = NULL, geno = NULL,
-                                 temp = NULL, treat = NULL, enviro = NULL,
-                                 Lights = NULL, aPrioriConditions,
-                                 aPrioriVariable, lbf = TRUE, relValues = FALSE, font = "plain") {
+kmeansCluster <- function(x = c(NULL, "mean_Bout_Length_D","mean_Bout_Length_L", "n_Bouts_D", "n_Bouts_L", "Sleep_Time_D", "Sleep_Time_L"), 
+                          y = c(NULL, "mean_Bout_Length_D","mean_Bout_Length_L", "n_Bouts_D", "n_Bouts_L", "Sleep_Time_D", "Sleep_Time_L"),
+                          condition1 = NULL, condition2 = NULL, sex = NULL, geno = NULL,
+                          temp = NULL, treat = NULL, enviro = NULL,
+                          Lights = NULL, aPrioriConditions,
+                          aPrioriVariable = c(c("Sex", "Genotype", "Temperature", "Treatment", "Environment", "Light")), 
+                          lbf = TRUE, relValues = FALSE, font = c("plain", "bold", "italic", "bold.italic")) {
   # aPrioriConditions <- c("CS", "L1", "L2", "S1", "S2")
   # aPrioriVariable <- "Genotype"
-
+  
+  X <- match.arg(x)  # Validate that x is valid.
+  Y <- match.arg(y)  # Validate that x is valid.
+  aPrioriVariable<- match.arg(aPrioriVariable)
+  font<-match.arg(font)
+  
   if(relValues){
     # Check if 'all_batches_summary.csv' exists in the current directory, and if not, stop execution.
     if (!file.exists("all_batches_relative_summary.csv")) {
@@ -49,39 +57,13 @@ kmeansCluster <- function(x = NULL, y = NULL, condition1 = NULL, condition2 = NU
                                    "Sleep_Time_D", "n_Bouts_L", "mean_Bout_Length_L",
                                    "n_Bouts_D", "mean_Bout_Length_D")]
   }else{
-    # Read the data from CSV file
     # Check if 'all_batches_summary.csv' exists in the current directory, and if not, stop execution.
     if (!file.exists("all_batches_stat.csv")) {
       stop("'all_batches_stat.csv' is not found in the current directory. Please run 'runAllBatches' before attempting to run 'kmeansCluster'. If you have already run it, reset the working directory and run kmeansCluster again.")
     }
     combined_data <- read.csv("all_batches_stat.csv")
   }
-
   data.table::setDT(combined_data)
-xylist<- c("mean_Bout_Length_D", "mean_Bout_Length_L", "n_Bouts_D", "n_Bouts_L", "Sleep_Time_D", "Sleep_Time_L")
-  # Validate that y is valid.
-  if(!is.null(y) && !any(grep(y, colnames(combined_data)))){
-    menu("'y' is invalid")
-    yy <- menu(c("mean_Bout_Length_D", "mean_Bout_Length_L", "n_Bouts_D", "n_Bouts_L", "Sleep_Time_D", "Sleep_Time_L"), title="The 'y' specified is invalid. please select a y variable from this list to use instead:")
-    Y <- xylist[yy]
-  } else {
-    Y<- y
-  }
-
-  # Validate that x is valid.
-  if(!is.null(x) && !any(grep(x, colnames(combined_data)[15:30]))){
-    menu("'y' is invalid")
-    xx <- menu(c("mean_Bout_Length_D", "mean_Bout_Length_L", "n_Bouts_D", "n_Bouts_L", "Sleep_Time_D", "Sleep_Time_L"), title="The 'x' specified is invalid. please select a x variable from this list to use instead:")
-    X <- xylist[xx]
-  } else {
-    X<- x
-  }
-
-  if (missing(aPrioriVariable) || !(aPrioriVariable %in% c( "Sex", "Genotype", "Temperature", "Treatment", "Environment", "Light"))) {
-    stop("'aPrioriVariable' is missing or invalid")
-  }
-  if (!(font %in% c("plain", "bold", "italic","bold.italic"))){
-    stop("'font' must be 'plain', 'bold', 'italic', or 'bold.italic'")}
 
   # subset by only selecting rows with condition(s) specified
   if(relValues){
@@ -89,54 +71,19 @@ xylist<- c("mean_Bout_Length_D", "mean_Bout_Length_L", "n_Bouts_D", "n_Bouts_L",
     }else{
     titlee<- c("")
     }
-  if(!is.null(treat)){
-    combined_data <- combined_data[combined_data$Treatment == treat,]
-
-    # warning if condition is invalid
-    if (nrow(combined_data) == 0) {
-      stop("The 'treat' specified is not included in the data within the 'Treatment' variable")
-    }
-    titlee <- trimws(paste(titlee, treat))
-  }
-  if(!is.null(temp)){
-    combined_data <- combined_data[combined_data$Temperature == temp,]
-    # warning if condition is invalid
-    if (nrow(combined_data) == 0) {
-      stop("The 'temp' specified is not included in the data within the 'Temperature' variable")
-    }
-    titlee <- trimws(paste(titlee, temp))
-  }
-  if(!is.null(enviro)){
-    combined_data <- combined_data[combined_data$Environment == enviro,]
-    # warning if condition is invalid
-    if (nrow(combined_data) == 0) {
-      stop("The 'enviro' specified is not included in the data within the 'Environment' variable")
-    }
-    titlee <- trimws(paste(titlee, enviro))
-  }
-  if(!is.null(Lights)){
-    combined_data <- combined_data[combined_data$Light == Lights,]
-    # warning if condition is invalid
-    if (nrow(combined_data) == 0) {
-      stop("The 'Lights' specified is not included in the data within the 'Light' variable")
-    }
-    titlee <- trimws(paste(titlee, Lights))
-  }
-  if(!is.null(geno)){
-    combined_data <- combined_data[combined_data$Genotype == geno,]
-    # warning if condition is invalid
-    if (nrow(combined_data) == 0) {
-      stop("The 'geno' specified is not included in the data within the 'Genotype' variable")
-    }
-    titlee <- trimws(paste(titlee, geno))
-  }
-  if(!is.null(sex)){
-    combined_data <- combined_data[combined_data$Sex == sex,]
-    # warning if condition is invalid
-    if (nrow(combined_data) == 0) {
-      stop("The 'geno' specified is not included in the data within the 'Genotype' variable")
-    }
-    titlee <- trimws(paste(titlee, sex))
+  
+  # Subset data
+  metalist<- c("Sex", "Genotype", "Temperature", "Treatment", "Environment", "Light")
+  metlist<- c("sex", "geno", "temp", "treat", "enviro","Lights")
+  for(i in seq_along(metalist)) {
+    if(!is.null(get(metlist[i]))){
+      combined_data <- combined_data[combined_data[[metalist[i]]] == get(metlist[i]), ]
+      # warning if condition is invalid
+      if (nrow(combined_data) == 0) {
+        stop(paste("The", metlist[i], "specified is not included in the data within the", metalist[i], "variable"))
+      }
+      titlee <- trimws(paste(titlee, get(metlist[i])))
+      }
   }
 
   ### aPriori
@@ -169,8 +116,7 @@ xylist<- c("mean_Bout_Length_D", "mean_Bout_Length_L", "n_Bouts_D", "n_Bouts_L",
   parameterlist <- c("Sleep_Time_All_mean", "Sleep_Time_L_mean", "Sleep_Time_D_mean",
                  "n_Bouts_L_mean", "n_Bouts_D_mean", "mean_Bout_Length_L_mean",
                  "mean_Bout_Length_D_mean")
-  metalist <- c("Sex", "Genotype", "Temperature", "Treatment", "Environment",
-                "Light", "aPrioriConditions")
+  metalist <- c(metalist, "aPrioriConditions")
   if (!is.null(Y) && !is.null(X)){ ### ??? what does this supposed to do???
   colx <- grep(X, parameterlist)
   coly <- grep(Y, parameterlist)
