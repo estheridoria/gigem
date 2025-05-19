@@ -18,6 +18,7 @@
 #' @param Lights A string specifying a Light condition to subset the data by. Default is NULL
 #' @param geno A string specifying a Genotype condition to subset the data by. Default is NULL
 #' @param ranking A tibble of one column containing the order of conditions displayed in the plot from variable x.
+#' @param fitted Use predicted values after controlling for variables and Batch effects. Default = FALSE
 #' @param font A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic"). Default is "plain"
 #' @param limits A list of two numerics to be the upper and lower limits of the plot. Default is c(-100, 1500)
 #'
@@ -26,304 +27,198 @@
 #' @export
 #'
 #' @keywords internal
-rankedDisplay <- function(x, control, condition1 = NULL, condition2 = NULL, treat = NULL,
-                          temp = NULL, enviro = NULL, sex = NULL, Lights = NULL, geno = NULL, ranking = NULL,
-                          font = "plain", limits = c(-100, 1500)) {
-
+rankedDisplay <- function(
+    x = c("Temperature", "Sex", "Treatment", "Genotype", "Environment", "Light"),
+    control = NULL,
+    condition1 = NULL,
+    condition2 = NULL,
+    treat = NULL, temp = NULL, enviro = NULL, sex = NULL, Lights = NULL, geno = NULL,
+    ranking = NULL, fitted = FALSE,
+    font = c("plain", "bold", "italic", "bold.italic")
+) {
+  x <- match.arg(x)
+  font <- match.arg(font)
+  meta_vars <- c("Sex", "Genotype", "Temperature", "Treatment", "Environment", "Light")
+  meta_inputs <- list(sex, geno, temp, treat, enviro, Lights)
+  names(meta_inputs) <- meta_vars
+  
   if (!file.exists("all_batches_summary.csv")) {
-    stop("'all_batches_summary.csv' is not found in the current directory. Please run 'runAllBatches' before attempting to run 'kmeansCluster'. If you have already run it, ")
+    stop("'all_batches_summary.csv' not found. Please run 'runAllBatches' first.")
   }
-  # Validate that x is provided and is a valid string.
-  if(missing(x) || !rlang::is_string(x) || !(x %in% c("Temperature", "Sex", "Treatment", "Genotype", "Environment", "Light"))){
-    stop("x is missing or invalid")
-  }
-  if (!(font %in% c("plain", "bold", "italic","bold.italic"))){
-    stop("'font' must be 'plain', 'bold', 'italic', or 'bold.italic'")
-  }
-
-
-  # Read the normalized data from CSV file
+  
   dataset <- read.csv("all_batches_summary.csv")
-  # dataset$Light <- gsub("\"", "", dataset$Light)
-  titlee <- c("")
-  if(!is.null(treat)){
-    dataset <- dataset[dataset$Treatment == treat,]
-
-    # warning if condition is invalid
-    if (nrow(dataset) == 0) {
-      stop("The 'treat' specified is not included in the data within the 'Treatment' variable")
-    }
-    titlee <- trimws(paste(titlee, treat))
-  }
-  if(!is.null(temp)){
-    dataset <- dataset[dataset$Temperature == temp,]
-    # warning if condition is invalid
-    if (nrow(dataset) == 0) {
-      stop("The 'temp' specified is not included in the data within the 'Temperature' variable")
-    }
-    titlee <- trimws(paste(titlee, temp))
-  }
-  if(!is.null(enviro)){
-    dataset <- dataset[dataset$Environment == enviro,]
-    # warning if condition is invalid
-    if (nrow(dataset) == 0) {
-      stop("The 'enviro' specified is not included in the data within the 'Environment' variable")
-    }
-    titlee <- trimws(paste(titlee, enviro))
-  }
-  if(!is.null(sex)){
-    dataset <- dataset[dataset$Sex == sex,]
-    # warning if condition is invalid
-    if (nrow(dataset) == 0) {
-      stop("The 'sex' specified is not included in the data within the 'Sex' variable")
-    }
-    titlee <- trimws(paste(titlee, sex))
-  }
-  if(!is.null(Lights)){
-    dataset <- dataset[dataset$Light == Lights,]
-    # warning if condition is invalid
-    if (nrow(dataset) == 0) {
-      stop("The 'Lights' specified is not included in the data within the 'Light' variable")
-    }
-    titlee <- trimws(paste(titlee, Lights))
-  }
-  if(!is.null(geno)){
-    dataset <- dataset[dataset$Genotype == geno,]
-    # warning if condition is invalid
-    if (nrow(dataset) == 0) {
-      stop("The 'geno' specified is not included in the data within the 'Genotype' variable")
-    }
-    titlee <- trimws(paste(titlee, geno))
-  }
-
-
-
-  #predicted values when controlling for the effects of stuffs
-
-  # List of your categorical variables
-  categorical_vars <- c("Sex", "Treatment", "Temperature", "Environment", "Batch", "Genotype", "Light")
-
-  # Initialize the formula string with the response variable
-  formula_string <- "Sleep_Time_All ~ "
-
-  varvars<- c()
-  # Loop through each categorical variable
-  for (var in categorical_vars) {
-    # Check if the variable exists as a column in 'dataset' and has more than one unique value
-    if (length(unique(dataset[[var]])) > 1) {
-      # If it's the first variable being added, don't add a "+" before it
-      if (formula_string == "Sleep_Time_All ~ ") {
-        formula_string <- paste0(formula_string, var)
-      } else {
-        formula_string <- paste0(formula_string, " + ", var)
+  dataset <- dataset %>%
+    dplyr::group_by(across(all_of(c(meta_vars, "Batch")))) %>%
+    dplyr::summarise(across(all_of(param_cols), ~ mean(.x, na.rm = TRUE)), .groups = "drop")
+  title_parts <- character()
+  for (var in meta_vars) {
+    val <- meta_inputs[[var]]
+    if (!is.null(val)) {
+      dataset <- dataset[dataset[[var]] == val, ]
+      if (nrow(dataset) == 0) {
+        stop(paste0("'", val, "' not found in variable '", var, "'"))
       }
-      varvars<- c(varvars, var)
+      title_parts <- c(title_parts, val)
     }
   }
-  # Convert the formula string to a formula object
-  formula <- as.formula(formula_string)
-  # Fit the linear model using dataset
-  fit <- lm(formula, data = dataset)
-  # You can now inspect the model summary
-  summary(fit)
-
-
-
-  # Create new_data for predictions
-  new_data_list <- list()
-  for (var in varvars) {
-    new_data_list[[var]] <- unique(dataset[[var]])
-  }
-  new_data_list[[x]] <- unique(dataset[[x]])
-
-  # If 'Batch' was in your model, and you want to fix it at the first level
-  if ("Batch" %in% varvars) {
-    new_data_list[["Batch"]] <- levels(as.factor(dataset$Batch))[1]
-  }
-
-  # Generate all combinations using expand.grid
-  new_data <- expand.grid(new_data_list)
-
-  # Predict using the model
-  new_data$predicted <- predict(fit, newdata = new_data)
-
-  # Assign to your 'dataset' variable
-  dataset <- new_data
-
-
-
-
-
-
-
-  # dataset <- data.table::setDT(dataset)
-  parameterlist <- c("Sleep_Time_All_mean", "Sleep_Time_L_mean", "Sleep_Time_D_mean")
-  if(!is.null(condition1) && !is.null(condition2)){
-    condition_cols <- dataset[c("Sex","Genotype","Temperature","Treatment",
-                                "Environment","Light","Batch")]
-    c1_col <- names(condition_cols)[
-      sapply(condition_cols, function(column) any(grepl(condition1, column)))
-    ]
-    c2_col <- names(condition_cols)[
-      sapply(condition_cols, function(column) any(grepl(condition2, column)))
-    ]
-    if(length(c1_col) == 0 | length(c2_col) == 0){
-      stop("'condition1' and/or 'condition2' is not found inside the data. Please check the spelling. Also check that one of the conditions was not removed via the variable subsetting option in this function.")
-    }
-    if(c1_col != c2_col){
-      stop("'condition1' and condition2' are not within the same variable.")
-    } #else{condition_cols <- condition_cols[!(names(condition_cols) %in% c(c1_col))]}
-    c1parameter <- dataset[dataset[[c1_col]] == condition1, c(parameterlist, names(condition_cols))]
-
-    c2parameter <- dataset[dataset[[c2_col]] == condition2, c(parameterlist, names(condition_cols))]
-    if(length(c1parameter) != length(c2parameter)){
-      stop("There is an uneven number of 'condition1' and 'condition2' populations within the current subset of variables. Please ensure there are no unpaired populations/monitors for 'condition1' and 'condition2'.")
-    }
-
-    # Make sure we sort based on variables
-    c1parameter_sorted <- c1parameter[order(c1parameter$Sex, c1parameter$Genotype, c1parameter$Temperature,
-                                    c1parameter$Treatment, c1parameter$Environment, c1parameter$Light),]
-    c2parameter_sorted<- c2parameter[order(c2parameter$Sex, c2parameter$Genotype, c2parameter$Temperature,
-                                   c2parameter$Treatment, c2parameter$Environment, c2parameter$Light),]
-
-    non_numeric_cols <- c1parameter[!sapply(c1parameter, is.numeric)]
-    non_numeric_cols_noc1col <- non_numeric_cols[!(names(non_numeric_cols) %in% c(c1_col))]
-    numeric_cols <- c1parameter[sapply(c1parameter_sorted, is.numeric)]
-
-    # df <- (c1parameter-c2parameter)/c2parameter -- Perform the calculation only on the numeric columns
-    pre_df <- (c1parameter_sorted[, names(numeric_cols)] - c2parameter_sorted[, names(numeric_cols)]) / c2parameter_sorted[, names(numeric_cols)]
-
-    df <- cbind(pre_df, c1parameter_sorted[, names(non_numeric_cols_noc1col), drop = FALSE])
-
-
-    # Rename the columns for better clarity.
-    colnames(df) <- c("TotalSleepChange", "DaySleepChange", "NightSleepChange", "DayNChange",
-                      "NightNBoutsChange", "DayBoutLengthChange", "NightBoutLengthChange", names(non_numeric_cols_noc1col))
-
-    # order by sleep change All
-    if(is.null(ranking)){
-      ret <- TRUE
-      average_lookup <- dplyr::summarise(
-      dplyr::group_by(df, !!rlang::sym(x)),
-      TotalSleepChange = mean(TotalSleepChange))
-    average_lookup <- average_lookup[order(average_lookup$TotalSleepChange), ]  # sort
-    ranking <- average_lookup[,1]
-    }else{
-    ret <- FALSE
+  title_text <- paste(title_parts, collapse = "_")
+  
+  # Use fitted values if fitted = TRUE
+  if (fitted){
+    #predicted values when controlling for the effects of stuffs
+    
+    # List of your categorical variables
+    categorical_vars <- c(meta_vars, "Batch")
+    
+    # Initialize the formula string with the response variable
+    formula_stringss <- c("Sleep_Time_All ~ ", "Sleep_Time_L ~ ", "Sleep_Time_D ~ ")
+    
+    for(i in seq_along(formula_stringss)){
+      formula_string <- formula_stringss[i]
+      varvars<- c()
+      # Loop through each categorical variable
+      for (var in categorical_vars) {
+        # Check if the variable exists as a column in 'dataset' and has more than one unique value
+        if (length(unique(dataset[[var]])) > 1) {
+          # If it's the first variable being added, don't add a "+" before it
+          if (formula_string == "Sleep_Time_All ~ " ||
+              formula_string == "Sleep_Time_L ~ " ||
+              formula_string == "Sleep_Time_D ~ ") {
+            formula_string <- paste0(formula_string, var)
+          } else {
+            formula_string <- paste0(formula_string, " + ", var)
+          }
+          varvars<- c(varvars, var)
+        }
       }
-
-    # Reorder x based on the average changes in sleep
-    df[[x]] <- factor(df[[x]], levels = ranking[[x]])
-
-    titlee <- trimws(paste0(titlee, " ", condition1, "-", condition2))
-    names <- c("TotalSleepChange", "DaySleepChange", "NightSleepChange")
-
-    y<- "Change in Sleep (%)"
+      # Convert the formula string to a formula object
+      formula <- as.formula(formula_string)
+      # Fit the linear model using dataset
+      fit <- lm(formula, data = dataset)
+      
+      # Create new_data for predictions
+      new_data_list <- list()
+      for (var in varvars) {
+        new_data_list[[var]] <- unique(dataset[[var]])
+      }
+      
+      # If 'Batch' was in your model, and you want to fix it at the first level
+      if ("Batch" %in% varvars) {
+        new_data_list[["Batch"]] <- levels(as.factor(dataset$Batch))[1]
+      }
+      
+      # Generate all combinations using expand.grid
+      new_data <- expand.grid(new_data_list)
+      
+      # Predict using the model
+      tryCatch({
+        new_data$predicted <- predict(fit, newdata = new_data)
+      }, error = function(e) {
+        if (grepl("rank-deficient", e$message)) {
+          stop("Prediction failed due to a rank-deficient model fit.\n",
+               "Too many variable conditions may be interfering with the regression.\n",
+               "Try subsetting your data further using 'treat', 'temp', 'enviro', 'sex', 'Lights', and/or 'geno'.\n",
+               "Full error: ", e$message)
+        } else {
+          stop(e)  # re-throw other errors
+        }})
+      # Assign to your 'dataset' variable
+      if(i == 1){
+        dataa <- new_data
+      } else{
+        col<- 1+ncol(dataa)
+        dataa[[col]]<- new_data$predicted
+      }
+    }
+    colnames(dataa)[(ncol(dataa)-2):ncol(dataa)] <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D")
+    dataset<- dataa
+    meta_vars <- varvars
+    pdftitle <- "_fittedValues"
+  }else {
+    pdftitle <- ""
+  }
+  
+  param_cols <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D")
+  
+  if (!is.null(condition1) && !is.null(condition2)) {
+    match_col <- intersect(names(dataset), meta_vars)[sapply(meta_vars, function(var) {
+      any(grepl(condition1, dataset[[var]])) && any(grepl(condition2, dataset[[var]]))
+    })]
+    if (length(match_col) != 1) {
+      stop("Conditions must match within exactly one metadata column.")
+    }
+    c1_data <- dataset[dataset[[match_col]] == condition1, ]
+    c2_data <- dataset[dataset[[match_col]] == condition2, ]
+    if (nrow(c1_data) != nrow(c2_data)) stop("Unpaired condition1 and condition2 rows.")
+    
+    c1_sorted <- c1_data[do.call(order, c1_data[meta_vars]), ]
+    c2_sorted <- c2_data[do.call(order, c2_data[meta_vars]), ]
+    
+    sleep_diff <- (c1_sorted[, param_cols] - c2_sorted[, param_cols]) / c2_sorted[, param_cols]
+    sleep_diff <- sleep_diff*100 #get percentage
+    df <- cbind(sleep_diff, c1_sorted[, setdiff(c(meta_vars, "Batch"), match_col), drop = FALSE])
+    colnames(df)[1:3] <- c("Total_Sleep_Change", "Daytime_Sleep_Change", "Nighttime_Sleep_Change")
+    
+    if (is.null(ranking)) {
+      ranking_df <- df %>%
+        dplyr::group_by(.data[[x]]) %>%
+        dplyr::summarise(Total_Sleep_Change = mean(Total_Sleep_Change, na.rm = TRUE)) %>%
+        dplyr::arrange(Total_Sleep_Change)
+      ranking <- ranking_df[[x]]
+    }
+    df[[x]] <- factor(df[[x]], levels = ranking)
+    y_label <- "Change in Sleep (%)"
+    plot_cols <- c("Total_Sleep_Change", "Daytime_Sleep_Change", "Nighttime_Sleep_Change")
+    
   } else {
-    save_cols<- c(parameterlist, c("Sex", "Genotype", "Temperature",
-                               "Treatment", "Environment", "Light", "Batch"))
-    df <- dataset[,save_cols]
-    # Rename the columns for better clarity.
-    colnames(df) <- parameters <- c("TotalSleepTime", "DaySleepTime", "NightSleepTime", "DayNBouts",
-                                "NightNBouts", "DayBoutLength", "NightBoutLength", "Sex", "Genotype", "Temperature",
-                                "Treatment", "Environment", "Light", "Batch")
-    if(is.null(ranking)){
-      ret <- TRUE
-    # order by sleep change All
-    average_lookup <- dplyr::summarise(
-      dplyr::group_by(df, !!rlang::sym(x)),
-      TotalSleepChange = mean(TotalSleepTime))
-    average_lookup <- average_lookup[order(average_lookup$TotalSleepChange), ]  # sort
-    ranking <- average_lookup[,1]
-    }else{
-      ret <- FALSE
+    df <- dataset[, c(param_cols, meta_vars, "Batch")]
+    colnames(df)[1:3] <- c("Total_Sleep", "Daytime_Sleep", "Nighttime_Sleep")
+    if (is.null(ranking)) {
+      ranking_df <- df %>%
+        dplyr::group_by(.data[[x]]) %>%
+        dplyr::summarise(Total_Sleep = mean(Total_Sleep, na.rm = TRUE)) %>%
+        dplyr::arrange(Total_Sleep)
+      ranking <- ranking_df[[x]]
     }
-
-    # Reorder x based on the average changes in sleep
-    df[[x]] <- factor(df[[x]], levels = ranking[[x]])
-
-    # List of sleep-related metrics to plot
-    names <- c("TotalSleepTime", "DaySleepTime", "NightSleepTime")
-
-    y <- "Sleep (min)"
+    df[[x]] <- factor(df[[x]], levels = ranking)
+    y_label <- "Sleep (min)"
+    plot_cols <- c("Total_Sleep", "Daytime_Sleep", "Nighttime_Sleep")
   }
-  #separate control & noncontrol x variable conditions
-  if(!is.null(control)){
-
-    if(any(grep(control, df[,x]))){
-      df_con <- df[df[,x] == control,]
-      df_con <- df_con[order(df_con$Batch), ]
-
-      df_nc <- df[df[,x] != control,]
-    } else{
-      stop("The 'control' condition is not within variable 'x'")
-    }
-  }else{
-    df_nc <- df
-  }
-
-  titleee <- gsub(" ", "", titlee)
-
-  # Create a function to iterate through each plot
-  plot_fun <- function(plot_data, title, x, ytitle, font, Param, limits) {
-    p<- ggplot2::ggplot(plot_data, ggplot2::aes (x = get(x), y = get(Param))) +
-      ggplot2::coord_cartesian(ylim = limits) +
-      ggplot2::stat_summary(fun = "mean", geom = "bar", width = .85, fill="grey50") +
-      ggplot2::labs(title = title,
-                    x = "",
-                    y = ytitle) +
+  
+  plot_df <- function(data, yvar, x, title) {
+    ggplot2::ggplot(data, ggplot2::aes(x = .data[[x]], y = .data[[yvar]])) +
+      ggplot2::stat_summary(fun = mean, geom = "bar", fill = "grey50", width = 0.85) +
+      ggplot2::labs(title = title, x = "", y = y_label) +
       ggprism::theme_prism(base_fontface = font) +
-      ggplot2::theme(
-        title = ggplot2::element_text(size = 12),
-        axis.text.x = ggplot2::element_text(hjust = 1, vjust = .5, angle = 90, size = 9),
-        axis.text.y = ggplot2::element_text(size = 9),
-        axis.title.y = ggplot2::element_text(size = 12),
-        legend.position="none")
-    return(p)
+      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5, hjust = 1))
   }
-
-  p<-c<- list()
-  # Loop for generating plots for the main data (df_nc)
-  for (i in 1:length(names)) {
-    p[[i]] <- plot_fun(plot_data = df_nc, title = paste(names[i],
-                                                        titlee),x = x, ytitle = y, font = font, Param = names[i], limits)
-    invisible(print(p[[i]]))
+  
+  plots <- lapply(plot_cols, function(col) {
+    plot_df(df, col, x, paste(gsub("_", " ",col), title_text))
+  })
+  combined_plot <- cowplot::plot_grid(plotlist = plots, ncol = 1)
+  rel_widths <- length(unique(df[, x]))/3
+  
+  if (!is.null(control) && fitted == FALSE) {
+    if (!any(df[[x]] == control)) {
+      stop("Control value not found in grouping variable.")}
+    control_df <- df[df[[x]] == control, ]
+    Batch<- "Batch"
+    plots_con <- lapply(plot_cols, function(col) {
+      plot_df(control_df, col, Batch, paste0("Control: ", control))
+    })
+    rel_widths <- c(rel_widths, length(unique(control_df$Batch))/3 + 1.7)
+    combined_plot <- cowplot::plot_grid(plotlist = c(plots[1], plots_con[1],
+                                                     plots[2], plots_con[2],
+                                                     plots[3], plots_con[3]), ncol = 2,
+                                        rel_widths = rel_widths)
+    pdftitle<- paste0("_",control, pdftitle)
   }
-
-  # Check if control is provided and generate control plots (df_con)
-  if (!is.null(control)) {
-    for (i in 1:length(names)) {
-
-      c[[i]] <- plot_fun(plot_data = df_con, title = control,
-                         x = "Batch", ytitle = y, font = font, Param = names[i], limits)
-      invisible(print(c[[i]]))
-    }
-    # Combine the plots with control and save them
-    combined_plot <- cowplot::plot_grid(
-      p[[1]], c[[1]], p[[2]], c[[2]], p[[3]], c[[3]],
-      ncol = 2, align = "h", axis = "tb",
-      rel_widths = rep(c(length(unique(df_nc[, x])) / 8 + 0.85,
-                     length(unique(df_con$Batch)) / 8 + .85), 6),
-      rel_heights = rep(3,6)
-    )
-    titleee <- gsub(":", ".", titleee)
-    ggplot2::ggsave(paste0("RankedSleep_", paste0(titleee, control), "_", names[i],".pdf"),
-                    combined_plot, width = (length(unique(df_nc[, x])) / 8 +
-                                              length(unique(df_con$Batch)) / 8 + 1.7), height = (9))
-  } else {
-    # Combine the plots without control and save them
-    combined_plot <- cowplot::plot_grid(
-      p[[1]], p[[2]], p[[3]],
-      ncol = 1, align = "h", axis = "tb",
-      rel_widths = rep(length(unique(df_nc[, x])) / 8 + 1.45, 3),
-      rel_heights = rep(3,6)
-    )
-    ggplot2::ggsave(paste0("RankedSleep_", paste0(titleee), "_", names[i],".pdf"),
-                    combined_plot, width = (length(unique(df_nc[, x])) / 8 + 0.85), height = (9))
-  }
-
-if(ret){
+  title_text <- gsub(":", ".", title_text)
+  title_text <- gsub(" ", "_", title_text)
+  
+  ggplot2::ggsave(paste0("RankedSleep_",title_text, pdftitle, ".pdf"), combined_plot, width = sum(rel_widths), height = 10)
+  if(fitted){
+    write.csv(dataset, paste0("PopulationSleep_",title_text, pdftitle, ".csv"))}
   return(ranking)
 }
-}
-
