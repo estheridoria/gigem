@@ -197,7 +197,7 @@ rankedDisplay <- function(
     plot_df(df, col, x, paste(gsub("_", " ",col), title_text))
   })
   combined_plot <- cowplot::plot_grid(plotlist = plots, ncol = 1)
-  rel_widths <- length(unique(df[, x]))/3
+  rel_widths <- length(unique(df[, x]))/5
   
   if (!is.null(control) && fitted == FALSE) {
     if (!any(df[[x]] == control)) {
@@ -207,7 +207,7 @@ rankedDisplay <- function(
     plots_con <- lapply(plot_cols, function(col) {
       plot_df(control_df, col, Batch, paste0("Control: ", control))
     })
-    rel_widths <- c(rel_widths, length(unique(control_df$Batch))/3 + 1.7)
+    rel_widths <- c(rel_widths, length(unique(control_df$Batch))/5 + 1.7)
     combined_plot <- cowplot::plot_grid(plotlist = c(plots[1], plots_con[1],
                                                      plots[2], plots_con[2],
                                                      plots[3], plots_con[3]), ncol = 2,
@@ -217,7 +217,8 @@ rankedDisplay <- function(
   title_text <- gsub(":", ".", title_text)
   title_text <- gsub(" ", "_", title_text)
   
-  ggplot2::ggsave(paste0("RankedSleep_",title_text, pdftitle, ".pdf"), combined_plot, width = sum(rel_widths), height = 10)
+  ggplot2::ggsave(paste0("RankedSleep_",title_text, pdftitle, ".pdf"), 
+                  combined_plot, width = sum(rel_widths), height = 9)
   if(fitted){
     write.csv(dataset, paste0("PopulationSleep_",title_text, pdftitle, ".csv"))}
   return(ranking)
