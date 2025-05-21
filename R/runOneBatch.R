@@ -18,10 +18,10 @@
 #'
 #'
 #' @keywords export
-runOneBatch <- function(oneBatch, control, num_days, 
-                        overlayVar = c("Treatment", "Sex", "Genotype", "Temperature", "Environment", "Light"), 
-                        rowVar = c("Genotype", "Sex", "Temperature", "Treatment", "Environment", "Light"), 
-                        columnVar = c("Environment", "Sex", "Genotype", "Temperature", "Treatment", "Light"), 
+runOneBatch <- function(oneBatch, control, num_days,
+                        overlayVar = c("Treatment", "Sex", "Genotype", "Temperature", "Environment", "Light"),
+                        rowVar = c("Genotype", "Sex", "Temperature", "Treatment", "Environment", "Light"),
+                        columnVar = c("Environment", "Sex", "Genotype", "Temperature", "Treatment", "Light"),
                         font = c("plain", "bold", "italic", "bold.italic")) {
   # Warnings/Errors-------------------------------------------------------------
   if (missing(oneBatch)){
@@ -40,32 +40,32 @@ runOneBatch <- function(oneBatch, control, num_days,
   if(length(unique(c(overlayVar, rowVar, columnVar))) < 3){  # divisions for fascetting plots
     stop("'overlayVar', rowVar, and columnVar cannot contain the same variable names.")
   }
-  divisions<- list()
+  divisions<- character()
   divisions[1]<- match.arg(overlayVar)
   divisions[2]<- match.arg(rowVar)
   divisions[3]<- match.arg(columnVar)
   font<- match.arg(font)
-  
+
 
   # Set the stage---------------------------------------------------------------
-  
+
   # Save the current working directory
-  original_wd <- getwd() 
+  original_wd <- getwd()
 
   # Change to the target directory
   setwd(paste0(original_wd, "/", oneBatch))
 
   # Get the list of R files in the directory
-  r_files <- list.files(getwd(), pattern = "\\.R$", full.names = TRUE)
+  r_files <- list.files(getwd(), pattern = "^Main[0-9_a-zA-Z]*\\.R$", full.names = TRUE)
 
   # Source each R file (run info)
   for (r_file in r_files) {
     source(r_file)
   }
-  
+
   # Ask user which plots they want
   pref<- plotPreferences("one")
-  
+
   # Analyze the batch
   runEachBatch(control, num_days, oneBatch, font, pref, divisions)
 

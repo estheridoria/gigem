@@ -103,13 +103,42 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
       # If a label is assigned, annotate the plot
       if (p_label !="") {
         pointplot <- pointplot +
-          ggplot2::annotate("text", x = 1.5, y = limits,
-                            label = p_label, size = 5, color = "black") +
-          ggplot2::geom_segment( mapping = NULL, x = 1, xend = 2, y = (limits - (limits / 20)), yend = (limits - (limits / 20)),
+          ggplot2::annotate("text", x = 1.5, y = (limits),
+                            label = paste("p =", round(p_value, 4)), size = 4.5,
+                            color = "black", fontface = font) +
+          ggplot2::annotate("text", x = 1.5, y = (limits- (limits / 13)),
+                            label = p_label, size = 5, color = "black", fontface = font) +
+          ggplot2::geom_segment( mapping = NULL, x = 1, xend = 2,
+                                 y = (limits -(limits/20)- (limits / 20)),
+                                 yend = (limits - (limits / 20)- (limits / 20)),
                                 color = "black", linewidth = 1)
        }
       # }
     return(pointplot)
+  }
+
+  #function for bout distribution plots
+  boutDist.fun<- function(data){
+    bout_plot<- ggplot2::ggplot(data = data, ggplot2::aes(x = as.numeric(factor),
+                                                          y = cumProp, color = d1))+
+      ggplot2::geom_point(shape = 1, size = 2, alpha = 1/2)+
+      ggplot2::scale_color_manual(values = c("blue", "red", "pink", "green", "#008B8B", "#808080", "#FFA500")) +
+      ggplot2::facet_grid(rows = ggplot2::vars(TimeofDay))+
+      ggprism::theme_prism(base_fontface = font) +
+      ggplot2::scale_x_log10(limits = c(1,1500), labels = scales::label_number(accuracy = 1)) +
+      ggplot2::scale_y_continuous(limits = c(0.05,1.01), breaks = seq(0.1,1.0, by = 0.9)) +
+      ggplot2::annotation_logticks(sides = "b", mid = grid::unit(0.1, "cm"), long = grid::unit(0, "cm"),) +
+      ggplot2::labs(y = "Cumulative relative\nfrequency",
+                    x = "Sleep bout duration (min)")+
+      ggplot2::theme(axis.title.x = ggplot2::element_text(size = 16),
+                     axis.title.y = ggplot2::element_text(size = 18, vjust = 0),
+                     axis.text.x = ggplot2::element_text(size = 14),
+                     axis.text.y = ggplot2::element_text(size = 16),
+                     strip.text = ggplot2::element_text(size = 14, face = font),
+                     plot.margin = ggplot2::unit(c(0.05, 0.5, 0, 0), #top right bottom left
+                                                 "inches"),
+                     legend.position = "none")
+    return(bout_plot)
   }
 
   # Apply the logic for subsetting and plotting using data.table------------
@@ -133,7 +162,7 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
 
 
         # Create overlay sleep plot--------------
-          p1 <- ggetho::ggetho(plot_subdata, ggplot2::aes(y = asleep, colour = .data[[divisions[1]]]), time_wrap = behavr::hours(24)) +
+          p1 <- ggetho::ggetho(plot_subdata, ggplot2::aes(x = t, y = asleep, colour = .data[[divisions[1]]]), time_wrap = behavr::hours(24)) +
             ggetho::stat_pop_etho(show.legend = T) +
             ggetho::stat_ld_annotations() +
             ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
@@ -219,7 +248,8 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
         # bout distributions
 
         # take treatment, genotype, and phase, subsetting the bout_min table, make frequency counts, write to a table
-        nightdf<-daydf<- data.frame()
+        #nightdf<-daydf<-
+        finaldf<- data.frame()
 
         bout_dt_min <- sleepr::bout_analysis(asleep, plot_subdata)[, .(
           id, duration = duration / 60, t = t / 60,
@@ -238,42 +268,27 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
                 out <- transform(out, cumProp = cumsum(relative))
                 out<-tibble::rownames_to_column(out)
                 out$d1 <- i
-                if(phasee == "L"){
-                  daydf<- rbind(daydf, out)
-                }
-                if(phasee == "D"){
-                  nightdf<- rbind(nightdf, out)
-                }
+                # if(phasee == "L"){
+                #   daydf<- rbind(daydf, out)
+                # }
+                # if(phasee == "D"){
+                #   nightdf<- rbind(nightdf, out)
+                # }
+                out[["TimeofDay"]]<- ifelse(phasee == "L", "Day", "Night")
+                finaldf<- rbind(finaldf, out)
               }}
         # remove all bout lengths with frequency of 0
-        daydf2<- daydf[daydf$Freq !=0,]
-        daydf2 <- daydf2[base::order(daydf2$d1), ]
-        nightdf2 <- nightdf[nightdf$Freq !=0,]
-        nightdf2 <- nightdf2[base::order(nightdf2$d1), ]
+        # daydf2<- daydf[daydf$Freq !=0,]
+        # daydf2 <- daydf2[base::order(daydf2$d1), ]
+        # nightdf2 <- nightdf[nightdf$Freq !=0,]
+        # nightdf2 <- nightdf2[base::order(nightdf2$d1), ]
+        finaldf2<- finaldf[finaldf$Freq !=0,]
+        finaldf2 <- finaldf2[base::order(finaldf2$d1), ]
 
-        #function for plots
-        boutDist.fun<- function(data, phase){
-          bout_plot<- ggplot2::ggplot(data = data, ggplot2::aes(x = as.numeric(factor),
-                                                                y = cumProp, color = d1))+
-            ggplot2::geom_point(shape = 1, size = 2, alpha = 1/2)+
-            ggplot2::scale_color_manual(values = c("blue", "red", "pink", "green", "#008B8B", "#808080", "#FFA500")) +
-            ggprism::theme_prism(base_fontface = font) +
-            ggplot2::scale_x_log10(limits = c(1,1500), labels = scales::label_number(accuracy = 1)) +
-            ggplot2::scale_y_continuous(limits = c(0.05,1.01), breaks = seq(0.1,1.0, by = 0.9)) +
-            ggplot2::annotation_logticks(sides = "b", mid = grid::unit(0.1, "cm"), long = grid::unit(0, "cm"),) +
-            ggplot2::labs(y = "Cumulative relative\nfrequency",
-                          x = paste(phase, "time sleep bout\nduration (min)"))+
-            ggplot2::theme(axis.title.x = ggplot2::element_text(size = 16),
-                           axis.title.y = ggplot2::element_text(size = 16, vjust = -5),
-                           axis.text.x = ggplot2::element_text(size = 14),
-                           axis.text.y = ggplot2::element_text(size = 16),
-                           plot.margin = ggplot2::unit(c(0.05, 0.2, 0, -0.25), #top right bottom left
-                                                       "inches"),
-                           legend.position = "none")
-          return(bout_plot)
-        }
-        p9 <- boutDist.fun(daydf2, "Day")
-        p10<- boutDist.fun(nightdf2, "Night")
+        p9 <- boutDist.fun(finaldf2)
+
+        # p9 <- boutDist.fun(daydf2, "Day")
+        # p10<- boutDist.fun(nightdf2, "Night")
 
       # p5 <- create_sleeptime_plot(plot_subdata2, yParams[4], "# Daytime Sleep Bouts", ceiling(max(plot_subdata2[,get(yParams[4])])/50)*50, "violin", font)#, p_value = "No")
       # p6 <- create_sleeptime_plot(plot_subdata2, yParams[5], "# Nighttime Sleep Bouts", ceiling(max(plot_subdata2[,get(yParams[5])])/50)*50, "violin", font)#, p_value = "No")
@@ -283,19 +298,16 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
         # Combine plots
         rel_width <- 1 + (u / 2) + ((u - 1) * 0.1)
 
-         suppressWarnings(
-          combined_plot <- cowplot::plot_grid(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, ncol = 10, align = "h", axis = "tb",
-                                              rel_widths = c(addedspace, rep(rel_width, 7), 3,3))
-         )
+          combined_plot <- cowplot::plot_grid(p1, p2, p3, p4, p5, p6, p7, p8, p9, ncol = 9, align = "h", axis = "tb",
+                                              rel_widths = c(addedspace, rep(rel_width, 7), 3.25))
 
-total_width <- addedspace + 7 * rel_width + 6
+total_width <- addedspace + 7 * rel_width + 3.25
 
 p1titlee <- gsub(" ", "_", p1title)
 p1titlee <- gsub(":", ".", p1titlee)
         # Save combined plot
         ggplot2::ggsave(paste0("CombinedPlots", p1titlee, ExperimentData@Batch, ".pdf"),
                         combined_plot, width = total_width, height = 4)
-
 }, by = 1:nrow(condition_combinations)]
 
   #-------------

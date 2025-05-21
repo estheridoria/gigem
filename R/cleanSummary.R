@@ -43,8 +43,8 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
   pdf(paste0(ExperimentData@Batch, '_Overlaid_Sleep_Bout_Profiles.pdf'),
       width = 5*length(unique(info[[divisions[3]]]))+2,
       height = 3*length(unique(info[[divisions[2]]]))+2)
-    suppressWarnings(print(
-      ggetho::ggetho(bout_dt, ggplot2::aes(y = duration / 60, colour = .data[[divisions[1]]]), time_wrap = behavr::hours(24)) +
+    print(
+      ggetho::ggetho(bout_dt, ggplot2::aes(x = t, y = duration / 60, colour = .data[[divisions[1]]]), time_wrap = behavr::hours(24)) +
       ggetho::stat_pop_etho() +
       ggetho::stat_ld_annotations() +
       ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
@@ -60,7 +60,6 @@ cleanSummary <- function(ExperimentData, dt, num_days, loadinginfo_linked, divis
                        strip.text = ggplot2::element_text(size = 20),
                        legend.text = ggplot2::element_text(size = 16, face = font),
                        legend.position = "right")
-  )
   )
   dev.off()
 }

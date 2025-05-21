@@ -16,6 +16,8 @@
 #' @return A `data.table` of the curated data (`dt`) limited to animals meeting or exceeding the lifespan threshold.
 #' @keywords internal
 manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref, font) {
+  # # debug
+  # dt<- dt_curated
 
   # Remove animals dying too early
   lifespan_dt <- dt[, .(lifespan = max(t)), by=id]
@@ -34,7 +36,6 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref, fon
   # Trim data to the desired time range
   dt_curated_final <- dt_curated_2[dt_curated_2$t >= behavr::days(0) &
                                      dt_curated_2$t <= behavr::days(num_days)]
-
 
   #save behavr and metadata into csv files (with Light quoted) for concatGenotypePlots
   if (pref[7] == 1) {
@@ -56,9 +57,10 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref, fon
         # height = 3*prod(sapply(divisions[1:3], function(col) length(unique(info[[col]]))))+2)
         width = 5*numb_days*length(unique(info[[divisions[3]]]))+2,
         height = 3*length(unique(info[[divisions[2]]]))*length(unique(info[[divisions[1]]]))+2)
-    pop_sleep_plot <- ggetho::ggetho(plot_data, ggplot2::aes(y = asleep, colour = .data[[divisions[1]]]), time_wrap = wrap_time) +
+    pop_sleep_plot <- ggetho::ggetho(plot_data, ggplot2::aes(x=t, y = asleep, colour = .data[[divisions[1]]]),
+                                     time_wrap = wrap_time) +
       ggetho::stat_pop_etho() +
-      ggetho::stat_ld_annotations() +
+      ggetho::stat_ld_annotations(ggplot2::aes(x=t), inherit.aes = FALSE) +
       ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
       ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
 
@@ -73,15 +75,14 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref, fon
                      axis.text.x = ggplot2::element_text(size = 16),
                      axis.text.y = ggplot2::element_text(size = 16),
                      legend.text = ggplot2::element_text(size = 16, face = font),
-                     strip.text = ggplot2::element_text(size = 20))
+                     strip.text = ggplot2::element_text(size = 20)) +
+      ggetho::stat_ld_annotations()
     print(pop_sleep_plot)
     dev.off()
   }
 
-  suppressWarnings(
-  create_population_plot(paste0(ExperimentData@Batch, '_Population_Sleep_Profiles.pdf'), dt_curated_final, divisions))
-  suppressWarnings(
-  create_population_plot(paste0(ExperimentData@Batch, '_Population_Sleep_Profiles_Wrap.pdf'), dt_curated_final, divisions, numb_days = 1, wrap_time = behavr::hours(24)))
+  create_population_plot(paste0(ExperimentData@Batch, '_Population_Sleep_Profiles.pdf'), dt_curated_final, divisions)
+  create_population_plot(paste0(ExperimentData@Batch, '_Population_Sleep_Profiles_Wrap.pdf'), dt_curated_final, divisions, numb_days = 1, wrap_time = behavr::hours(24))
 
 }
 
@@ -91,7 +92,7 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref, fon
     pdf(filename,
         width = 5*numb_days*length(unique(info[[divisions[3]]]))+2,
         height = 3*length(unique(info[[divisions[2]]]))+2)
-    pop_sleep_plot <- ggetho::ggetho(plot_data, ggplot2::aes(y = asleep, colour = .data[[divisions[1]]]), time_wrap = wrap_time) +
+    pop_sleep_plot <- ggetho::ggetho(plot_data, ggplot2::aes(x = t, y = asleep, colour = .data[[divisions[1]]]), time_wrap = wrap_time) +
       ggetho::stat_pop_etho() +
       ggetho::stat_ld_annotations() +
       ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
@@ -110,10 +111,10 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref, fon
     print(pop_sleep_plot)
     dev.off()
   }
-  suppressWarnings(
-  create_overlay_plot(paste0(ExperimentData@Batch, '_Overlaid_Sleep_Profile.pdf'), dt_curated_final, divisions, numb_days = num_days))
-  suppressWarnings(
-  create_overlay_plot(paste0(ExperimentData@Batch, '_Overlaid_Sleep_Profile_Wrap.pdf'), dt_curated_final, divisions, numb_days = 1, wrap_time = behavr::hours(24)))
+  create_overlay_plot(paste0(ExperimentData@Batch, '_Overlaid_Sleep_Profile.pdf'),
+                      dt_curated_final, divisions, numb_days = num_days)
+  create_overlay_plot(paste0(ExperimentData@Batch, '_Overlaid_Sleep_Profile_Wrap.pdf'),
+                      dt_curated_final, divisions, numb_days = 1, wrap_time = behavr::hours(24))
 
 }
 

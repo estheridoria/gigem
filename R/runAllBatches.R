@@ -47,10 +47,10 @@
 #' 3. It concatenates the normalized and general summary statistics for each batch into separate CSV files.
 #' 4. The final CSV files, \code{all_batches_norm_summary.csv} and \code{all_batches_summary.csv},
 #'    are saved in the parent directory, containing combined results for all batches.
-runAllBatches <- function(control, num_days, 
-                          overlayVar = c("Treatment", "Sex", "Genotype", "Temperature", "Environment", "Light"), 
-                          rowVar = c("Genotype", "Sex", "Temperature", "Treatment", "Environment", "Light"), 
-                          columnVar = c("Environment", "Sex", "Genotype", "Temperature", "Treatment", "Light"), 
+runAllBatches <- function(control, num_days,
+                          overlayVar = c("Treatment", "Sex", "Genotype", "Temperature", "Environment", "Light"),
+                          rowVar = c("Genotype", "Sex", "Temperature", "Treatment", "Environment", "Light"),
+                          columnVar = c("Environment", "Sex", "Genotype", "Temperature", "Treatment", "Light"),
                           font = c("plain", "bold", "italic", "bold.italic")) {
   # Warnings/Errors-------------------------------------------------------------
   if (missing(control)){
@@ -62,10 +62,11 @@ runAllBatches <- function(control, num_days,
   if(length(unique(c(overlayVar, rowVar, columnVar))) < 3){  # divisions for fascetting plots
     stop("'overlayVar', rowVar, and columnVar cannot contain the same variable names.")
     }
-  divisions<- list()
+  divisions<- character()
   divisions[1]<- match.arg(overlayVar)
   divisions[2]<- match.arg(rowVar)
   divisions[3]<- match.arg(columnVar)
+  #divisions<- c(overlayVar, rowVar, columnVar)
   font<- match.arg(font)
 
   # Save the current working directory
@@ -75,8 +76,8 @@ runAllBatches <- function(control, num_days,
   # Function to iterate through Meta.r files
   run_r_files_in_dir <- function(dir) {
     setwd(dir) # Change to the target directory
-    r_files <- list.files(dir, pattern = "^Meta\\.R$", full.names = TRUE) # Get the list of R files in the directory
-    for (r_file in r_files) { 
+    r_files <- list.files(dir, pattern = "^Main[0-9_a-zA-Z]*\\.R$", full.names = TRUE) # Get the list of R files in the directory
+    for (r_file in r_files) {
       source(r_file) # Source each R file
     }
   }
@@ -98,7 +99,7 @@ runAllBatches <- function(control, num_days,
     withCallingHandlers({
       # Attempt to combine the data.tables
       combined <- data.table::rbindlist(dt_list, fill = TRUE, use.names = TRUE)
-  
+
     }, warning = function(w) {
       # Check if the warning contains the specific message
       if (grepl("Item .* has .* rows but longest item has .*; recycled with remainder", conditionMessage(w))) {
@@ -129,7 +130,7 @@ runAllBatches <- function(control, num_days,
   }
 
   # Set the stage---------------------------------------------------------------
-  
+
   # Save the current working directory
   setwd(original_wd)
 
@@ -138,42 +139,58 @@ runAllBatches <- function(control, num_days,
 
   # Analyze each batch
   for (oneBatch in batch_dirs){
-    run_r_files_in_dir(thisBatch)
+    run_r_files_in_dir(oneBatch)
     runEachBatch(control, num_days, oneBatch, font, pref, divisions)
   }
-  
+
   # Restore the original working directory
   setwd(original_wd)
-  
+
 # Concatenate files from batches------------------------------------------------
 
   # Summaries: relative, stat, summary, & possibly sleep, meta
-  concatList<- c("^relative_summary_Batch[0-9_a-zA-Z]*\\.csv$", "^stat_Batch[0-9_a-zA-Z]*\\.csv$", "^summary_Batch[0-9_a-zA-Z]*\\.csv$", ) # "ks.results_L.csv$"
-  concatNames<- c("all_batches_relative_summary.csv", "all_batches_stat.csv", "all_batches_summary.csv", ) # "all_batches_ks.result_L.csv"
-  
+  concatList<- c("^stat_Batch[0-9_a-zA-Z]*\\.csv$", "^summary_Batch[0-9_a-zA-Z]*\\.csv$") #, "ks.results_L.csv$", "^relative_summary_Batch[0-9_a-zA-Z]*\\.csv$"
+  concatNames<- c("all_batches_stat.csv", "all_batches_summary.csv") #, "all_batches_ks.result_L.csv", "all_batches_relative_summary.csv"
+
   if (pref[7] == 1){ # concatenated sleepdata & metadata --> genotypePlots
   concatList <- c(concatList, "^sleepdata_Batch[0-9_a-zA-Z]*\\.csv$", "^sleepmeta_Batch[0-9_a-zA-Z]*\\.csv$")
   concatNames <- c(concatNames, "all_sleepdata.csv", "all_sleepmeta.csv")
   }
-  
+
+  combined_data_list <- list()
+
   for (i in seq_along(concatList)){
-    
+
     all_tables <- list()
-    
+
     # Iterate over each batch directory and read the concat-specified files
     for (batch_dir in batch_dirs) {
-      
+
       all_tables <- concatenate(batch_dir, all_tables, concatList[i])
     }
-    
+
     # Concatenate all data frames into one large data frame
     combined_data <- do.call(rbind, all_tables[1:9])
-  
+
+    if(i == 3){
+      summary_dt_final<-combined_data
+    }
+    if(i == 4){
+      combined_sleepdata <-combined_data
+    }
+    if(i == 5){
+      combined_sleepmeta<-combined_data
+    }
+
     # Save the combined data frame to a CSV file in the parent directory
     output_file <- file.path(original_wd, concatNames[i])
     data.table::fwrite(combined_data, output_file, row.names = FALSE)
   }
 
   setwd(original_wd)
+
+  if(pref[7] ==1){
+  concatGenotypePlots(combined_sleepdata, combined_sleepmeta, summary_dt_final, control, font)
+  }
 
 }
