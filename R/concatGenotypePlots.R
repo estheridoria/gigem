@@ -9,6 +9,7 @@
 #'   `Genotype`, `Treatment`, `Sex` and various sleep metrics.
 #' @param control A character string specifying the control from `divisions[1]`.
 #' @param font A character string variable determining the font style of the produced plots.
+#' @param pValues A TRUE/FALSE vector for if combined plots will display p values for 2-condition overlays.
 #'
 #' @details
 #' The function iterates through all unique combinations of `Light`, `Environment`, `Treatment`, `Sex`, and `Genotype`.
@@ -23,7 +24,8 @@
 #' @return None. Plots are saved as PDF files.
 #' @keywords internal
 
-concatGenotypePlots <- function(combined_sleepdata, combined_sleepmeta, summary_dt_final, control, font, divisions) {
+concatGenotypePlots <- function(combined_sleepdata, combined_sleepmeta, 
+                                summary_dt_final, control, font, divisions, pValues) {
   
   data.table::setDT(combined_sleepdata)
   data.table::setDT(combined_sleepmeta)
@@ -40,6 +42,6 @@ concatGenotypePlots <- function(combined_sleepdata, combined_sleepmeta, summary_
                         genotypelist = list(),
                         loadinginfo = data.table::data.table())
 
-  genotypePlots(ExperimentData, dt_curated_final, summary_dt_final, control, font, divisions)
+  genotypePlots(ExperimentData, dt_curated_final, summary_dt_final, control, font, divisions, pValues)
 }
 

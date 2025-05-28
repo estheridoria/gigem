@@ -12,6 +12,7 @@
 #' @param columnVar A character string specifying which variable to facet columns in plots by. Default is "Environment".
 #' @param plotSelection A character string specifying if the user wants all possible plots, no optional plots, or select specific plot outputs.
 #' @param font A string variable determining the font style of the produced plots.
+#' @param pValues A TRUE/FALSE vector for if combined plots will display p values for 2-condition overlays.
 #' @export
 #'
 #' @return This function does not return a value but performs a series of steps to process the data,
@@ -24,7 +25,8 @@ runOneBatch <- function(oneBatch, control, numDays,
                         rowVar = c("Genotype", "Sex", "Temperature", "Treatment", "Environment", "Light"),
                         columnVar = c("Environment", "Sex", "Genotype", "Temperature", "Treatment", "Light"),
                         plotSelection = c("All", "None", "Select"),
-                        font = c("plain", "bold", "italic", "bold.italic")) {
+                        font = c("plain", "bold", "italic", "bold.italic"),
+                        pValues = c(FALSE, TRUE)) {
   # Warnings/Errors-------------------------------------------------------------
   if (missing(oneBatch)){
     stop("'oneBatch' must be specified")
@@ -48,7 +50,9 @@ runOneBatch <- function(oneBatch, control, numDays,
   divisions[3]<- match.arg(columnVar)
   plotSelection <- match.arg(plotSelection)
   font<- match.arg(font)
-
+  if(!is.logical(pValues)){
+    stop("'pValues' must be either 'TRUE' or 'FALSE'")
+  }  
   # Set the stage---------------------------------------------------------------
 
   # Save the current working directory
@@ -64,6 +68,9 @@ runOneBatch <- function(oneBatch, control, numDays,
   for (r_file in r_files) {
     source(r_file)
   }
+  
+  # add "monitor" to the info file
+  info[["monitor"]]<- paste0("M", gsub("\\D", "", info$file))
 
   if(plotSelection == "All"){
     # Ask user which plots they want
@@ -79,7 +86,7 @@ runOneBatch <- function(oneBatch, control, numDays,
   }
 
   # Analyze the batch
-  runEachBatch(control, numDays, oneBatch, font, pref, divisions)
+  runEachBatch(control, numDays, oneBatch, font, pref, divisions, pValues)
 
   setwd(original_wd)
 

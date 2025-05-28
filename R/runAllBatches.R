@@ -12,6 +12,7 @@
 #' @param columnVar A character string specifying which variable to facet columns in plots by. Default is "Environment".
 #' @param plotSelection A character string specifying if the user wants all possible plots, no optional plots, or select specific plot outputs.
 #' @param font A string variable determining the font style of the produced plots.
+#' @param pValues A TRUE/FALSE vector for if combined plots will display p values for 2-condition overlays.
 #'
 #' @return This function does not return a value, but generates and saves two CSV files:
 #'         \code{all_batches_norm_summary.csv} and \code{all_batches_summary.csv}.
@@ -53,7 +54,8 @@ runAllBatches <- function(control, numDays,
                           rowVar = c("Genotype", "Sex", "Temperature", "Treatment", "Environment", "Light"),
                           columnVar = c("Environment", "Sex", "Genotype", "Temperature", "Treatment", "Light"), 
                           plotSelection = c("All", "None", "Select"),
-                          font = c("plain", "bold", "italic", "bold.italic")) {
+                          font = c("plain", "bold", "italic", "bold.italic"),
+                          pValues = c(FALSE, TRUE)) {
   # Warnings/Errors-------------------------------------------------------------
   if (missing(control)){
     stop("'control' must be specified")
@@ -62,7 +64,7 @@ runAllBatches <- function(control, numDays,
     stop("'numDays' must be specified as a whole number.")
   }
   if(length(unique(c(overlayVar, rowVar, columnVar))) < 3){  # divisions for fascetting plots
-    stop("'overlayVar', rowVar, and columnVar cannot contain the same variable names.")
+    stop("'overlayVar', 'rowVar', and 'columnVar' cannot contain the same variable names.")
     }
   divisions<- character()
   divisions[1]<- match.arg(overlayVar)
@@ -71,7 +73,10 @@ runAllBatches <- function(control, numDays,
   #divisions<- c(overlayVar, rowVar, columnVar)
   plotSelection <- match.arg(plotSelection)
   font <- match.arg(font)
-
+  if(!is.logical(pValues)){
+    stop("'pValues' must be either 'TRUE' or 'FALSE'")
+}
+  
   # Save the current working directory
   original_wd <- getwd()
   # Get the list of all sub directories
@@ -153,8 +158,8 @@ runAllBatches <- function(control, numDays,
   # Analyze each batch
   for (oneBatch in batch_dirs){
     run_r_files_in_dir(oneBatch)
-    info[[monitor]]<- paste0("M", gsub("\\D", "", info$file))
-    runEachBatch(control, numDays, oneBatch, font, pref, divisions)
+    info[["monitor"]]<- paste0("M", gsub("\\D", "", info$file))
+    runEachBatch(control, numDays, oneBatch, font, pref, divisions, pValues)
   }
 
   # Restore the original working directory
@@ -204,6 +209,6 @@ runAllBatches <- function(control, numDays,
   setwd(original_wd)
 
   if(pref[7] ==1){
-  concatGenotypePlots(combined_sleepdata, combined_sleepmeta, summary_dt_final, control, font, divisions)
+  concatGenotypePlots(combined_sleepdata, combined_sleepmeta, summary_dt_final, control, font, divisions, pValues)
   }
 }

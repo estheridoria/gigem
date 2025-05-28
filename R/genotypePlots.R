@@ -10,6 +10,7 @@
 #' @param control A character string specifying the control from `divisions[1]`.
 #' @param font A character string variable determining the font style of the produced plots.
 #' @param divisions A list of grouping columns used for facetting plots.
+#' @param pValues A TRUE/FALSE vector for if combined plots will display p values for 2-condition overlays.
 #'
 #' @details
 #' The function iterates through all unique combinations of `Light`, `Environment`, `Treatment`, `Sex`, and `Genotype`.
@@ -26,7 +27,7 @@
 #' @return None. Plots are saved as PDF files.
 #' @keywords internal
 
-genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, control, font, divisions) {
+genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, control, font, divisions, pValues) {
   # Dynamically exclude columns where the value is equal to divisions[1] &
   columns_to_consider <- c("Sex", "Genotype", "Temperature", "Treatment", "Environment", "Light")
   # Exclude the first division and get unique combinations
@@ -161,13 +162,21 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
 #       if (divisions[1] != "Sex" && length(unique(Sex))>1) {paste0(Sex, " ")} else "",
 #       if (divisions[1] != "Environment" && length(unique(Environment))>1) {paste0(Environment, " ")} else ""))
 
-
+    # Count samples per group
+    group_counts <- dplyr::count(keep_data, by = get(divisions[1]))
+    group_counts <- dplyr::mutate(group_counts, label = paste0(by, " (n=", n, ")"))
+    # n <- plot_subdata2[, lapply(.SD, mean),
+    #                                by = .(Sex, Genotype, Temperature, Treatment,Environment,Light, Batch),
+    #                                .SDcols = groups]
+    # Named vector: group -> "label (n=x)"
+    label_map <- stats::setNames(group_counts$label, group_counts$by)
+    
         # Create overlay sleep plot--------------
           p1 <- ggetho::ggetho(plot_subdata, ggplot2::aes(x = t, y = asleep, colour = .data[[divisions[1]]]), time_wrap = behavr::hours(24)) +
             ggetho::stat_pop_etho(show.legend = T) +
             ggetho::stat_ld_annotations() +
-            ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
-            ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
+            ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6"), labels = label_map) +
+            ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6"), labels = label_map) +
             ggplot2::labs(title = p1title, y= "Sleep (%)") +
             ggplot2::scale_y_continuous(limits = c(0,1), labels = scales::percent)+
             ggprism::theme_prism(base_fontface = font) +
@@ -178,7 +187,7 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
                            axis.text.y = ggplot2::element_text(size = 16),
                            legend.text = ggplot2::element_text(size = 16, face = font))
             if(length(unique(plot_subdata2[[divisions[1]]])) <= 2){
-              p1 <- p1 + ggplot2::theme(legend.position = c(0.8,0.15)) ###continued warning about legend position inside
+              p1 <- p1 + ggplot2::theme(legend.position = c(0.75,0.15)) ###continued warning about legend position inside
               addedspace <- 6
             } else {
                 addedspace <- 8
@@ -187,6 +196,7 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
     #-------------
     yParams<- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
 
+    if(pValues){
     #p-value statements!!
     # find out if there is a control for each combination of conditions
     if (length(unique(plot_subdata2[[divisions[1]]])) == 2) {
@@ -212,6 +222,9 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
 
       colnames(p_value) <- yParams
       rownames(p_value) <- t.test_y_vars
+    } else {
+      p_value <- matrix("No", nrow = 1, ncol = length(yParams))
+    }
     } else {
       p_value <- matrix("No", nrow = 1, ncol = length(yParams))
     }
@@ -264,10 +277,10 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
 
         # Combine plots
         rel_width <- 1 + (u / 2) + ((u - 1) * 0.1)
-
+suppressWarnings(
           combined_plot <- cowplot::plot_grid(p1, p2, p3, p4, p5, p6, p7, p8, p9, ncol = 9, align = "h", axis = "tb",
                                               rel_widths = c(addedspace, rep(rel_width, 7), 3.25))
-
+)
 total_width <- addedspace + 7 * rel_width + 3.25
 
 p1titlee <- gsub(" ", "_", p1title)
@@ -278,21 +291,8 @@ p1titlee <- gsub(":", ".", p1titlee)
 }, by = 1:nrow(condition_combinations)]
 
   #-------------
-  # pvdf <- data.frame(matrix(unlist(p_values), nrow = ncol(p_values), byrow = TRUE))
-  # colnames(pvdf) <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
-  # rownames(pvdf)<- names(p_values)
-  # write.csv(pvdf, paste0("pValues_", ExperimentData@Batch, ".csv"))
-
-  # Flatten the list of matrices in p_values into a list of rows
-  flattened <- lapply(p_values, function(mat) {
-    if (is.matrix(mat)) as.vector(t(mat)) else rep(NA, 7)  # assumes 7 p-values expected
-  })
-  # Combine into a data frame
-  pvdf <- as.data.frame(do.call(rbind, flattened))
-  # Set column & row names
-  colnames(pvdf) <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", 
-                      "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
-  rownames(pvdf) <- names(p_values)
-  # Save to CSV
+  pvdf <- data.frame(matrix(unlist(p_values), nrow = ncol(p_values), byrow = TRUE))
+  colnames(pvdf) <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
+  rownames(pvdf)<- names(p_values)
   write.csv(pvdf, paste0("pValues_", ExperimentData@Batch, ".csv"))
 }
