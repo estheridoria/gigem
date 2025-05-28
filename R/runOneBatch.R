@@ -6,10 +6,11 @@
 #'
 #' @param oneBatch A character string of the Batch folder to be analyzed.
 #' @param control A character string specifying the control condition for normalization (ex. Canton S Vs to SIP-L1-1).
-#' @param num_days A numerical value specifying the number of days to be used in analysis.
+#' @param numDays A numerical value specifying the number of days to be used in analysis.
 #' @param overlayVar A character string specifying which variable to overlay and color plots by Default is "Treatment".
 #' @param rowVar A character string specifying which variable to facet rows in plots by. Default is "Genotype".
 #' @param columnVar A character string specifying which variable to facet columns in plots by. Default is "Environment".
+#' @param plotSelection A character string specifying if the user wants all possible plots, no optional plots, or select specific plot outputs.
 #' @param font A string variable determining the font style of the produced plots.
 #' @export
 #'
@@ -18,10 +19,11 @@
 #'
 #'
 #' @keywords export
-runOneBatch <- function(oneBatch, control, num_days,
+runOneBatch <- function(oneBatch, control, numDays,
                         overlayVar = c("Treatment", "Sex", "Genotype", "Temperature", "Environment", "Light"),
                         rowVar = c("Genotype", "Sex", "Temperature", "Treatment", "Environment", "Light"),
                         columnVar = c("Environment", "Sex", "Genotype", "Temperature", "Treatment", "Light"),
+                        plotSelection = c("All", "None", "Select"),
                         font = c("plain", "bold", "italic", "bold.italic")) {
   # Warnings/Errors-------------------------------------------------------------
   if (missing(oneBatch)){
@@ -34,8 +36,8 @@ runOneBatch <- function(oneBatch, control, num_days,
   if (missing(control)){
     stop("'control' must be specified")
   }
-  if (missing(num_days) || !is.numeric(num_days)){
-    stop("'num_days' must be specified as a whole number.")
+  if (missing(numDays) || !is.numeric(numDays)){
+    stop("'numDays' must be specified as a whole number.")
   }
   if(length(unique(c(overlayVar, rowVar, columnVar))) < 3){  # divisions for fascetting plots
     stop("'overlayVar', rowVar, and columnVar cannot contain the same variable names.")
@@ -44,8 +46,8 @@ runOneBatch <- function(oneBatch, control, num_days,
   divisions[1]<- match.arg(overlayVar)
   divisions[2]<- match.arg(rowVar)
   divisions[3]<- match.arg(columnVar)
+  plotSelection <- match.arg(plotSelection)
   font<- match.arg(font)
-
 
   # Set the stage---------------------------------------------------------------
 
@@ -63,11 +65,21 @@ runOneBatch <- function(oneBatch, control, num_days,
     source(r_file)
   }
 
-  # Ask user which plots they want
-  pref<- plotPreferences("one")
+  if(plotSelection == "All"){
+    # Ask user which plots they want
+    pref <- c(1,1,1,1,1,1,1)
+  }
+  if(plotSelection == "None"){
+    # Ask user which plots they want
+    pref <- c(2,2,2,2,2,2,2)
+  }
+  if(plotSelection == "Select"){
+    # Ask user which plots they want
+    pref <- plotPreferences("one")
+  }
 
   # Analyze the batch
-  runEachBatch(control, num_days, oneBatch, font, pref, divisions)
+  runEachBatch(control, numDays, oneBatch, font, pref, divisions)
 
   setwd(original_wd)
 

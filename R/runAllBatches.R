@@ -6,10 +6,11 @@
 #' both normalized and general summary statistics from each batch into a final report.
 #'
 #' @param control A character string specifying the control condition for normalization (ex. Canton S Vs to SIP-L1-1).
-#' @param num_days A numerical value specifying the number of days to be used in analysis.
+#' @param numDays A numerical value specifying the number of days to be used in analysis.
 #' @param overlayVar A character string specifying which variable to overlay and color plots by Default is "Treatment".
 #' @param rowVar A character string specifying which variable to facet rows in plots by. Default is "Genotype".
 #' @param columnVar A character string specifying which variable to facet columns in plots by. Default is "Environment".
+#' @param plotSelection A character string specifying if the user wants all possible plots, no optional plots, or select specific plot outputs.
 #' @param font A string variable determining the font style of the produced plots.
 #'
 #' @return This function does not return a value, but generates and saves two CSV files:
@@ -47,17 +48,18 @@
 #' 3. It concatenates the normalized and general summary statistics for each batch into separate CSV files.
 #' 4. The final CSV files, \code{all_batches_norm_summary.csv} and \code{all_batches_summary.csv},
 #'    are saved in the parent directory, containing combined results for all batches.
-runAllBatches <- function(control, num_days,
+runAllBatches <- function(control, numDays,
                           overlayVar = c("Treatment", "Sex", "Genotype", "Temperature", "Environment", "Light"),
                           rowVar = c("Genotype", "Sex", "Temperature", "Treatment", "Environment", "Light"),
-                          columnVar = c("Environment", "Sex", "Genotype", "Temperature", "Treatment", "Light"),
+                          columnVar = c("Environment", "Sex", "Genotype", "Temperature", "Treatment", "Light"), 
+                          plotSelection = c("All", "None", "Select"),
                           font = c("plain", "bold", "italic", "bold.italic")) {
   # Warnings/Errors-------------------------------------------------------------
   if (missing(control)){
     stop("'control' must be specified")
   }
-  if (missing(num_days) || !is.numeric(num_days)){
-    stop("'num_days' must be specified as a whole number.")
+  if (missing(numDays) || !is.numeric(numDays)){
+    stop("'numDays' must be specified as a whole number.")
   }
   if(length(unique(c(overlayVar, rowVar, columnVar))) < 3){  # divisions for fascetting plots
     stop("'overlayVar', rowVar, and columnVar cannot contain the same variable names.")
@@ -67,7 +69,8 @@ runAllBatches <- function(control, num_days,
   divisions[2]<- match.arg(rowVar)
   divisions[3]<- match.arg(columnVar)
   #divisions<- c(overlayVar, rowVar, columnVar)
-  font<- match.arg(font)
+  plotSelection <- match.arg(plotSelection)
+  font <- match.arg(font)
 
   # Save the current working directory
   original_wd <- getwd()
@@ -134,13 +137,24 @@ runAllBatches <- function(control, num_days,
   # Save the current working directory
   setwd(original_wd)
 
-  # Ask user which plots they want
-  pref <- plotPreferences("all")
-
+  if(plotSelection == "All"){
+    # Ask user which plots they want
+    pref <- c(1,1,1,1,1,1,1)
+  }
+  if(plotSelection == "None"){
+    # Ask user which plots they want
+    pref <- c(2,2,2,2,2,2,2)
+  }
+  if(plotSelection == "Select"){
+    # Ask user which plots they want
+    pref <- plotPreferences("all")
+  }
+  
   # Analyze each batch
   for (oneBatch in batch_dirs){
     run_r_files_in_dir(oneBatch)
-    runEachBatch(control, num_days, oneBatch, font, pref, divisions)
+    info[[monitor]]<- paste0("M", gsub("\\D", "", info$file))
+    runEachBatch(control, numDays, oneBatch, font, pref, divisions)
   }
 
   # Restore the original working directory
@@ -172,13 +186,13 @@ runAllBatches <- function(control, num_days,
     # Concatenate all data frames into one large data frame
     combined_data <- do.call(rbind, all_tables[1:9])
 
-    if(i == 3){
+    if(i == 2){
       summary_dt_final<-combined_data
     }
-    if(i == 4){
+    if(i == 3){
       combined_sleepdata <-combined_data
     }
-    if(i == 5){
+    if(i == 4){
       combined_sleepmeta<-combined_data
     }
 
@@ -190,7 +204,6 @@ runAllBatches <- function(control, num_days,
   setwd(original_wd)
 
   if(pref[7] ==1){
-  concatGenotypePlots(combined_sleepdata, combined_sleepmeta, summary_dt_final, control, font)
+  concatGenotypePlots(combined_sleepdata, combined_sleepmeta, summary_dt_final, control, font, divisions)
   }
-
 }

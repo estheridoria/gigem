@@ -4,7 +4,7 @@
 #' and the latency to the longest bout for each animal per day. The function computes these statistics for each
 #' day within a specified number of days and merges the results into a final summary table.
 #'
-#' @param num_days An integer specifying the number of days for which to process the bout data.
+#' @param numDays An integer specifying the number of days for which to process the bout data.
 #' @param bout_dt A data.table containing bout data, including time (`t`) and bout duration (`duration`).
 #' @param summary_dt_final A data.table containing the final summary data, which will be updated with the computed
 #'                         latency and bout lengths for each day.
@@ -19,8 +19,8 @@
 #' The function processes bout data for each day within the specified range, calculating the latency to the first bout,
 #' the first bout length, and the latency to the longest bout. The results for each day are added to a summary table,
 #' which is then returned after processing all specified days.
-processDays <- function(num_days, bout_dt, summary_dt_final) {
-  for (day in 1:num_days) {
+processDays <- function(numDays, bout_dt, summary_dt_final) {
+  for (day in 1:numDays) {
     # Define start and end times for the current day
     start_time <- behavr::days(day - 1)
     end_time <- start_time + behavr::hours(12)

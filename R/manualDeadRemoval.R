@@ -5,7 +5,7 @@
 #'
 #' @param ExperimentData An S4 object containing experiment metadata, including `Batch` for output filenames.
 #' @param dt A `data.table` containing experimental results, including columns `id` and `t` (time).
-#' @param num_days Numeric, the minimum lifespan (in days) required for an animal to be retained.
+#' @param numDays Numeric, the minimum lifespan (in days) required for an animal to be retained.
 #' @param divisions A list of grouping columns used for facetting plots.
 #' @param pref A numeric vector specifying whether to generate population plots (`pref[2] == 1`) and overlay plots (`pref[3] == 1`).
 #' @param font A character string variable determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")
@@ -15,13 +15,13 @@
 #'
 #' @return A `data.table` of the curated data (`dt`) limited to animals meeting or exceeding the lifespan threshold.
 #' @keywords internal
-manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref, font) {
+manualDeadRemoval <- function(ExperimentData, dt, numDays, divisions, pref, font) {
   # # debug
   # dt<- dt_curated
 
   # Remove animals dying too early
   lifespan_dt <- dt[, .(lifespan = max(t)), by=id]
-  valid_ids <- lifespan_dt[lifespan >= behavr::days(num_days), id] ## previously it was stated > not >=
+  valid_ids <- lifespan_dt[lifespan >= behavr::days(numDays), id] ## previously it was stated > not >=
 
   # Apply the filter and ensure it stays a behavr object
   filtered_meta <- behavr::meta(dt)[id %in% valid_ids]
@@ -35,7 +35,7 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref, fon
 
   # Trim data to the desired time range
   dt_curated_final <- dt_curated_2[dt_curated_2$t >= behavr::days(0) &
-                                     dt_curated_2$t <= behavr::days(num_days)]
+                                     dt_curated_2$t <= behavr::days(numDays)]
 
   #save behavr and metadata into csv files (with Light quoted) for concatGenotypePlots
   if (pref[7] == 1) {
@@ -51,7 +51,7 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref, fon
 
   if(pref[2]==1){
   # Generate population plots
-  create_population_plot <- function(filename, plot_data, divisions, numb_days = num_days, wrap_time = NULL) {
+  create_population_plot <- function(filename, plot_data, divisions, numb_days = numDays, wrap_time = NULL) {
     pdf(filename,
         # width = 5*numb_days+2,
         # height = 3*prod(sapply(divisions[1:3], function(col) length(unique(info[[col]]))))+2)
@@ -88,7 +88,7 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref, fon
 
   if(pref[3]==1){
   # Generate overlay plots
-  create_overlay_plot <- function(filename, plot_data, divisions, numb_days = num_days, wrap_time = NULL) {
+  create_overlay_plot <- function(filename, plot_data, divisions, numb_days = numDays, wrap_time = NULL) {
     pdf(filename,
         width = 5*numb_days*length(unique(info[[divisions[3]]]))+2,
         height = 3*length(unique(info[[divisions[2]]]))+2)
@@ -112,7 +112,7 @@ manualDeadRemoval <- function(ExperimentData, dt, num_days, divisions, pref, fon
     dev.off()
   }
   create_overlay_plot(paste0(ExperimentData@Batch, '_Overlaid_Sleep_Profile.pdf'),
-                      dt_curated_final, divisions, numb_days = num_days)
+                      dt_curated_final, divisions, numb_days = numDays)
   create_overlay_plot(paste0(ExperimentData@Batch, '_Overlaid_Sleep_Profile_Wrap.pdf'),
                       dt_curated_final, divisions, numb_days = 1, wrap_time = behavr::hours(24))
 

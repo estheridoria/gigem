@@ -5,7 +5,7 @@
 #' generating normalized statistics.
 #'
 #' @param control A character string specifying the control.
-#' @param num_days A numerical value specifying the number of days to be used in analysis.
+#' @param numDays A numerical value specifying the number of days to be used in analysis.
 #' @param oneBatch A character string of the Batch folder to be analyzed.
 #' @param font A string variable determining the font style of the produced plots.
 #' @param pref A vector of preferences for generating specific plots (e.g., whether to generate concatenated plots).
@@ -25,7 +25,7 @@
 #' 8. Writes relevant output files, including the final summary and normalized statistics.
 #'
 #' @keywords Internal
-runEachBatch <- function(control, num_days, oneBatch, font, pref, divisions) {
+runEachBatch <- function(control, numDays, oneBatch, font, pref, divisions) {
 
   # Create an object that contains all of your inputs
   ExperimentData <- new("ExperimentData",
@@ -44,10 +44,10 @@ runEachBatch <- function(control, num_days, oneBatch, font, pref, divisions) {
   dt_curated <- aliveVsDead(ExperimentData, dt_activity)
 
   # Further removal and trimming of animals that died before specified time, providing list of IDs removed
-  dt_final <- manualDeadRemoval(ExperimentData, dt_curated, num_days, divisions, pref, font)
+  dt_final <- manualDeadRemoval(ExperimentData, dt_curated, numDays, divisions, pref, font)
 
   # Write bout length pdf, and calculate bout and latency stats
-  dt_finalSummary <- cleanSummary(ExperimentData, dt = dt_final, num_days, loadinginfo_linked =loading_metadata, divisions, pref, font)
+  dt_finalSummary <- cleanSummary(ExperimentData, dt = dt_final, numDays, loadinginfo_linked =loading_metadata, divisions, pref, font)
 
   if (pref[6] == 1){
     # Generate concatenated plots

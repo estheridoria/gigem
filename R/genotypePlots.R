@@ -27,7 +27,7 @@
 #' @keywords internal
 
 genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, control, font, divisions) {
-  #Dynamically exclude columns where the value is equal to divisions[1] &
+  # Dynamically exclude columns where the value is equal to divisions[1] &
   columns_to_consider <- c("Sex", "Genotype", "Temperature", "Treatment", "Environment", "Light")
   # Exclude the first division and get unique combinations
   cols <- columns_to_consider[columns_to_consider != divisions[1]]
@@ -35,7 +35,7 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
 
   condition_combinations[, p1title := trimws(paste0(
     if (divisions[1] != "Genotype" && length(unique(Genotype)) > 1) paste0(Genotype, " ") else "",
-    if (divisions[1] != "Light"    && length(unique(Light))    > 1) paste0(Light, " ")    else "",
+    if (divisions[1] != "Light" && length(unique(Light)) > 1) paste0(Light, " ") else "",
     if (divisions[1] != "Treatment" && length(unique(Treatment)) > 1) paste0(Treatment, " ") else "",
     if (divisions[1] != "Temperature" && length(unique(Temperature)) > 1) paste0(Temperature, " ") else "",
     if (divisions[1] != "Sex" && length(unique(Sex)) > 1) paste0(Sex, " ") else "",
@@ -86,19 +86,20 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
                      axis.text.x = ggplot2::element_text(size = 16, angle = 45, vjust = 1, hjust= 1),
                      axis.text.y = ggplot2::element_text(size = 16),
                      legend.position = "none")
-    # if (p_value == "No") {
-    #   invisible()
-    # }else{
+    if (p_value == "No") {
+      invisible()
+    }else{
       # Define thresholds and corresponding labels
-      thresholds <- c(0.0001, 0.001, 0.01, 0.05)
-      labels <- c("****", "***", "**", "*")
+      thresholds <- c(0.0001, 0.001, 0.01, 0.05, 0.07)
+      labels <- c("****", "***", "**", "*", ".")
 
       # Find the corresponding label directly using logical comparisons
       p_label <- ifelse(p_value <= thresholds[1], labels[1],
                  ifelse(p_value <= thresholds[2], labels[2],
                  ifelse(p_value <= thresholds[3], labels[3],
                  ifelse(p_value <= thresholds[4], labels[4],
-                        ""))))
+                 ifelse(p_value <= thresholds[5], labels[5],
+                        "")))))
 
       # If a label is assigned, annotate the plot
       if (p_label !="") {
@@ -113,7 +114,7 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
                                  yend = (limits - (limits / 20)- (limits / 20)),
                                 color = "black", linewidth = 1)
        }
-      # }
+      }
     return(pointplot)
   }
 
@@ -188,20 +189,15 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
 
     #p-value statements!!
     # find out if there is a control for each combination of conditions
-    controlee<-"Grp"
-    if(controlee %in% plot_subdata2[,get(divisions[1])]){
-
-
-    # all_condition_combinations_compare <- all_condition_combinations[,.SD,.SDcols = columns_to_consider[columns_to_consider != divisions[1]]]
-    # if(any(condition_combinations != all_condition_combinations_compare)){
-    #   stop("the 'control' specified is not included in all possible combinations of experimental variables")
-    # }
-
-
+    if (length(unique(plot_subdata2[[divisions[1]]])) == 2) {
+      controlee <- unique(plot_subdata2[[divisions[1]]])[1]
+      
       # Perform t-test if the 'divisions[1]'  has 'control'
       all_conditions <- unique(plot_subdata2[,.SD,.SDcols = columns_to_consider])
-      t.test_y_vars <- all_conditions[get(divisions[1]) != controlee, get(divisions[1])]
-
+      #t.test_y_vars <- all_conditions[get(divisions[1]) != controlee, get(divisions[1])]
+      t.test_y_vars <- setdiff(unique(plot_subdata2[[divisions[1]]]), controlee) # should be same as above line
+      
+      #set up for p_values & run the t.test
       p_value <- matrix(, nrow = length(t.test_y_vars), ncol = length(yParams))
       p_vals <- list()
 
@@ -213,18 +209,17 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
         }
 
       }
-      p1title <- gsub(" ", "_", p1title)
-      p1title <- gsub(":", ".", p1title)
 
-      if(length(p_value) >1){
       colnames(p_value) <- yParams
       rownames(p_value) <- t.test_y_vars
-      # write.csv(p_value, paste0("pValues(unadjusted)_", p1title, "_", ExperimentData@Batch, ".csv"))
-      }
-
-       p_values[, (p1title) := list(list(p_value))]
-       # p_v<- unlist(p_value)
+    } else {
+      p_value <- matrix("No", nrow = 1, ncol = length(yParams))
     }
+
+      p1title <- gsub(" ", "_", p1title)
+      p1title <- gsub(":", ".", p1title)
+      #write.csv(p_value, paste0("pValues(unadjusted)_", p1title, "_", ExperimentData@Batch, ".csv"))
+      p_values[, (p1title) := list(list(p_value))]
 
         # Generate sleep duration plots
         p2 <- create_sleeptime_plot(plot_subdata2, yParams[1], "Total Sleep (min)", 1500, "bar", font, p_value[,1])
@@ -235,18 +230,8 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
         p7 <- create_sleeptime_plot(plot_subdata2, yParams[6], "Daytime Bout Length", ceiling(max(plot_subdata2[,get(yParams[6])])/50)*50, "violin", font, p_value[,6])
         p8 <- create_sleeptime_plot(plot_subdata2, yParams[7], "Nighttime Bout Length", ceiling(max(plot_subdata2[,get(yParams[7])])/50)*50, "violin", font, p_value[,7])
 
-      # # # Generate sleep duration plots without p-values
-      # p2 <- create_sleeptime_plot(plot_subdata2, yParams[1], "Total Sleep (min)", 1500, "bar", font)#, p_value = "No")
-      # p3 <- create_sleeptime_plot(plot_subdata2, yParams[2], "Daytime Sleep (min)", 1000, "bar", font)#, p_value = "No")
-      # p4 <- create_sleeptime_plot(plot_subdata2, yParams[3], "Nighttime Sleep (min)", 1000, "bar", font)#, p_value = "No")
-      # p5 <- create_sleeptime_plot(plot_subdata2, yParams[4], "# Daytime Sleep Bouts", 80, "violin", font)#, p_value = "No")
-      # p6 <- create_sleeptime_plot(plot_subdata2, yParams[5], "# Nighttime Sleep Bouts", 80, "violin", font)#, p_value = "No")
-      # p7 <- create_sleeptime_plot(plot_subdata2, yParams[6], "Daytime Bout Length", 250, "violin", font)#, p_value = "No")
-      # p8 <- create_sleeptime_plot(plot_subdata2, yParams[7], "Nighttime Bout Length", 250, "violin", font)#, p_value = "No")
-      #
-
-        # bout distributions
-
+        
+  # Bout distributions
         # take treatment, genotype, and phase, subsetting the bout_min table, make frequency counts, write to a table
         #nightdf<-daydf<-
         finaldf<- data.frame()
@@ -268,33 +253,15 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
                 out <- transform(out, cumProp = cumsum(relative))
                 out<-tibble::rownames_to_column(out)
                 out$d1 <- i
-                # if(phasee == "L"){
-                #   daydf<- rbind(daydf, out)
-                # }
-                # if(phasee == "D"){
-                #   nightdf<- rbind(nightdf, out)
-                # }
                 out[["TimeofDay"]]<- ifelse(phasee == "L", "Day", "Night")
                 finaldf<- rbind(finaldf, out)
               }}
         # remove all bout lengths with frequency of 0
-        # daydf2<- daydf[daydf$Freq !=0,]
-        # daydf2 <- daydf2[base::order(daydf2$d1), ]
-        # nightdf2 <- nightdf[nightdf$Freq !=0,]
-        # nightdf2 <- nightdf2[base::order(nightdf2$d1), ]
         finaldf2<- finaldf[finaldf$Freq !=0,]
         finaldf2 <- finaldf2[base::order(finaldf2$d1), ]
 
         p9 <- boutDist.fun(finaldf2)
 
-        # p9 <- boutDist.fun(daydf2, "Day")
-        # p10<- boutDist.fun(nightdf2, "Night")
-
-      # p5 <- create_sleeptime_plot(plot_subdata2, yParams[4], "# Daytime Sleep Bouts", ceiling(max(plot_subdata2[,get(yParams[4])])/50)*50, "violin", font)#, p_value = "No")
-      # p6 <- create_sleeptime_plot(plot_subdata2, yParams[5], "# Nighttime Sleep Bouts", ceiling(max(plot_subdata2[,get(yParams[5])])/50)*50, "violin", font)#, p_value = "No")
-      # p7 <- create_sleeptime_plot(plot_subdata2, yParams[6], "Daytime Bout Length", ceiling(max(plot_subdata2[,get(yParams[6])])/50)*50, "violin", font)#, p_value = "No")
-      # p8 <- create_sleeptime_plot(plot_subdata2, yParams[7], "Nighttime Bout Length", ceiling(max(plot_subdata2[,get(yParams[7])])/50)*50, "violin", font)#, p_value = "No")
-      # #
         # Combine plots
         rel_width <- 1 + (u / 2) + ((u - 1) * 0.1)
 
@@ -311,10 +278,21 @@ p1titlee <- gsub(":", ".", p1titlee)
 }, by = 1:nrow(condition_combinations)]
 
   #-------------
-# # if(!is.null(p_v[1])){
-  pvdf <- data.frame(matrix(unlist(p_values), nrow = ncol(p_values), byrow = TRUE))
-  colnames(pvdf) <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
-  rownames(pvdf)<- names(p_values)
+  # pvdf <- data.frame(matrix(unlist(p_values), nrow = ncol(p_values), byrow = TRUE))
+  # colnames(pvdf) <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
+  # rownames(pvdf)<- names(p_values)
+  # write.csv(pvdf, paste0("pValues_", ExperimentData@Batch, ".csv"))
+
+  # Flatten the list of matrices in p_values into a list of rows
+  flattened <- lapply(p_values, function(mat) {
+    if (is.matrix(mat)) as.vector(t(mat)) else rep(NA, 7)  # assumes 7 p-values expected
+  })
+  # Combine into a data frame
+  pvdf <- as.data.frame(do.call(rbind, flattened))
+  # Set column & row names
+  colnames(pvdf) <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", 
+                      "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
+  rownames(pvdf) <- names(p_values)
+  # Save to CSV
   write.csv(pvdf, paste0("pValues_", ExperimentData@Batch, ".csv"))
-# }
 }

@@ -16,13 +16,13 @@
 #' @examples
 #' # Example usage
 #' info <- data.table::data.table(region_id = c(1, 2, 3),
-#'                                monitor = c("11", "12", "13"),
+#'                                file = c("Monitor11.txt", "Monitor12.txt", "Monitor13.txt"),
 #'                                status = c("OK", "OK", "OK"))
-#' updated_info <- setStatus(info, regionID_targ = 1, monitor_targ = "13")
+#' updated_info <- setStatus(info, regionID_targ = 1, file_targ = "Monitor13.txt")
 #' print(updated_info)
 #' @export
-setStatus <- function(info, regionID_targ, monitor_targ){
-  info <- info[region_id == regionID_targ & monitor == monitor_targ, status := "notOK"]
+setStatus <- function(info, regionID_targ, file_targ){
+  info <- info[region_id == regionID_targ & file == file_targ, status := "notOK"]
   return(info)
 
   info <- info[status != "notOK"]
