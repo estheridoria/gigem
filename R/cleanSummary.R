@@ -230,24 +230,24 @@ if(pref[5] == 1){
 
   #function for plots
   boutDist.fun<- function(data){
-    pdf(paste0(ExperimentData@Batch, '_cumRelFreq.pdf'),
+    pdf(paste0(ExperimentData@Batch, '_cumRelFreq_test.pdf'),
         width = (length(unique(info[[divisions[3]]]))*1.1+3.3),
         height = length(unique(info[[divisions[2]]]))*3)
-    bout_plot<- ggplot2::ggplot(data = data, ggplot2::aes(x = as.numeric(factor),
+    bout_plot<- ggplot2::ggplot(data = finaldf3, ggplot2::aes(x = as.numeric(factor), ##########
                                 y = cumProp, color = d1))+
       ggplot2::facet_grid(rows = ggplot2::vars(d2, TimeofDay),
                           cols = ggplot2::vars(d3))+
       ggplot2::geom_point(shape = 1, size = 2, alpha = 1/2)+
       ggplot2::scale_color_manual(values = c("blue", "red", "pink", "green", "#008B8B", "#808080", "#FFA500")) +
       ggprism::theme_prism(base_fontface = font) +
-      ggplot2::scale_x_log10(limits = c(1,1500), labels = scales::label_number(accuracy = 1)) +
+      ggplot2::scale_x_log10(limits = c(1,3000))+
       ggplot2::scale_y_continuous(limits = c(0.05,1.01), breaks = seq(0.1,1.0, by = 0.9)) +
       ggplot2::annotation_logticks(sides = "b", mid = grid::unit(0.1, "cm"), long = grid::unit(0, "cm"),) +
       ggplot2::labs(y = "Cumulative relative\nfrequency",
                     x = "Sleep bout duration (min)")+
       ggplot2::theme(axis.title.x = ggplot2::element_text(size = 16),
                      axis.title.y = ggplot2::element_text(size = 18, vjust = 0),
-                     axis.text.x = ggplot2::element_text(size = 14),
+                     axis.text.x = ggplot2::element_text(size = 14, angle = 45),
                      axis.text.y = ggplot2::element_text(size = 16),
                      strip.text = ggplot2::element_text(size = 14, face = font),
                      plot.margin = ggplot2::unit(c(0.05, 0, 0, 0), #top right bottom left

@@ -126,7 +126,7 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
       ggplot2::scale_color_manual(values = c("blue", "red", "pink", "green", "#008B8B", "#808080", "#FFA500")) +
       ggplot2::facet_grid(rows = ggplot2::vars(TimeofDay))+
       ggprism::theme_prism(base_fontface = font) +
-      ggplot2::scale_x_log10(limits = c(1,1500), labels = scales::label_number(accuracy = 1)) +
+      ggplot2::scale_x_log10(limits = c(1,3000)) +
       ggplot2::scale_y_continuous(limits = c(0.05,1.01), breaks = seq(0.1,1.0, by = 0.9)) +
       ggplot2::annotation_logticks(sides = "b", mid = grid::unit(0.1, "cm"), long = grid::unit(0, "cm"),) +
       ggplot2::labs(y = "Cumulative relative\nfrequency",
