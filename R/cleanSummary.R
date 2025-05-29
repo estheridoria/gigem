@@ -43,16 +43,16 @@ cleanSummary <- function(ExperimentData, dt, numDays, loadinginfo_linked, divisi
   pdf(paste0(ExperimentData@Batch, '_Overlaid_Sleep_Bout_Profiles.pdf'),
       width = 5*length(unique(info[[divisions[3]]]))+2,
       height = 3*length(unique(info[[divisions[2]]]))+2)
-    print(
-      ggetho::ggetho(bout_dt, ggplot2::aes(x = t, y = duration / 60, colour = .data[[divisions[1]]]), time_wrap = behavr::hours(24)) +
-      ggetho::stat_pop_etho() +
-      ggetho::stat_ld_annotations() +
-      ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
-      ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
-      ggprism::theme_prism(base_fontface = font) +
-      ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[2])),
-                          cols = ggplot2::vars(!!rlang::sym(divisions[3]))) +
-      ggplot2::scale_y_continuous(name = "Sleep Bout Length (min)") +
+  
+      plot<- ggetho::ggetho(bout_dt, ggplot2::aes(x = t, y = duration / 60, colour = .data[[divisions[1]]]), time_wrap = behavr::hours(24)) +
+        ggetho::stat_pop_etho() +
+        ggetho::stat_ld_annotations() +
+        ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
+        ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
+        ggprism::theme_prism(base_fontface = font) +
+        ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[2])),
+                            cols = ggplot2::vars(!!rlang::sym(divisions[3]))) +
+        ggplot2::scale_y_continuous(name = "Sleep Bout Length (min)") +
         ggplot2::theme(axis.title.x = ggplot2::element_text(size = 20),
                        axis.title.y = ggplot2::element_text(size = 20),
                        axis.text.x = ggplot2::element_text(size = 16),
@@ -60,7 +60,7 @@ cleanSummary <- function(ExperimentData, dt, numDays, loadinginfo_linked, divisi
                        strip.text = ggplot2::element_text(size = 20),
                        legend.text = ggplot2::element_text(size = 16, face = font),
                        legend.position = "right")
-  )
+      suppressWarnings(print(plot))
   dev.off()
 }
   # Process daily bout length and latency by Light/dark phase
@@ -134,18 +134,18 @@ cleanSummary <- function(ExperimentData, dt, numDays, loadinginfo_linked, divisi
                        strip.text = ggplot2::element_text(size = 20),
                        legend.text = ggplot2::element_text(size = 16, face = font),
                        legend.position = "right")
-    print(sleeptime_plot)
+    suppressWarnings(print(sleeptime_plot))
     dev.off()
   }
 
   # Generate sleep time and bout plots for Light and dark phases
-  create_sleeptime_plot(summary_dt_final, "Sleep_Time_All", "Total Sleep (min)", divisions, 1500, "bar")
-  create_sleeptime_plot(summary_dt_final, "Sleep_Time_L", "Daytime Sleep (min)", divisions, 1000, "bar")
-  create_sleeptime_plot(summary_dt_final, "Sleep_Time_D", "Nighttime Sleep (min)", divisions, 1000, "bar")
-  create_sleeptime_plot(summary_dt_final, "n_Bouts_L", "# Daytime Sleep Bouts", divisions, 80, "violin")
-  create_sleeptime_plot(summary_dt_final, "n_Bouts_D", "# Nighttime Sleep Bouts", divisions, 80, "violin")
-  create_sleeptime_plot(summary_dt_final, "mean_Bout_Length_L", "Daytime Bout Length", divisions, 250, "violin")
-  create_sleeptime_plot(summary_dt_final, "mean_Bout_Length_D", "Nighttime Bout Length", divisions, 250, "violin")
+    create_sleeptime_plot(summary_dt_final, "Sleep_Time_All", "Total Sleep (min)", divisions, 1500, "bar")
+    create_sleeptime_plot(summary_dt_final, "Sleep_Time_L", "Daytime Sleep (min)", divisions, 1000, "bar")
+    create_sleeptime_plot(summary_dt_final, "Sleep_Time_D", "Nighttime Sleep (min)", divisions, 1000, "bar")
+    create_sleeptime_plot(summary_dt_final, "n_Bouts_L", "# Daytime Sleep Bouts", divisions, 80, "violin")
+    create_sleeptime_plot(summary_dt_final, "n_Bouts_D", "# Nighttime Sleep Bouts", divisions, 80, "violin")
+    create_sleeptime_plot(summary_dt_final, "mean_Bout_Length_L", "Daytime Bout Length", divisions, 250, "violin")
+    create_sleeptime_plot(summary_dt_final, "mean_Bout_Length_D", "Nighttime Bout Length", divisions, 250, "violin")
 }
 
   if(pref[5] == 1 | pref[6] == 1 | pref[7] == 1) {

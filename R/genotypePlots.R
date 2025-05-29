@@ -7,7 +7,6 @@
 #' @param dt_curated_final A `data.table` containing curated sleep data with columns such as `id` and `asleep`.
 #' @param summary_dt_final A `data.table` containing summary statistics with columns including `Light`, `Environment`,
 #'   `Genotype`, `Treatment`, `Sex` and various sleep metrics.
-#' @param control A character string specifying the control from `divisions[1]`.
 #' @param font A character string variable determining the font style of the produced plots.
 #' @param divisions A list of grouping columns used for facetting plots.
 #' @param pValues A TRUE/FALSE vector for if combined plots will display p values for 2-condition overlays.
@@ -27,7 +26,7 @@
 #' @return None. Plots are saved as PDF files.
 #' @keywords internal
 
-genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, control, font, divisions, pValues) {
+genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, font, divisions, pValues) {
   # Dynamically exclude columns where the value is equal to divisions[1] &
   columns_to_consider <- c("Sex", "Genotype", "Temperature", "Treatment", "Environment", "Light")
   # Exclude the first division and get unique combinations
@@ -95,11 +94,11 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
       labels <- c("****", "***", "**", "*", ".")
 
       # Find the corresponding label directly using logical comparisons
-      p_label <- ifelse(p_value <= thresholds[1], labels[1],
-                 ifelse(p_value <= thresholds[2], labels[2],
-                 ifelse(p_value <= thresholds[3], labels[3],
-                 ifelse(p_value <= thresholds[4], labels[4],
-                 ifelse(p_value <= thresholds[5], labels[5],
+      p_label <- ifelse(p_value < thresholds[1], labels[1],
+                 ifelse(p_value < thresholds[2], labels[2],
+                 ifelse(p_value < thresholds[3], labels[3],
+                 ifelse(p_value < thresholds[4], labels[4],
+                 ifelse(p_value < thresholds[5], labels[5],
                         "")))))
 
       # If a label is assigned, annotate the plot
@@ -151,6 +150,7 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
           return(TRUE)  # Skip this condition if divisions[1] matches the column name
         } else {return(get(col) == .SD[[col]])  # Compare the column if it doesn't match divisions[1]
           }}))]
+    #keep_data <<- plot_subdata2 # plot_subdata2 <- keep_data
     # Curate data for plotting
     plot_subdata <- dt_curated_final[id %in% plot_subdata2$id]
     u <- length(unique(plot_subdata2[[divisions[1]]]))
@@ -163,7 +163,7 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, co
 #       if (divisions[1] != "Environment" && length(unique(Environment))>1) {paste0(Environment, " ")} else ""))
 
     # Count samples per group
-    group_counts <- dplyr::count(keep_data, by = get(divisions[1]))
+    group_counts <- dplyr::count(plot_subdata2, by = get(divisions[1]))
     group_counts <- dplyr::mutate(group_counts, label = paste0(by, " (n=", n, ")"))
     # n <- plot_subdata2[, lapply(.SD, mean),
     #                                by = .(Sex, Genotype, Temperature, Treatment,Environment,Light, Batch),

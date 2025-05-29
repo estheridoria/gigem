@@ -25,7 +25,7 @@
 #' @keywords internal
 
 concatGenotypePlots <- function(combined_sleepdata, combined_sleepmeta, 
-                                summary_dt_final, control, font, divisions, pValues) {
+                                summary_dt_final, font, divisions, pValues) {
   
   data.table::setDT(combined_sleepdata)
   data.table::setDT(combined_sleepmeta)
@@ -42,6 +42,6 @@ concatGenotypePlots <- function(combined_sleepdata, combined_sleepmeta,
                         genotypelist = list(),
                         loadinginfo = data.table::data.table())
 
-  genotypePlots(ExperimentData, dt_curated_final, summary_dt_final, control, font, divisions, pValues)
+  genotypePlots(ExperimentData, dt_curated_final, summary_dt_final, font, divisions, pValues)
 }
 

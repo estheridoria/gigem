@@ -176,8 +176,6 @@ runAllBatches <- function(control, numDays,
   concatNames <- c(concatNames, "all_sleepdata.csv", "all_sleepmeta.csv")
   }
 
-  combined_data_list <- list()
-
   for (i in seq_along(concatList)){
 
     all_tables <- list()
@@ -189,7 +187,7 @@ runAllBatches <- function(control, numDays,
     }
 
     # Concatenate all data frames into one large data frame
-    combined_data <- do.call(rbind, all_tables[1:9])
+    combined_data <- do.call(rbind, all_tables)
 
     if(i == 2){
       summary_dt_final<-combined_data
@@ -206,9 +204,7 @@ runAllBatches <- function(control, numDays,
     data.table::fwrite(combined_data, output_file, row.names = FALSE)
   }
 
-  setwd(original_wd)
-
   if(pref[7] ==1){
-  concatGenotypePlots(combined_sleepdata, combined_sleepmeta, summary_dt_final, control, font, divisions, pValues)
+  concatGenotypePlots(combined_sleepdata, combined_sleepmeta, summary_dt_final, font, divisions, pValues)
   }
 }

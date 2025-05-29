@@ -52,7 +52,7 @@ runEachBatch <- function(control, numDays, oneBatch, font, pref, divisions, pVal
 
   if (pref[6] == 1){
     # Generate concatenated plots
-    genotypePlots(ExperimentData, dt_curated_final = dt_final, summary_dt_final = dt_finalSummary, control, font, divisions, pValues)
+    genotypePlots(ExperimentData, dt_curated_final = dt_final, summary_dt_final = dt_finalSummary, font, divisions, pValues)
   } # dt_curated_final <- dt_final; summary_dt_final <- dt_finalSummary
 
   # Define input column names for normalized statistics
@@ -72,9 +72,4 @@ runEachBatch <- function(control, numDays, oneBatch, font, pref, divisions, pVal
   # Summary of statistics for sleep time for all groups
   stat_summary <- statsSummary(ExperimentData, dt_finalSummary, groups, norm_factor)
 
-  if (any(dt_finalSummary[,Treatment] == "Grp") & any(dt_finalSummary[,Treatment ] == "Iso")){
-    # Calculate normalized sleep loss statistics for all groups
-    relSummary(ExperimentData, dt_finalSummary, groups,
-                                norm_factor,control)
-  }
 }
