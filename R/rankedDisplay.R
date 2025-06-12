@@ -36,32 +36,39 @@ rankedDisplay <- function(
     ranking = NULL, fitted = FALSE,
     font = c("plain", "bold", "italic", "bold.italic")
 ) {
+  if (!file.exists("all_batches_summary.csv")) {
+    stop("'all_batches_summary.csv' not found. Please run 'runAllBatches' first.")
+  } 
   x <- match.arg(x)
   font <- match.arg(font)
+  
+  # define later variables
+  param_cols<- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D")
   meta_vars <- c("Sex", "Genotype", "Temperature", "Treatment", "Environment", "Light")
   meta_inputs <- list(sex, geno, temp, treat, enviro, Lights)
   names(meta_inputs) <- meta_vars
   
-  if (!file.exists("all_batches_summary.csv")) {
-    stop("'all_batches_summary.csv' not found. Please run 'runAllBatches' first.")
-  }
+  # load data
+  combined_data <- read.csv("all_batches_summary.csv")
   
-  dataset <- read.csv("all_batches_summary.csv")
-  dataset <- dataset %>%
-    dplyr::group_by(across(all_of(c(meta_vars, "Batch")))) %>%
-    dplyr::summarise(across(all_of(param_cols), ~ mean(.x, na.rm = TRUE)), .groups = "drop")
+  # Subset the data & define the title
   title_parts <- character()
   for (var in meta_vars) {
     val <- meta_inputs[[var]]
     if (!is.null(val)) {
-      dataset <- dataset[dataset[[var]] == val, ]
-      if (nrow(dataset) == 0) {
+      combined_data <- combined_data[combined_data[[var]] == val, ]
+      if (nrow(combined_data) == 0) {
         stop(paste0("'", val, "' not found in variable '", var, "'"))
       }
       title_parts <- c(title_parts, val)
     }
   }
   title_text <- paste(title_parts, collapse = "_")
+  
+  # Summarize sleep data by temp, Sex, Treatment, and Genotype, enviro calculating means for sleep-related variables.
+  dataset <- combined_data |>
+    dplyr::group_by(across(all_of(c(meta_vars, "Batch")))) |>
+    dplyr::summarise(across(all_of(param_cols), ~ mean(.x, na.rm = TRUE)), .groups = "keep")
   
   # Use fitted values if fitted = TRUE
   if (fitted){
@@ -132,16 +139,15 @@ rankedDisplay <- function(
     }
     colnames(dataa)[(ncol(dataa)-2):ncol(dataa)] <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D")
     dataset<- dataa
-    meta_vars <- varvars
+    fit_meta_vars <- varvars
     pdftitle <- "_fittedValues"
   }else {
     pdftitle <- ""
+    fit_meta_vars <- meta_vars
   }
   
-  param_cols <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D")
-  
   if (!is.null(condition1) && !is.null(condition2)) {
-    match_col <- intersect(names(dataset), meta_vars)[sapply(meta_vars, function(var) {
+    match_col <- intersect(names(dataset), fit_meta_vars)[sapply(fit_meta_vars, function(var) {
       any(grepl(condition1, dataset[[var]])) && any(grepl(condition2, dataset[[var]]))
     })]
     if (length(match_col) != 1) {
@@ -151,32 +157,33 @@ rankedDisplay <- function(
     c2_data <- dataset[dataset[[match_col]] == condition2, ]
     if (nrow(c1_data) != nrow(c2_data)) stop("Unpaired condition1 and condition2 rows.")
     
-    c1_sorted <- c1_data[do.call(order, c1_data[meta_vars]), ]
-    c2_sorted <- c2_data[do.call(order, c2_data[meta_vars]), ]
+    c1_sorted <- c1_data[do.call(order, c1_data[fit_meta_vars]), ]
+    c2_sorted <- c2_data[do.call(order, c2_data[fit_meta_vars]), ]
     
     sleep_diff <- (c1_sorted[, param_cols] - c2_sorted[, param_cols]) / c2_sorted[, param_cols]
     sleep_diff <- sleep_diff*100 #get percentage
-    df <- cbind(sleep_diff, c1_sorted[, setdiff(c(meta_vars, "Batch"), match_col), drop = FALSE])
+    df <- cbind(sleep_diff, c1_sorted[, setdiff(c(fit_meta_vars, "Batch"), match_col), drop = FALSE])
     colnames(df)[1:3] <- c("Total_Sleep_Change", "Daytime_Sleep_Change", "Nighttime_Sleep_Change")
     
     if (is.null(ranking)) {
-      ranking_df <- df %>%
-        dplyr::group_by(.data[[x]]) %>%
-        dplyr::summarise(Total_Sleep_Change = mean(Total_Sleep_Change, na.rm = TRUE)) %>%
+      ranking_df <- df |>
+        dplyr::group_by(.data[[x]]) |>
+        dplyr::summarise(Total_Sleep_Change = mean(Total_Sleep_Change, na.rm = TRUE)) |>
         dplyr::arrange(Total_Sleep_Change)
       ranking <- ranking_df[[x]]
     }
+    
     df[[x]] <- factor(df[[x]], levels = ranking)
     y_label <- "Change in Sleep (%)"
     plot_cols <- c("Total_Sleep_Change", "Daytime_Sleep_Change", "Nighttime_Sleep_Change")
     
   } else {
-    df <- dataset[, c(param_cols, meta_vars, "Batch")]
+    df <- dataset[, c(param_cols, fit_meta_vars, "Batch")]
     colnames(df)[1:3] <- c("Total_Sleep", "Daytime_Sleep", "Nighttime_Sleep")
     if (is.null(ranking)) {
-      ranking_df <- df %>%
-        dplyr::group_by(.data[[x]]) %>%
-        dplyr::summarise(Total_Sleep = mean(Total_Sleep, na.rm = TRUE)) %>%
+      ranking_df <- df |>
+        dplyr::group_by(.data[[x]]) |>
+        dplyr::summarise(Total_Sleep = mean(Total_Sleep, na.rm = TRUE)) |>
         dplyr::arrange(Total_Sleep)
       ranking <- ranking_df[[x]]
     }
