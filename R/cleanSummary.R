@@ -227,10 +227,11 @@ if(pref[5] == 1){
 
   finaldf3 <- finaldf2
   finaldf3 <- finaldf3[base::order(finaldf3$d1), ]
+  
 
   #function for plots
   boutDist.fun<- function(data){
-    pdf(paste0(ExperimentData@Batch, '_cumRelFreq_test.pdf'),
+    pdf(paste0(ExperimentData@Batch, '_cumRelFreq.pdf'),
         width = (length(unique(info[[divisions[3]]]))*1.1+3.3),
         height = length(unique(info[[divisions[2]]]))*3)
     bout_plot<- ggplot2::ggplot(data = finaldf3, ggplot2::aes(x = as.numeric(factor), ##########

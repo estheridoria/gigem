@@ -13,7 +13,7 @@ writeLoading <- function(ExperimentData){
   data.table::fwrite(ExperimentData@loadinginfo, paste("loadinginfo_",ExperimentData@Batch,".csv",sep = ""))
 
   # Link metadata
-  loadinginfo <- damr::link_dam_metadata(ExperimentData@loadinginfo, result_dir = getwd())
+  loadinginfo_linked <- damr::link_dam_metadata(ExperimentData@loadinginfo, result_dir = getwd())
 
   return(loadinginfo_linked)
 }

@@ -119,7 +119,7 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
   }
 
   #function for bout distribution plots
-  boutDist.fun<- function(data){
+  boutDist.fun<- function(data, p_value_day, p_value_night){
     bout_plot<- ggplot2::ggplot(data = data, ggplot2::aes(x = as.numeric(factor),
                                                           y = cumProp, color = d1))+
       ggplot2::geom_point(shape = 1, size = 2, alpha = 1/2)+
@@ -139,9 +139,56 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
                      plot.margin = ggplot2::unit(c(0.05, 0.5, 0, 0), #top right bottom left
                                                  "inches"),
                      legend.position = "none")
+    if (p_value_day == "No" | p_value_night == "No") {
+      invisible()
+    }else{
+      # Define thresholds and corresponding labels
+      thresholds <- c(0.0001, 0.001, 0.01, 0.05, 0.07)
+      labels <- c("****", "***", "**", "*", ".")
+      
+      # Find the corresponding label directly using logical comparisons
+      p_label_day <- ifelse(p_value_day < thresholds[1], labels[1],
+                        ifelse(p_value_day < thresholds[2], labels[2],
+                               ifelse(p_value_day < thresholds[3], labels[3],
+                                      ifelse(p_value_day < thresholds[4], labels[4],
+                                             ifelse(p_value_day < thresholds[5], labels[5],
+                                                    "")))))
+      p_label_night <- ifelse(p_value_night < thresholds[1], labels[1],
+                            ifelse(p_value_night < thresholds[2], labels[2],
+                                   ifelse(p_value_night < thresholds[3], labels[3],
+                                          ifelse(p_value_night < thresholds[4], labels[4],
+                                                 ifelse(p_value_night < thresholds[5], labels[5],
+                                                        "")))))
+      # If a label is assigned, annotate the plot
+      pval_labels <- data.frame(
+        TimeofDay = c("Day", "Night"),
+        p_text = c(
+          if (p_label_day != "") paste("p =", round(p_value_day, 4)) else NA,
+          if (p_label_night != "") paste("p =", round(p_value_night, 4)) else NA
+        ),
+        label_text = c(
+          if (p_label_day != "") p_label_day else NA,
+          if (p_label_night != "") p_label_night else NA
+        )
+      )
+      
+      bout_plot <- bout_plot +
+        ggplot2::geom_text(data = pval_labels, ggplot2::aes(x = 5, y = 0.85, label = p_text),
+                           size = 4.5, color = "black", fontface = font, inherit.aes = FALSE) +
+        ggplot2::geom_text(data = pval_labels, ggplot2::aes(x = 5, y = 0.95, label = label_text),
+                           size = 5, color = "black", fontface = font, inherit.aes = FALSE)
+    }
     return(bout_plot)
   }
 
+  # prep for Kolmogorov-Smirnov & bout distribution
+  bout_dt_min <- sleepr::bout_analysis(asleep, dt_curated_final)[, .(
+    id, duration = duration / 60, t = t / 60,
+    phase = ifelse(t %% behavr::hours(24) < behavr::hours(12), "L", "D")
+  )][duration >= 5]
+  
+  save<- data.frame()
+  
   # Apply the logic for subsetting and plotting using data.table------------
   condition_combinations[, {
     plot_subdata2 <- summary_dt_final[
@@ -154,13 +201,6 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
     # Curate data for plotting
     plot_subdata <- dt_curated_final[id %in% plot_subdata2$id]
     u <- length(unique(plot_subdata2[[divisions[1]]]))
-#     p1title <- trimws(paste0(
-#       if (divisions[1] != "Genotype" && length(unique(Genotype))>1) {paste0(Genotype, " ")} else "",
-#       if (divisions[1] != "Light" && length(unique(Light))>1) {paste0(Light, " ")} else "",
-#       if (divisions[1] != "Treatment" && length(unique(Treatment))>1) {paste0(Treatment, " ")} else "",
-#       if (divisions[1] != "Temperature" && length(unique(Temperature))>1) {paste0(Temperature, " ")} else "",
-#       if (divisions[1] != "Sex" && length(unique(Sex))>1) {paste0(Sex, " ")} else "",
-#       if (divisions[1] != "Environment" && length(unique(Environment))>1) {paste0(Environment, " ")} else ""))
 
     # Count samples per group
     group_counts <- dplyr::count(plot_subdata2, by = get(divisions[1]))
@@ -196,6 +236,29 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
     #-------------
     yParams<- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
 
+    #setup for bout dist & p-values
+    finaldf<- data.frame()
+    
+    for (phasee in c("L", "D")) {
+      pdat<- bout_dt_min[phase==phasee]
+      for (i in unique(behavr::meta(pdat)[[divisions[1]]])) {
+        gd1 <- behavr::meta(pdat)[get(divisions[1]) == i, id]
+        a <- pdat[pdat$id %in% gd1]
+        amax<-max(a[,duration])
+        factor<-factor(a[,duration],levels=1:amax)
+        out <- as.data.frame(table(factor))
+        out <- transform(out, cumFreq = cumsum(Freq), relative = prop.table(Freq))
+        out <- transform(out, cumProp = cumsum(relative))
+        out<-tibble::rownames_to_column(out)
+        out$d1 <- i
+        out[["TimeofDay"]]<- ifelse(phasee == "L", "Day", "Night")
+        finaldf<- rbind(finaldf, out)
+      }}
+    # remove all bout lengths with frequency of 0
+    finaldf2<- finaldf[finaldf$Freq !=0,]
+    finaldf2 <- finaldf2[base::order(finaldf2$d1), ]
+    
+    
     if(pValues){
     #p-value statements!!
     # find out if there is a control for each combination of conditions
@@ -208,7 +271,7 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
       t.test_y_vars <- setdiff(unique(plot_subdata2[[divisions[1]]]), controlee) # should be same as above line
       
       #set up for p_values & run the t.test
-      p_value <- matrix(, nrow = length(t.test_y_vars), ncol = length(yParams))
+      p_value <- matrix(, nrow = length(t.test_y_vars), ncol = length(yParams)+2)
       p_vals <- list()
 
       for(j in seq_along(yParams)){
@@ -219,14 +282,37 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
         }
 
       }
+      
+      # add Kolmogorov-Smirnov using bout_dt_min
+      ddat<-finaldf2
+      for (j in (length(yParams)+1):(length(yParams)+2)){ # day or night phase calculation
+        for (i in seq_along(t.test_y_vars)){ # here in case increas from just 2 entries to more
+          ks_result<- ks.test(ddat[ddat$d1 == controlee & ddat$TimeofDay == unique(ddat$TimeofDay)[j-length(yParams)], "cumFreq"],
+                              ddat[ddat$d1 == t.test_y_vars[i] & ddat$TimeofDay == unique(ddat$TimeofDay)[j-length(yParams)], "cumFreq"])
+          statistic <- ks_result$statistic
+          p_val <- ks_result$p.value
+          method <- ks_result$method
 
-      colnames(p_value) <- yParams
+          output_df <- data.frame(
+            Statistic = statistic,
+            P_value = p_val,
+            Method = method,
+            Data = paste0(controlee, "-", t.test_y_vars[i], "_", unique(ddat$TimeofDay)[j-length(yParams)]),
+            Batch = ExperimentData@Batch
+          )
+          
+          save<- rbind(save, output_df)
+          p_value[i,j] <- ks_result$p.value
+        }
+      }
+      
+      colnames(p_value) <- c(yParams, "DayboutDist", "NightBoutDist")
       rownames(p_value) <- t.test_y_vars
     } else {
-      p_value <- matrix("No", nrow = 1, ncol = length(yParams))
+      p_value <- matrix("No", nrow = 1, ncol = length(yParams)+2)
     }
     } else {
-      p_value <- matrix("No", nrow = 1, ncol = length(yParams))
+      p_value <- matrix("No", nrow = 1, ncol = length(yParams)+2)
     }
 
       p1title <- gsub(" ", "_", p1title)
@@ -246,34 +332,7 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
         
   # Bout distributions
         # take treatment, genotype, and phase, subsetting the bout_min table, make frequency counts, write to a table
-        #nightdf<-daydf<-
-        finaldf<- data.frame()
-
-        bout_dt_min <- sleepr::bout_analysis(asleep, plot_subdata)[, .(
-          id, duration = duration / 60, t = t / 60,
-          phase = ifelse(t %% behavr::hours(24) < behavr::hours(12), "L", "D")
-        )][duration >= 5]
-
-        for (phasee in c("L", "D")) {
-          pdat<- bout_dt_min[phase==phasee]
-              for (i in unique(behavr::meta(pdat)[[divisions[1]]])) {
-                gd1 <- behavr::meta(pdat)[get(divisions[1]) == i, id]
-                a <- pdat[pdat$id %in% gd1]
-                amax<-max(a[,duration])
-                factor<-factor(a[,duration],levels=1:amax)
-                out <- as.data.frame(table(factor))
-                out <- transform(out, cumFreq = cumsum(Freq), relative = prop.table(Freq))
-                out <- transform(out, cumProp = cumsum(relative))
-                out<-tibble::rownames_to_column(out)
-                out$d1 <- i
-                out[["TimeofDay"]]<- ifelse(phasee == "L", "Day", "Night")
-                finaldf<- rbind(finaldf, out)
-              }}
-        # remove all bout lengths with frequency of 0
-        finaldf2<- finaldf[finaldf$Freq !=0,]
-        finaldf2 <- finaldf2[base::order(finaldf2$d1), ]
-
-        p9 <- boutDist.fun(finaldf2)
+        p9 <- boutDist.fun(finaldf2, p_value[,8], p_value[,9])
 
         # Combine plots
         rel_width <- 1 + (u / 2) + ((u - 1) * 0.1)
@@ -292,7 +351,12 @@ p1titlee <- gsub(":", ".", p1titlee)
 
   #-------------
   pvdf <- data.frame(matrix(unlist(p_values), nrow = ncol(p_values), byrow = TRUE))
-  colnames(pvdf) <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
+  colnames(pvdf) <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D", "DayboutDist", "NightBoutDist")
   rownames(pvdf)<- names(p_values)
   write.csv(pvdf, paste0("pValues_", ExperimentData@Batch, ".csv"))
+  if(pValues){
+    if (length(unique(plot_subdata2[[divisions[1]]])) == 2) {
+  write.csv(save, paste0("Kolmogorov-SmirnovResults_", ExperimentData@Batch, ".csv"))
+    }
+  }
 }
