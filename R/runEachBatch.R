@@ -4,7 +4,6 @@
 #' generating activity and sleep plots, trimming dead animals, calculating summary statistics, and
 #' generating normalized statistics.
 #'
-#' @param control A character string specifying the control.
 #' @param numDays A numerical value specifying the number of days to be used in analysis.
 #' @param oneBatch A character string of the Batch folder to be analyzed.
 #' @param font A string variable determining the font style of the produced plots.
@@ -26,7 +25,7 @@
 #' 8. Writes relevant output files, including the final summary and normalized statistics.
 #'
 #' @keywords Internal
-runEachBatch <- function(control, numDays, oneBatch, font, pref, divisions, pValues) {
+runEachBatch <- function(numDays, oneBatch, font, pref, divisions, pValues) {
 
   # Create an object that contains all of your inputs
   ExperimentData <- new("ExperimentData",
@@ -52,7 +51,7 @@ runEachBatch <- function(control, numDays, oneBatch, font, pref, divisions, pVal
 
   if (pref[6] == 1){
     # Generate concatenated plots
-    genotypePlots(ExperimentData, dt_curated_final = dt_final, summary_dt_final = dt_finalSummary, font, divisions, pValues)
+    combinedPlots(ExperimentData, dt_curated_final = dt_final, summary_dt_final = dt_finalSummary, font, divisions, pValues)
   } # dt_curated_final <- dt_final; summary_dt_final <- dt_finalSummary
 
   # Define input column names for normalized statistics

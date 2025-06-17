@@ -5,7 +5,6 @@
 #' It iterates through directories matching the batch pattern, executes relevant R files, and combines
 #' both normalized and general summary statistics from each batch into a final report.
 #'
-#' @param control A character string specifying the control condition for normalization (ex. Canton S Vs to SIP-L1-1).
 #' @param numDays A numerical value specifying the number of days to be used in analysis.
 #' @param overlayVar A character string specifying which variable to overlay and color plots by Default is "Treatment".
 #' @param rowVar A character string specifying which variable to facet rows in plots by. Default is "Genotype".
@@ -49,7 +48,7 @@
 #' 3. It concatenates the normalized and general summary statistics for each batch into separate CSV files.
 #' 4. The final CSV files, \code{all_batches_norm_summary.csv} and \code{all_batches_summary.csv},
 #'    are saved in the parent directory, containing combined results for all batches.
-runAllBatches <- function(control, numDays,
+runAllBatches <- function(numDays,
                           overlayVar = c("Treatment", "Sex", "Genotype", "Temperature", "Environment", "Light"),
                           rowVar = c("Genotype", "Sex", "Temperature", "Treatment", "Environment", "Light"),
                           columnVar = c("Environment", "Sex", "Genotype", "Temperature", "Treatment", "Light"), 
@@ -57,9 +56,6 @@ runAllBatches <- function(control, numDays,
                           font = c("plain", "bold", "italic", "bold.italic"),
                           pValues = c(FALSE, TRUE)) {
   # Warnings/Errors-------------------------------------------------------------
-  if (missing(control)){
-    stop("'control' must be specified")
-  }
   if (missing(numDays) || !is.numeric(numDays)){
     stop("'numDays' must be specified as a whole number.")
   }
@@ -121,19 +117,6 @@ runAllBatches <- function(control, numDays,
              Please ensure all variables are present and named correctly in all Main.R files.")
         }
     })
-    for (i in seq_along(all_tables)) {
-      current_table <- all_tables[[i]]
-      condition1_found <- FALSE
-      for (col in names(current_dt)) {
-        if (any(current_dt[[col]] == "condition1")) {
-          condition1_found <- TRUE
-          break # Once found in any column, no need to check further in this table
-        }
-      }
-      if(condition1_found == FALSE){
-        stop("'control' must be a condition within each batch.")
-      }
-    }
     return()
   }
 
@@ -159,7 +142,7 @@ runAllBatches <- function(control, numDays,
   for (oneBatch in batch_dirs){
     run_r_files_in_dir(oneBatch)
     info[["monitor"]]<- paste0("M", gsub("\\D", "", info$file))
-    runEachBatch(control, numDays, oneBatch, font, pref, divisions, pValues)
+    runEachBatch(numDays, oneBatch, font, pref, divisions, pValues)
   }
 
   # Restore the original working directory
@@ -205,6 +188,6 @@ runAllBatches <- function(control, numDays,
   }
 
   if(pref[7] ==1){
-  concatGenotypePlots(combined_sleepdata, combined_sleepmeta, summary_dt_final, font, divisions, pValues)
+    concatCombinedPlots(combined_sleepdata, combined_sleepmeta, summary_dt_final, font, divisions, pValues)
   }
 }

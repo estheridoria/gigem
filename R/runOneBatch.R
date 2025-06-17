@@ -5,7 +5,6 @@
 #' generating normalized statistics.
 #'
 #' @param oneBatch A character string of the Batch folder to be analyzed.
-#' @param control A character string specifying the control condition for normalization (ex. Canton S Vs to SIP-L1-1).
 #' @param numDays A numerical value specifying the number of days to be used in analysis.
 #' @param overlayVar A character string specifying which variable to overlay and color plots by Default is "Treatment".
 #' @param rowVar A character string specifying which variable to facet rows in plots by. Default is "Genotype".
@@ -20,7 +19,7 @@
 #'
 #'
 #' @keywords export
-runOneBatch <- function(oneBatch, control, numDays,
+runOneBatch <- function(oneBatch, numDays,
                         overlayVar = c("Treatment", "Sex", "Genotype", "Temperature", "Environment", "Light"),
                         rowVar = c("Genotype", "Sex", "Temperature", "Treatment", "Environment", "Light"),
                         columnVar = c("Environment", "Sex", "Genotype", "Temperature", "Treatment", "Light"),
@@ -34,9 +33,6 @@ runOneBatch <- function(oneBatch, control, numDays,
   all_dirs <- list.dirs(getwd(), full.names = FALSE, recursive = FALSE)
   if (length(grep(oneBatch, all_dirs)) != 1){
     stop("The 'oneBatch' specified is not a subdirectory inside the current working directory. Please make sure your current directory is correct.")
-  }
-  if (missing(control)){
-    stop("'control' must be specified")
   }
   if (missing(numDays) || !is.numeric(numDays)){
     stop("'numDays' must be specified as a whole number.")
@@ -87,7 +83,7 @@ runOneBatch <- function(oneBatch, control, numDays,
   }
 
   # Analyze the batch
-  runEachBatch(control, numDays, oneBatch, font, pref, divisions, pValues)
+  runEachBatch(numDays, oneBatch, font, pref, divisions, pValues)
 
   setwd(original_wd)
 

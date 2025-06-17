@@ -241,9 +241,11 @@ if(pref[5] == 1){
       ggplot2::geom_point(shape = 1, size = 2, alpha = 1/2)+
       ggplot2::scale_color_manual(values = c("blue", "red", "pink", "green", "#008B8B", "#808080", "#FFA500")) +
       ggprism::theme_prism(base_fontface = font) +
-      ggplot2::scale_x_log10(limits = c(1,3000))+
-      ggplot2::scale_y_continuous(limits = c(0.05,1.01), breaks = seq(0.1,1.0, by = 0.9)) +
-      ggplot2::annotation_logticks(sides = "b", mid = grid::unit(0.1, "cm"), long = grid::unit(0, "cm"),) +
+      ggplot2::scale_y_log10(breaks = seq(0.1,1.0, by = 0.9)) +
+      ggplot2::scale_x_log10() +
+      ggplot2::coord_cartesian(xlim = c(1,2000), ylim = c(0.1,1.01))+
+      #ggplot2::scale_y_continuous(limits = c(0.05,1.01), breaks = seq(0.1,1.0, by = 0.9)) +
+      ggplot2::annotation_logticks(sides = "bl", mid = grid::unit(0.1, "cm"), long = grid::unit(0, "cm"),) +
       ggplot2::labs(y = "Cumulative relative\nfrequency",
                     x = "Sleep bout duration (min)")+
       ggplot2::theme(axis.title.x = ggplot2::element_text(size = 16),
