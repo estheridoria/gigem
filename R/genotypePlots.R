@@ -188,7 +188,7 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
   )][duration >= 5]
   
   save<- data.frame()
-  
+  yParams<- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
   # Apply the logic for subsetting and plotting using data.table------------
   condition_combinations[, {
     plot_subdata2 <- summary_dt_final[
@@ -234,13 +234,11 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
               }
 
     #-------------
-    yParams<- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
-
     #setup for bout dist & p-values
     finaldf<- data.frame()
-    
+    pdatt<- bout_dt_min[id %in% plot_subdata2$id]
     for (phasee in c("L", "D")) {
-      pdat<- bout_dt_min[phase==phasee]
+      pdat<- pdatt[phase==phasee]
       for (i in unique(behavr::meta(pdat)[[divisions[1]]])) {
         gd1 <- behavr::meta(pdat)[get(divisions[1]) == i, id]
         a <- pdat[pdat$id %in% gd1]
@@ -286,7 +284,7 @@ genotypePlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
       # add Kolmogorov-Smirnov using bout_dt_min
       ddat<-finaldf2
       for (j in (length(yParams)+1):(length(yParams)+2)){ # day or night phase calculation
-        for (i in seq_along(t.test_y_vars)){ # here in case increas from just 2 entries to more
+        for (i in seq_along(t.test_y_vars)){ # here in case increase from just 2 entries to more
           ks_result<- ks.test(ddat[ddat$d1 == controlee & ddat$TimeofDay == unique(ddat$TimeofDay)[j-length(yParams)], "cumFreq"],
                               ddat[ddat$d1 == t.test_y_vars[i] & ddat$TimeofDay == unique(ddat$TimeofDay)[j-length(yParams)], "cumFreq"])
           statistic <- ks_result$statistic
@@ -355,7 +353,7 @@ p1titlee <- gsub(":", ".", p1titlee)
   rownames(pvdf)<- names(p_values)
   write.csv(pvdf, paste0("pValues_", ExperimentData@Batch, ".csv"))
   if(pValues){
-    if (length(unique(plot_subdata2[[divisions[1]]])) == 2) {
+    if (length(unique(summary_dt_final[[divisions[1]]])) == 2) {
   write.csv(save, paste0("Kolmogorov-SmirnovResults_", ExperimentData@Batch, ".csv"))
     }
   }

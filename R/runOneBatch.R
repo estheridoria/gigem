@@ -49,6 +49,7 @@ runOneBatch <- function(oneBatch, control, numDays,
   divisions[2]<- match.arg(rowVar)
   divisions[3]<- match.arg(columnVar)
   plotSelection <- match.arg(plotSelection)
+  #divisions<- c(overlayVar, rowVar, columnVar)
   font<- match.arg(font)
   if(!is.logical(pValues)){
     stop("'pValues' must be either 'TRUE' or 'FALSE'")
