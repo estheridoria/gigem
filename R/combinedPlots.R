@@ -119,75 +119,75 @@ combinedPlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
   }
 
   #function for bout distribution plots
-  boutDist.fun<- function(data, p_value_day, p_value_night){
-    bout_plot<- ggplot2::ggplot(data = data, ggplot2::aes(x = as.numeric(factor),#try changing this for cumFreq
-                                                          y = cumProp, color = d1))+
-      ggplot2::geom_point(shape = 1, size = 2, alpha = 1/2)+
-      ggplot2::scale_color_manual(values = c("blue", "red", "pink", "green", "#008B8B", "#808080", "#FFA500")) +
-      ggplot2::facet_grid(rows = ggplot2::vars(TimeofDay))+
-      ggprism::theme_prism(base_fontface = font) +
-      ggplot2::scale_y_log10(breaks = seq(0.1,1.0, by = 0.9)) +
-      ggplot2::scale_x_log10() +
-      ggplot2::coord_cartesian(xlim = c(1,2000), ylim = c(0.1,1.01))+
-      #ggplot2::scale_y_continuous(limits = c(0.05,1.01), breaks = seq(0.1,1.0, by = 0.9)) +
-      ggplot2::annotation_logticks(sides = "bl", mid = grid::unit(0.1, "cm"), long = grid::unit(0, "cm"),) +
-      ggplot2::labs(y = "Cumulative relative\nfrequency",
-                    x = "Sleep bout duration (min)")+
-      ggplot2::theme(axis.title.x = ggplot2::element_text(size = 16),
-                     axis.title.y = ggplot2::element_text(size = 18, vjust = 0),
-                     axis.text.x = ggplot2::element_text(size = 14),
-                     axis.text.y = ggplot2::element_text(size = 16),
-                     strip.text = ggplot2::element_text(size = 14, face = font),
-                     plot.margin = ggplot2::unit(c(0.05, 0.5, 0, 0), #top right bottom left
-                                                 "inches"),
-                     legend.position = "none")
-    if (p_value_day == "No" | p_value_night == "No") {
-      invisible()
-    }else{
-      # Define thresholds and corresponding labels
-      thresholds <- c(0.0001, 0.001, 0.01, 0.05, 0.07)
-      labels <- c("****", "***", "**", "*", " ")
-      
-      # Find the corresponding label directly using logical comparisons
-      p_label_day <- ifelse(p_value_day < thresholds[1], labels[1],
-                        ifelse(p_value_day < thresholds[2], labels[2],
-                               ifelse(p_value_day < thresholds[3], labels[3],
-                                      ifelse(p_value_day < thresholds[4], labels[4],
-                                             ifelse(p_value_day < thresholds[5], labels[5],
-                                                    "")))))
-      p_label_night <- ifelse(p_value_night < thresholds[1], labels[1],
-                            ifelse(p_value_night < thresholds[2], labels[2],
-                                   ifelse(p_value_night < thresholds[3], labels[3],
-                                          ifelse(p_value_night < thresholds[4], labels[4],
-                                                 ifelse(p_value_night < thresholds[5], labels[5],
-                                                        "")))))
-      # If a label is assigned, annotate the plot
-      pval_labels <- data.frame(
-        TimeofDay = c("Day", "Night"),
-        p_text = c(
-          if (p_label_day != "") paste("p =", round(p_value_day, 4)) else NA,
-          if (p_label_night != "") paste("p =", round(p_value_night, 4)) else NA
-        ),
-        label_text = c(
-          if (p_label_day != "") p_label_day else NA,
-          if (p_label_night != "") p_label_night else NA
-        )
-      )
-      
-      bout_plot <- bout_plot +
-        ggplot2::geom_text(data = pval_labels, ggplot2::aes(x = 150, y = 0.16, label = p_text),
-                           size = 4.5, color = "black", fontface = font, inherit.aes = FALSE) +
-        ggplot2::geom_text(data = pval_labels, ggplot2::aes(x = 150, y = 0.18, label = label_text),
-                           size = 5, color = "black", fontface = font, inherit.aes = FALSE)
-    }
-    return(bout_plot)
-  }
-
-  # prep for Kolmogorov-Smirnov & bout distribution
-  bout_dt_min <- sleepr::bout_analysis(asleep, dt_curated_final)[, .(
-    id, duration = duration / 60, t = t / 60,
-    phase = ifelse(t %% behavr::hours(24) < behavr::hours(12), "L", "D")
-  )][duration >= 5]
+  # boutDist.fun<- function(data, p_value_day, p_value_night){
+  #   bout_plot<- ggplot2::ggplot(data = data, ggplot2::aes(x = as.numeric(factor),#try changing this for cumFreq
+  #                                                         y = cumProp, color = d1))+
+  #     ggplot2::geom_point(shape = 1, size = 2, alpha = 1/2)+
+  #     ggplot2::scale_color_manual(values = c("blue", "red", "pink", "green", "#008B8B", "#808080", "#FFA500")) +
+  #     ggplot2::facet_grid(rows = ggplot2::vars(TimeofDay))+
+  #     ggprism::theme_prism(base_fontface = font) +
+  #     ggplot2::scale_y_log10(breaks = seq(0.1,1.0, by = 0.9)) +
+  #     ggplot2::scale_x_log10() +
+  #     ggplot2::coord_cartesian(xlim = c(1,2000), ylim = c(0.1,1.01))+
+  #     #ggplot2::scale_y_continuous(limits = c(0.05,1.01), breaks = seq(0.1,1.0, by = 0.9)) +
+  #     ggplot2::annotation_logticks(sides = "bl", mid = grid::unit(0.1, "cm"), long = grid::unit(0, "cm"),) +
+  #     ggplot2::labs(y = "Cumulative relative\nfrequency",
+  #                   x = "Sleep bout duration (min)")+
+  #     ggplot2::theme(axis.title.x = ggplot2::element_text(size = 16),
+  #                    axis.title.y = ggplot2::element_text(size = 18, vjust = 0),
+  #                    axis.text.x = ggplot2::element_text(size = 14),
+  #                    axis.text.y = ggplot2::element_text(size = 16),
+  #                    strip.text = ggplot2::element_text(size = 14, face = font),
+  #                    plot.margin = ggplot2::unit(c(0.05, 0.5, 0, 0), #top right bottom left
+  #                                                "inches"),
+  #                    legend.position = "none")
+  #   if (p_value_day == "No" | p_value_night == "No") {
+  #     invisible()
+  #   }else{
+  #     # Define thresholds and corresponding labels
+  #     thresholds <- c(0.0001, 0.001, 0.01, 0.05, 0.07)
+  #     labels <- c("****", "***", "**", "*", " ")
+  #     
+  #     # Find the corresponding label directly using logical comparisons
+  #     p_label_day <- ifelse(p_value_day < thresholds[1], labels[1],
+  #                       ifelse(p_value_day < thresholds[2], labels[2],
+  #                              ifelse(p_value_day < thresholds[3], labels[3],
+  #                                     ifelse(p_value_day < thresholds[4], labels[4],
+  #                                            ifelse(p_value_day < thresholds[5], labels[5],
+  #                                                   "")))))
+  #     p_label_night <- ifelse(p_value_night < thresholds[1], labels[1],
+  #                           ifelse(p_value_night < thresholds[2], labels[2],
+  #                                  ifelse(p_value_night < thresholds[3], labels[3],
+  #                                         ifelse(p_value_night < thresholds[4], labels[4],
+  #                                                ifelse(p_value_night < thresholds[5], labels[5],
+  #                                                       "")))))
+  #     # If a label is assigned, annotate the plot
+  #     pval_labels <- data.frame(
+  #       TimeofDay = c("Day", "Night"),
+  #       p_text = c(
+  #         if (p_label_day != "") paste("p =", round(p_value_day, 4)) else NA,
+  #         if (p_label_night != "") paste("p =", round(p_value_night, 4)) else NA
+  #       ),
+  #       label_text = c(
+  #         if (p_label_day != "") p_label_day else NA,
+  #         if (p_label_night != "") p_label_night else NA
+  #       )
+  #     )
+  #     
+  #     bout_plot <- bout_plot +
+  #       ggplot2::geom_text(data = pval_labels, ggplot2::aes(x = 150, y = 0.16, label = p_text),
+  #                          size = 4.5, color = "black", fontface = font, inherit.aes = FALSE) +
+  #       ggplot2::geom_text(data = pval_labels, ggplot2::aes(x = 150, y = 0.18, label = label_text),
+  #                          size = 5, color = "black", fontface = font, inherit.aes = FALSE)
+  #   }
+  #   return(bout_plot)
+  # }
+  # 
+  # # prep for Kolmogorov-Smirnov & bout distribution
+  # bout_dt_min <- sleepr::bout_analysis(asleep, dt_curated_final)[, .(
+  #   id, duration = duration / 60, t = t / 60,
+  #   phase = ifelse(t %% behavr::hours(24) < behavr::hours(12), "L", "D")
+  # )][duration >= 5]
   
   yParams<- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
   # save<- data.frame()
@@ -236,31 +236,31 @@ combinedPlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
               }
 
     #-------------
-    #setup for bout dist & p-values
-    finaldf<- data.frame()
-    pdatt<- bout_dt_min[id %in% plot_subdata2$id] #pdatt<- bout_dt_min[id %in% summary_dt_final[Genotype == "CS"]$id]
-    for (phasee in c("L", "D")) {
-      pdat<- pdatt[phase==phasee]
-      for (i in unique(behavr::meta(pdat)[[divisions[1]]])) {
-        gd1 <- behavr::meta(pdat)[get(divisions[1]) == i, id]
-        a <- pdat[pdat$id %in% gd1]
-        amax<-max(a[,duration])
-        #print(amax)
-        factor<-factor(a[,duration],levels=1:amax)
-        out <- as.data.frame(table(factor))
-        out <- transform(out, cumFreq = cumsum(Freq), relative = prop.table(Freq))
-        out <- transform(out, cumProp = cumsum(relative))
-        out<-tibble::rownames_to_column(out) #I don't think this is needed/helpful
-        out$d1 <- i
-        out[["TimeofDay"]]<- ifelse(phasee == "L", "Day", "Night")
-        finaldf<- rbind(finaldf, out)
-      }
-      }
-    # remove all bout lengths with frequency of 0
-    finaldf2<- finaldf#[finaldf$Freq !=0,]
-    finaldf2 <- finaldf2[base::rev(base::order(finaldf2$d1)), ]
-    
-    
+    # #setup for bout dist & p-values
+    # finaldf<- data.frame()
+    # pdatt<- bout_dt_min[id %in% plot_subdata2$id] #pdatt<- bout_dt_min[id %in% summary_dt_final[Genotype == "CS"]$id]
+    # for (phasee in c("L", "D")) {
+    #   pdat<- pdatt[phase==phasee]
+    #   for (i in unique(behavr::meta(pdat)[[divisions[1]]])) {
+    #     gd1 <- behavr::meta(pdat)[get(divisions[1]) == i, id]
+    #     a <- pdat[pdat$id %in% gd1]
+    #     amax<-max(a[,duration])
+    #     #print(amax)
+    #     factor<-factor(a[,duration],levels=1:amax)
+    #     out <- as.data.frame(table(factor))
+    #     out <- transform(out, cumFreq = cumsum(Freq), relative = prop.table(Freq))
+    #     out <- transform(out, cumProp = cumsum(relative))
+    #     out<-tibble::rownames_to_column(out) #I don't think this is needed/helpful
+    #     out$d1 <- i
+    #     out[["TimeofDay"]]<- ifelse(phasee == "L", "Day", "Night")
+    #     finaldf<- rbind(finaldf, out)
+    #   }
+    #   }
+    # # remove all bout lengths with frequency of 0
+    # finaldf2<- finaldf#[finaldf$Freq !=0,]
+    # finaldf2 <- finaldf2[base::rev(base::order(finaldf2$d1)), ]
+    # 
+    # 
     if(pValues){
     #p-value statements!!
     # find out if there is a control for each combination of conditions
@@ -285,39 +285,41 @@ combinedPlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
 
       }
       
-      # add Kolmogorov-Smirnov using bout_dt_min
-      ddat<-finaldf2
-      ToD<- c("Day", "Night")
-      for (j in (length(yParams)+1):(length(yParams)+2)){ # day or night phase calculation
-        for (i in seq_along(t.test_y_vars)){ # here in case increase from just 2 entries to more
-          ks_result<- ks.test(ddat[ddat$d1 == controlee & ddat$TimeofDay == ToD[j-length(yParams)], "cumProp"],
-                              ddat[ddat$d1 == t.test_y_vars[i] & ddat$TimeofDay == ToD[j-length(yParams)], "cumProp"])
-          # ks_result<- ks.test(finaldf2[finaldf2$d1 == "Grp" & ddat$TimeofDay == "Day", "cumProp"],
-          #                     finaldf2[finaldf2$d1 == "Iso" & ddat$TimeofDay == "Day", "cumProp"])
-          # statistic <- ks_result$statistic
-          # p_val <- ks_result$p.value
-          # method <- ks_result$method
-          # 
-          # output_df <- data.frame(
-          #   Statistic = statistic,
-          #   P_value = p_val,
-          #   Method = method,
-          #   Data = paste0(controlee, "-", t.test_y_vars[i], "_", unique(ddat$TimeofDay)[j-length(yParams)]),
-          #   Batch = ExperimentData@Batch
-          # )
-          
-          # save<- rbind(save, output_df)
-          p_value[i,j] <- ks_result$p.value
-        }
-      }
+    #   # add Kolmogorov-Smirnov using bout_dt_min
+    #   ddat<-finaldf2
+    #   ToD<- c("Day", "Night")
+    #   for (j in (length(yParams)+1):(length(yParams)+2)){ # day or night phase calculation
+    #     for (i in seq_along(t.test_y_vars)){ # here in case increase from just 2 entries to more
+    #       ks_result<- ks.test(ddat[ddat$d1 == controlee & ddat$TimeofDay == ToD[j-length(yParams)], "cumProp"],
+    #                           ddat[ddat$d1 == t.test_y_vars[i] & ddat$TimeofDay == ToD[j-length(yParams)], "cumProp"])
+    #       # ks_result<- ks.test(finaldf2[finaldf2$d1 == "Grp" & ddat$TimeofDay == "Day", "cumProp"],
+    #       #                     finaldf2[finaldf2$d1 == "Iso" & ddat$TimeofDay == "Day", "cumProp"])
+    #       # statistic <- ks_result$statistic
+    #       # p_val <- ks_result$p.value
+    #       # method <- ks_result$method
+    #       # 
+    #       # output_df <- data.frame(
+    #       #   Statistic = statistic,
+    #       #   P_value = p_val,
+    #       #   Method = method,
+    #       #   Data = paste0(controlee, "-", t.test_y_vars[i], "_", unique(ddat$TimeofDay)[j-length(yParams)]),
+    #       #   Batch = ExperimentData@Batch
+    #       # )
+    #       
+    #       # save<- rbind(save, output_df)
+    #       p_value[i,j] <- ks_result$p.value
+    #     }
+    #   }
+    #   
+    #   colnames(p_value) <- c(yParams, "DayboutDist", "NightBoutDist")
+    #   rownames(p_value) <- t.test_y_vars
+    # } else {
+    #   p_value <- matrix("No", nrow = 1, ncol = length(yParams)+2)
       
-      colnames(p_value) <- c(yParams, "DayboutDist", "NightBoutDist")
-      rownames(p_value) <- t.test_y_vars
-    } else {
-      p_value <- matrix("No", nrow = 1, ncol = length(yParams)+2)
     }
-    } else {
-      p_value <- matrix("No", nrow = 1, ncol = length(yParams)+2)
+    } 
+    else {
+      p_value <- matrix("No", nrow = 1, ncol = length(yParams))#+2)
     }
 
       p1title <- gsub(" ", "_", p1title)
@@ -335,17 +337,17 @@ combinedPlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
         p8 <- create_sleeptime_plot(plot_subdata2, yParams[7], "Nighttime Bout Length", ceiling(max(plot_subdata2[,get(yParams[7])])/50)*50, "violin", font, p_value[,7])
 
         
-  # Bout distributions
-        # take treatment, genotype, and phase, subsetting the bout_min table, make frequency counts, write to a table
-        p9 <- boutDist.fun(finaldf2, p_value[,8], p_value[,9])
+  # # Bout distributions
+  #       # take treatment, genotype, and phase, subsetting the bout_min table, make frequency counts, write to a table
+  #       p9 <- boutDist.fun(finaldf2, p_value[,8], p_value[,9])
 
         # Combine plots
         rel_width <- 1 + (u / 2) + ((u - 1) * 0.1)
 suppressWarnings(
-          combined_plot <- cowplot::plot_grid(p1, p2, p3, p4, p5, p6, p7, p8, p9, ncol = 9, align = "h", axis = "tb",
-                                              rel_widths = c(addedspace, rep(rel_width, 7), 3.25))
+          combined_plot <- cowplot::plot_grid(p1, p2, p3, p4, p5, p6, p7, p8, ncol = 8, align = "h", axis = "tb",
+                                              rel_widths = c(addedspace, rep(rel_width, 7)))
 )
-total_width <- addedspace + 7 * rel_width + 3.25
+total_width <- addedspace + 7 * rel_width 
 
 p1titlee <- gsub(" ", "_", p1title)
 p1titlee <- gsub(":", ".", p1titlee)
