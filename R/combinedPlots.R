@@ -175,9 +175,9 @@ combinedPlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
       )
       
       bout_plot <- bout_plot +
-        ggplot2::geom_text(data = pval_labels, ggplot2::aes(x = 50, y = 0.16, label = p_text),
+        ggplot2::geom_text(data = pval_labels, ggplot2::aes(x = 150, y = 0.16, label = p_text),
                            size = 4.5, color = "black", fontface = font, inherit.aes = FALSE) +
-        ggplot2::geom_text(data = pval_labels, ggplot2::aes(x = 50, y = 0.18, label = label_text),
+        ggplot2::geom_text(data = pval_labels, ggplot2::aes(x = 150, y = 0.18, label = label_text),
                            size = 5, color = "black", fontface = font, inherit.aes = FALSE)
     }
     return(bout_plot)
@@ -245,6 +245,7 @@ combinedPlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
         gd1 <- behavr::meta(pdat)[get(divisions[1]) == i, id]
         a <- pdat[pdat$id %in% gd1]
         amax<-max(a[,duration])
+        #print(amax)
         factor<-factor(a[,duration],levels=1:amax)
         out <- as.data.frame(table(factor))
         out <- transform(out, cumFreq = cumsum(Freq), relative = prop.table(Freq))
@@ -256,7 +257,7 @@ combinedPlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
       }
       }
     # remove all bout lengths with frequency of 0
-    finaldf2<- finaldf[finaldf$Freq !=0,]
+    finaldf2<- finaldf#[finaldf$Freq !=0,]
     finaldf2 <- finaldf2[base::rev(base::order(finaldf2$d1)), ]
     
     
