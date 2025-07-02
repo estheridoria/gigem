@@ -24,6 +24,7 @@
 #' @importFrom ggbeeswarm geom_beeswarm
 #' @importFrom ggcorrplot cor_pmat ggcorrplot
 #' @importFrom ggetho ggetho stat_bar_tile_etho scale_x_days stat_ld_annotations stat_pop_etho
+#' @importFrom ggeffects ggpredict
 #' @importFrom ggplot2 aes annotate coord_cartesian element_rect facet_grid geom_errorbar geom_point geom_smooth geom_text geom_violin ggplot ggsave ggtitle guide_legend labs margin mean_cl_boot scale_color_manual scale_color_viridis_c scale_fill_manual scale_fill_viridis_d scale_shape_manual scale_x_discrete scale_y_continuous stat_summary theme vars ylim
 #' @importFrom ggprism theme_prism
 #' @importFrom grDevices dev.off pdf
