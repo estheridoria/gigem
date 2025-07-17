@@ -60,7 +60,7 @@ corMatrix <- function(condition1 = NULL, condition2 = NULL, sex = NULL, geno = N
     
 # difference between conditions or absolute values
     if (!is.null(condition1) && !is.null(condition2)) {
-      match_col <- intersect(names(dataset), fit_meta_vars)[sapply(fit_meta_vars, function(var) {
+      match_col <- intersect(names(dataset), meta_vars)[sapply(meta_vars, function(var) {
         any(grepl(condition1, dataset[[var]])) && any(grepl(condition2, dataset[[var]]))
       })]
       if (length(match_col) != 1) {
@@ -73,11 +73,11 @@ corMatrix <- function(condition1 = NULL, condition2 = NULL, sex = NULL, geno = N
       stop("There is an uneven number of 'condition1' and 'condition2' populations within the current subset of variables. Please ensure there are no unpaired populations/monitors for 'condition1' and 'condition2'.")
     }
   # math
-      c1_sorted <- c1_data[do.call(order, c1_data[fit_meta_vars]), ]
-      c2_sorted <- c2_data[do.call(order, c2_data[fit_meta_vars]), ]
+      c1_sorted <- c1_data[do.call(order, c1_data[meta_vars]), ]
+      c2_sorted <- c2_data[do.call(order, c2_data[meta_vars]), ]
       
       sleep_diff <- (c1_sorted[, param_cols] - c2_sorted[, param_cols])
-      df <- cbind(sleep_diff, c1_sorted[, setdiff(c(fit_meta_vars, "Batch"), match_col), drop = FALSE])
+      df <- cbind(sleep_diff, c1_sorted[, setdiff(c(meta_vars, "Batch"), match_col), drop = FALSE])
 
     # Rename the columns for better clarity.
     colnames(df) <- c("Sleepchange_All", "Sleepchange_L", "Sleepchange_D", "nBoutschange_L",
@@ -136,7 +136,9 @@ corMatrix <- function(condition1 = NULL, condition2 = NULL, sex = NULL, geno = N
   suppressMessages({
   cor.plot <- ggcorrplot::ggcorrplot(corr, type = "lower", lab = TRUE, show.diag = TRUE, lab_size = 5) +
     ggplot2::labs(y = NULL, x = NULL, title = trimws(paste0("Sleep Correlation ", title_text))) +
-    ggplot2::scale_fill_gradient2(low = "blue", high =  "red2", mid = "white", midpoint = 0)+
+    ggplot2::scale_fill_gradient2(low = "blue", high =  "red2", mid = "white", 
+                                  midpoint = 0, limit = c(-1,1))+
+    
     ggprism::theme_prism(base_fontface = font) +
     ggplot2::theme(
       title = ggplot2::element_text(size = 14),

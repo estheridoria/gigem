@@ -1,3 +1,14 @@
+# Run the Analysis (one batch)
+runOneBatch(oneBatch = "Batch9_2Days", numDays = 2,
+            overlayVar = "Treatment", rowVar = "Environment",
+            columnVar = "Genotype", plotSelection = "All", font = "bold",
+            pValues = TRUE)
+
+
+
+
+
+
 Title = "Batch9_2Days"
 # ----------------------------------------------------------------------------
 info <- data.table::data.table(
