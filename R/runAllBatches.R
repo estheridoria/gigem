@@ -52,7 +52,7 @@
 runAllBatches <- function(numDays,
                           overlayVar = c("Treatment", "Sex", "Genotype", "Temperature", "Environment", "Light"),
                           rowVar = c("Genotype", "Sex", "Temperature", "Treatment", "Environment", "Light"),
-                          columnVar = c("Environment", "Sex", "Genotype", "Temperature", "Treatment", "Light"), 
+                          columnVar = c("Environment", "Sex", "Genotype", "Temperature", "Treatment", "Light"),
                           plotSelection = c("All", "None", "Select"),
                           font = c("plain", "bold", "italic", "bold.italic"),
                           pValues = c(FALSE, TRUE)) {
@@ -73,7 +73,7 @@ runAllBatches <- function(numDays,
   if(!is.logical(pValues)){
     stop("'pValues' must be either 'TRUE' or 'FALSE'")
 }
-  
+
   # Save the current working directory
   original_wd <- getwd()
   # Get the list of all sub directories
@@ -138,7 +138,7 @@ runAllBatches <- function(numDays,
     # Ask user which plots they want
     pref <- plotPreferences("all")
   }
-  
+
   # Analyze each batch
   for (oneBatch in batch_dirs){
     run_r_files_in_dir(oneBatch)
