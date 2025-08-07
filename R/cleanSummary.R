@@ -43,7 +43,7 @@ cleanSummary <- function(ExperimentData, dt, numDays, loadinginfo_linked, divisi
   pdf(paste0(ExperimentData@Batch, '_Overlaid_Sleep_Bout_Profiles.pdf'),
       width = 5*length(unique(info[[divisions[3]]]))+2,
       height = 3*length(unique(info[[divisions[2]]]))+2)
-  
+
       plot<- ggetho::ggetho(bout_dt, ggplot2::aes(x = t, y = duration / 60, colour = .data[[divisions[1]]]), time_wrap = behavr::hours(24)) +
         ggetho::stat_pop_etho() +
         ggetho::stat_ld_annotations() +
@@ -64,7 +64,7 @@ cleanSummary <- function(ExperimentData, dt, numDays, loadinginfo_linked, divisi
   dev.off()
 }
   # Process daily bout length and latency by Light/dark phase
-  summary_dt_final <- processDays(numDays, bout_dt, summary_dt_final)
+  summary_dt_final <- processDays(numDays, bout_dt, dt, summary_dt_final)
 
   # Calculate bout lengths during Light (L) and dark (D) phases, filtering by duration
 
@@ -153,7 +153,7 @@ cleanSummary <- function(ExperimentData, dt, numDays, loadinginfo_linked, divisi
   # take treatment, genotype, and phase, subsetting the bout_min table, make frequency counts, write to a table
   # nightdf<-daydf<- data.frame()
   finaldf<- data.frame()
-  
+
   for (phasee in c("L", "D")) {
     pdat<- bout_dt_min[phase==phasee]
     adf.save<- data.frame()
@@ -183,7 +183,7 @@ cleanSummary <- function(ExperimentData, dt, numDays, loadinginfo_linked, divisi
         out$d3 <- h
         out[["TimeofDay"]]<- ifelse(phasee == "L", "Day", "Night")
         finaldf<- rbind(finaldf, out)
-        
+
         finaldf2<- finaldf[finaldf$Freq !=0,] ## removes min 1-4 since they are 0 by definition
       }}}
 
@@ -227,7 +227,7 @@ if(pref[5] == 1){
 
   finaldf3 <- finaldf2
   finaldf3 <- finaldf3[base::order(finaldf3$d1), ]
-  
+
 
   #function for plots
   boutDist.fun<- function(data){
