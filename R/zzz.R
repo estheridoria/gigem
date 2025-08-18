@@ -21,7 +21,7 @@
 
 }
 # setwd(dirname(rstudioapi::getSourceEditorContext()$path))
-# 
+#
 # # Get the list of R files in the directory
 # r_files <- list.files(getwd(), pattern = "\\.R$", full.names = TRUE)
 # # Source each R file
