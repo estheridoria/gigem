@@ -82,10 +82,10 @@ manualDeadRemoval <- function(ExperimentData, dt, numDays, divisions, pref, font
   }
 
   suppressWarnings(
-    create_population_plot(paste0(ExperimentData@Batch, '_Population_Sleep_Profiles.pdf'), 
+    create_population_plot(paste0(ExperimentData@Batch, '_Population_Sleep_Profiles.pdf'),
                            dt_curated_final, divisions))
   suppressWarnings(
-    create_population_plot(paste0(ExperimentData@Batch, '_Population_Sleep_Profiles_Wrap.pdf'), 
+    create_population_plot(paste0(ExperimentData@Batch, '_Population_Sleep_Profiles_Wrap.pdf'),
                             dt_curated_final, divisions, numb_days = 1, wrap_time = behavr::hours(24)))
 
 }

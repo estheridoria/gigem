@@ -43,8 +43,25 @@ runEachBatch <- function(numDays, oneBatch, font, pref, divisions, pValues) {
   # Create activity plots before and after removing "dead", providing list of IDs removed from first trimming
   dt_curated <- aliveVsDead(ExperimentData, dt_activity)
 
-  # Further removal and trimming of animals that died before specified time, providing list of IDs removed
-  dt_final <- manualDeadRemoval(ExperimentData, dt_curated, numDays, divisions, pref, font)
+  # Warning: Custom function to stop on specific warning if columns are not aligned with each batch's main files
+  combine_with_warning_check <- function(ExperimentData, dt_curated, numDays, divisions, pref, font) {
+    tryCatch({
+
+      # Further removal and trimming of animals that died before specified time, providing list of IDs removed
+      result <- manualDeadRemoval(ExperimentData, dt_curated, numDays, divisions, pref, font)
+
+    }, error = function(e) {
+      # Check if the error contains the specific message
+      if (grepl("Faceting variables must have at least one value", conditionMessage(e))) {
+        msg<- paste0("\n",
+        "1) the start/stop date(s) within the 'Main' file is/are incorrect OR\n",
+        "2) 'numDays' is too many days")
+        stop(simpleError(msg))
+      }
+    })
+    return(result)
+  }
+  dt_final <- combine_with_warning_check(ExperimentData, dt_curated, numDays, divisions, pref, font)
 
   # Write bout length pdf, and calculate bout and latency stats
   dt_finalSummary <- cleanSummary(ExperimentData, dt = dt_final, numDays, loadinginfo_linked = loading_metadata, divisions, pref, font)
