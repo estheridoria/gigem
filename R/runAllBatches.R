@@ -142,11 +142,13 @@ runAllBatches <- function(numDays,
   # Analyze each batch
   for (oneBatch in batch_dirs){
     run_r_files_in_dir(oneBatch)
-    info[["monitor"]]<- paste0("M", gsub("\\D", "", info$file))
+    incodeinfo <- info
+    # add "monitor" to the info file
+    incodeinfo[["monitor"]]<- paste0("M", gsub("\\D", "", incodeinfo$file))
     #change any NA values to "NA" to prevent errors
-    info[is.na(info)] <- "NA"
-    info[,6:11]<- lapply(info[,6:11], as.character)
-    runEachBatch(numDays, oneBatch, font, pref, divisions, pValues)
+    incodeinfo[is.na(incodeinfo)] <- "NA"
+    incodeinfo[,6:11]<- lapply(incodeinfo[,6:11], as.character)
+    runEachBatch(numDays, oneBatch, font, pref, divisions, pValues, incodeinfo)
   }
 
   # Restore the original working directory

@@ -25,14 +25,14 @@
 #' 8. Writes relevant output files, including the final summary and normalized statistics.
 #'
 #' @keywords Internal
-runEachBatch <- function(numDays, oneBatch, font, pref, divisions, pValues) {
+runEachBatch <- function(numDays, oneBatch, font, pref, divisions, pValues, incodeinfo) {
 
   # Create an object that contains all of your inputs
   ExperimentData <- new("ExperimentData",
                         Batch = Title,
-                        monitorlist = as.list(unique(info$monitor)),
-                        genotypelist = as.list(unique(info$genotype)),
-                        loadinginfo = info)
+                        monitorlist = as.list(unique(incodeinfo$monitor)),
+                        genotypelist = as.list(unique(incodeinfo$genotype)),
+                        loadinginfo = incodeinfo)
 
   # Store this as a CSV file, used to curate summary tables
   loading_metadata <- writeLoading(ExperimentData)

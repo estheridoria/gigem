@@ -66,11 +66,12 @@ runOneBatch <- function(oneBatch, numDays,
     source(r_file)
   }
 
+  incodeinfo <- info
   # add "monitor" to the info file
-  info[["monitor"]]<- paste0("M", gsub("\\D", "", info$file))
+  incodeinfo[["monitor"]]<- paste0("M", gsub("\\D", "", incodeinfo$file))
   #change any NA values to "NA" to prevent errors
-  info[is.na(info)] <- "NA"
-  info[,6:11]<- lapply(info[,6:11], as.character)
+  incodeinfo[is.na(incodeinfo)] <- "NA"
+  incodeinfo[,6:11]<- lapply(incodeinfo[,6:11], as.character)
 
   if(plotSelection == "All"){
     # Ask user which plots they want
@@ -86,7 +87,7 @@ runOneBatch <- function(oneBatch, numDays,
   }
 
   # Analyze the batch
-  runEachBatch(numDays, oneBatch, font, pref, divisions, pValues)
+  runEachBatch(numDays, oneBatch, font, pref, divisions, pValues, incodeinfo)
 
   setwd(original_wd)
 
