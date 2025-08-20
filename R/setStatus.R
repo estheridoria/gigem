@@ -10,7 +10,7 @@
 #' @param info A data.table containing information about regions and monitors, with columns for `region_id`,
 #'             `monitor`, and `status`.
 #' @param regionID_targ The ID of the region for which the status should be updated.
-#' @param monitor_targ The target monitor for which the status should be updated.
+#' @param file_targ The target monitor for which the status should be updated.
 #'
 #' @return A data.table with the updated status for the specified region and monitor.
 #' @examples
