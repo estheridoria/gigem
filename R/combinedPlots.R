@@ -200,6 +200,8 @@ total_width <- addedspace + 7 * rel_width
 
 p1titlee <- gsub(" ", "_", p1title)
 p1titlee <- gsub(":", ".", p1titlee)
+p1titlee <- gsub("/", ".", p1titlee)
+
         # Save combined plot
         ggplot2::ggsave(paste0("CombinedPlots", p1titlee, ExperimentData@Batch, ".pdf"),
                         combined_plot, width = total_width, height = 4)

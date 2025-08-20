@@ -49,7 +49,7 @@ runOneBatch <- function(oneBatch, numDays,
   font<- match.arg(font)
   if(!is.logical(pValues)){
     stop("'pValues' must be either 'TRUE' or 'FALSE'")
-  }  
+  }
   # Set the stage---------------------------------------------------------------
 
   # Save the current working directory
@@ -65,9 +65,12 @@ runOneBatch <- function(oneBatch, numDays,
   for (r_file in r_files) {
     source(r_file)
   }
-  
+
   # add "monitor" to the info file
   info[["monitor"]]<- paste0("M", gsub("\\D", "", info$file))
+  #change any NA values to "NA" to prevent errors
+  info[is.na(info)] <- "NA"
+  info[,6:11]<- lapply(info[,6:11], as.character)
 
   if(plotSelection == "All"){
     # Ask user which plots they want

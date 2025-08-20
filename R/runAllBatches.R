@@ -143,6 +143,9 @@ runAllBatches <- function(numDays,
   for (oneBatch in batch_dirs){
     run_r_files_in_dir(oneBatch)
     info[["monitor"]]<- paste0("M", gsub("\\D", "", info$file))
+    #change any NA values to "NA" to prevent errors
+    info[is.na(info)] <- "NA"
+    info[,6:11]<- lapply(info[,6:11], as.character)
     runEachBatch(numDays, oneBatch, font, pref, divisions, pValues)
   }
 
