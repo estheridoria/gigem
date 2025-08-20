@@ -4,16 +4,33 @@
 \alias{runOneBatch}
 \title{Run the Complete Single Batch Analysis}
 \usage{
-runOneBatch(oneBatch, control, num_days, font = "plain")
+runOneBatch(
+  oneBatch,
+  numDays,
+  overlayVar = c("Treatment", "Sex", "Genotype", "Temperature", "Environment", "Light"),
+  rowVar = c("Genotype", "Sex", "Temperature", "Treatment", "Environment", "Light"),
+  columnVar = c("Environment", "Sex", "Genotype", "Temperature", "Treatment", "Light"),
+  plotSelection = c("All", "None", "Select"),
+  font = c("plain", "bold", "italic", "bold.italic"),
+  pValues = c(FALSE, TRUE)
+)
 }
 \arguments{
 \item{oneBatch}{A character string of the Batch folder to be analyzed.}
 
-\item{control}{A character string specifying the control condition from divisions\link{1} (the sleep plot overlay & color parameter).}
+\item{numDays}{A numerical value specifying the number of days to be used in analysis.}
 
-\item{num_days}{A numerical value specifying the number of days to be used in analysis.}
+\item{overlayVar}{A character string specifying which variable to overlay and color plots by Default is "Treatment".}
+
+\item{rowVar}{A character string specifying which variable to facet rows in plots by. Default is "Genotype".}
+
+\item{columnVar}{A character string specifying which variable to facet columns in plots by. Default is "Environment".}
+
+\item{plotSelection}{A character string specifying if the user wants all possible plots, no optional plots, or select specific plot outputs.}
 
 \item{font}{A string variable determining the font style of the produced plots.}
+
+\item{pValues}{A TRUE/FALSE vector for if combined plots will display p values for 2-condition overlays.}
 }
 \value{
 This function does not return a value but performs a series of steps to process the data,

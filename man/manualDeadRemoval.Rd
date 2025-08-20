@@ -4,16 +4,16 @@
 \alias{manualDeadRemoval}
 \title{Manually Remove IDs of Animals Detected as Dead (Internal)}
 \usage{
-manualDeadRemoval(ExperimentData, dt, num_days, divisions, pref, font)
+manualDeadRemoval(ExperimentData, dt, numDays, divisions, pref, font)
 }
 \arguments{
 \item{ExperimentData}{An S4 object containing experiment metadata, including \code{Batch} for output filenames.}
 
 \item{dt}{A \code{data.table} containing experimental results, including columns \code{id} and \code{t} (time).}
 
-\item{num_days}{Numeric, the minimum lifespan (in days) required for an animal to be retained.}
+\item{numDays}{Numeric, the minimum lifespan (in days) required for an animal to be retained.}
 
-\item{divisions}{A character vector defining grouping variables for plot facets.}
+\item{divisions}{A list of grouping columns used for facetting plots.}
 
 \item{pref}{A numeric vector specifying whether to generate population plots (\code{pref[2] == 1}) and overlay plots (\code{pref[3] == 1}).}
 

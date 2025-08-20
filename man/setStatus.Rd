@@ -4,7 +4,7 @@
 \alias{setStatus}
 \title{Set Status to "notOK" and Exclude for a Specific Region and Monitor}
 \usage{
-setStatus(info, regionID_targ, monitor_targ)
+setStatus(info, regionID_targ, file_targ)
 }
 \arguments{
 \item{info}{A data.table containing information about regions and monitors, with columns for \code{region_id},
@@ -29,8 +29,8 @@ for specific regions and monitors before conducting further analyses.
 \examples{
 # Example usage
 info <- data.table::data.table(region_id = c(1, 2, 3),
-                               monitor = c("11", "12", "13"),
+                               file = c("Monitor11.txt", "Monitor12.txt", "Monitor13.txt"),
                                status = c("OK", "OK", "OK"))
-updated_info <- setStatus(info, regionID_targ = 1, monitor_targ = "13")
+updated_info <- setStatus(info, regionID_targ = 1, file_targ = "Monitor13.txt")
 print(updated_info)
 }

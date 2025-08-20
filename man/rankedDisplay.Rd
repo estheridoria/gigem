@@ -5,10 +5,11 @@
 \title{Visualize Changes in Sleep Between}
 \usage{
 rankedDisplay(
-  x,
+  x = c("Temperature", "Sex", "Treatment", "Genotype", "Environment", "Light"),
   control = NULL,
   condition1 = NULL,
   condition2 = NULL,
+  method = c("Diff", "Perc.Change"),
   treat = NULL,
   temp = NULL,
   enviro = NULL,
@@ -16,36 +17,43 @@ rankedDisplay(
   Lights = NULL,
   geno = NULL,
   ranking = NULL,
-  font = "plain",
-  limits = c(-100, 1500)
+  fitted = FALSE,
+  formula = NULL,
+  font = c("plain", "bold", "italic", "bold.italic")
 )
 }
 \arguments{
-\item{x}{The name of a parameter in "all_batches_norm_summary.csv" to be used as the x-axis in the plot.}
+\item{x}{The name of a variable in "all_batches_norm_summary.csv" to be used as the x-axis in the plot.}
 
-\item{control}{The name of the control within the parameter x}
+\item{control}{The name of the control within the variable x.}
 
-\item{condition1}{A string specifying a condition within one of the experimental parameters. The percent difference is calculated as: (\code{condition1}-\code{condition2}) / \code{condition2}}
+\item{condition1}{A string specifying a condition within one of the experimental variables. Default is NULL}
 
-\item{condition2}{A string specifying a condition within the same experimental parameter as \code{condition1} that is associated with the percent difference seen in sleep.}
+\item{condition2}{A string specifying a condition within the same experimental variable as \code{condition1} that is associated with the percent difference seen in sleep. Default is NULL}
 
-\item{treat}{A string specifying a Treatment to subset the data by.}
+\item{method}{The equation to be used either as the difference \code{condition1}-\code{condition2} or percent change, (\code{condition1}-\code{condition2}) / \code{condition2}}
 
-\item{temp}{A string specifying a Temperature condition to subset the data by.}
+\item{treat}{A string specifying a Treatment to subset the data by. Default is NULL}
 
-\item{enviro}{A string specifying a Environment condition to subset the data by.}
+\item{temp}{A string specifying a Temperature condition to subset the data by. Default is NULL}
 
-\item{sex}{A string specifying a sex condition to subset the data by.}
+\item{enviro}{A string specifying a Environment condition to subset the data by. Default is NULL}
 
-\item{Lights}{A string specifying a Light condition to subset the data by.}
+\item{sex}{A string specifying a sex condition to subset the data by. Default is NULL}
 
-\item{geno}{A string specifying a Genotype condition to subset the data by.}
+\item{Lights}{A string specifying a Light condition to subset the data by. Default is NULL}
 
-\item{ranking}{A tibble of one column containing the order of conditions displayed in the plot from parameter x}
+\item{geno}{A string specifying a Genotype condition to subset the data by. Default is NULL}
 
-\item{font}{A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")}
+\item{ranking}{A tibble of one column containing the order of conditions displayed in the plot from variable x.}
 
-\item{limits}{A list of two numerics to be the upper and lower limits on the plot. Default is c(-100, 1500)}
+\item{fitted}{Use predicted values after controlling for variables and Batch effects. Default = FALSE}
+
+\item{formula}{Independent variables & their interactions in predicting sleep. Should be NULL if fitted = FALSE.}
+
+\item{font}{A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic"). Default is "plain"}
+
+\item{limits}{A list of two numerics to be the upper and lower limits of the plot. Default is c(-100, 1500)}
 }
 \value{
 conditional. If the ranking is NULL (default), then the ranking used in the plots will be returned to be used as the ranking in subsequent rankedDisplay plots. Otherwise, no return. Saves the plots as a PDF file labeled \code{RankedSleep...}

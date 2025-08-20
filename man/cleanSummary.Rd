@@ -7,7 +7,7 @@
 cleanSummary(
   ExperimentData,
   dt,
-  num_days,
+  numDays,
   loadinginfo_linked,
   divisions,
   pref,
@@ -20,7 +20,7 @@ Must include \code{Batch} (identifier for the batch being processed).}
 
 \item{dt}{A \code{behavr} table containing sleep and activity data.}
 
-\item{num_days}{Number of days for displaying and calculating average metrics.}
+\item{numDays}{Number of days for displaying and calculating average metrics.}
 
 \item{loadinginfo_linked}{Linked metadata for the behavioral data.}
 

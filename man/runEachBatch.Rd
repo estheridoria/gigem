@@ -4,18 +4,20 @@
 \alias{runEachBatch}
 \title{Run the Each Batch Analysis (Internal)}
 \usage{
-runEachBatch(control, num_days, oneBatch, font, pref)
+runEachBatch(numDays, oneBatch, font, pref, divisions, pValues, incodeinfo)
 }
 \arguments{
-\item{control}{A character string specifying the control.}
-
-\item{num_days}{A numerical value specifying the number of days to be used in analysis.}
+\item{numDays}{A numerical value specifying the number of days to be used in analysis.}
 
 \item{oneBatch}{A character string of the Batch folder to be analyzed.}
 
 \item{font}{A string variable determining the font style of the produced plots.}
 
 \item{pref}{A vector of preferences for generating specific plots (e.g., whether to generate concatenated plots).}
+
+\item{divisions}{A vector of meta variables to use the conditions within for fasceting plots}
+
+\item{pValues}{A TRUE/FALSE vector for if combined plots will display p values for 2-condition overlays.}
 }
 \value{
 This function does not return a value but performs a series of steps to process the data,
