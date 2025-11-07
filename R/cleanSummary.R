@@ -148,119 +148,119 @@ cleanSummary <- function(ExperimentData, dt, numDays, loadinginfo_linked, divisi
     create_sleeptime_plot(summary_dt_final, "mean_Bout_Length_D", "Nighttime Bout Length", divisions, 250, "violin")
 }
 
-  if(pref[5] == 1 | pref[6] == 1 | pref[7] == 1) {
-  # bout distributions
-  # take treatment, genotype, and phase, subsetting the bout_min table, make frequency counts, write to a table
-  # nightdf<-daydf<- data.frame()
-  finaldf<- data.frame()
-
-  for (phasee in c("L", "D")) {
-    pdat<- bout_dt_min[phase==phasee]
-    adf.save<- data.frame()
-    for (h in unique(behavr::meta(pdat)[[divisions[3]]]))
-    {
-      gd3 <- behavr::meta(pdat)[get(divisions[3]) == h, id]
-      d3dat <- pdat[pdat$id %in% gd3]
-
-    for (j in unique(behavr::meta(d3dat)[[divisions[2]]]))
-    {
-      gd2 <- behavr::meta(d3dat)[get(divisions[2]) == j, id]
-      d2dat <- d3dat[d3dat$id %in% gd2]
-
-      for (i in unique(behavr::meta(d2dat)[[divisions[1]]])) {
-        gd1 <- behavr::meta(d2dat)[get(divisions[1]) == i, id]
-        a <- d2dat[d2dat$id %in% gd1]
-        amax<-max(a[,duration])
-        adf<- data.frame(a[,duration], i, j, h)
-        adf.save<- rbind(adf.save, adf)
-        factor<-factor(a[,duration],levels=1:amax)
-        out <- as.data.frame(table(factor))
-        out <- transform(out, cumFreq = cumsum(Freq), relative = prop.table(Freq))
-        out <- transform(out, cumProp = cumsum(relative))
-        out<-tibble::rownames_to_column(out)
-        out$d1 <- i
-        out$d2 <- j
-        out$d3 <- h
-        out[["TimeofDay"]]<- ifelse(phasee == "L", "Day", "Night")
-        finaldf<- rbind(finaldf, out)
-
-        finaldf2<- finaldf[finaldf$Freq !=0,] ## removes min 1-4 since they are 0 by definition
-      }}}
-
-    #see if iso and grp are in d1 & run ks.test if so
-    if("Iso" %in% unique(adf.save$d1) & "Grp" %in% unique(adf.save$d1)){
-    colnames(adf.save) <-  c("bout_lengths", "d1","d2","d3")
-    data.table::fwrite(adf.save, paste0(ExperimentData@Batch, "_RawFrequencyData_", phasee, ".csv"))
-
-    # ks test between Iso & Grp
-    ddat<-adf.save
-    save<- data.frame()
-    for (h in unique(ddat$d2)){
-      for (j in unique(ddat$d3)){
-        ks_result<- ks.test(ddat[ddat$d1 == "Iso" & ddat$d2 == h & ddat$d3 == j, "bout_lengths"],
-                            ddat[ddat$d1 == "Grp" & ddat$d2 == h & ddat$d3 == j, "bout_lengths"])
-        statistic <- ks_result$statistic
-        p_value <- ks_result$p.value
-        method <- ks_result$method
-        data_name <- ks_result$data.name
-
-        output_df <- data.frame(
-          Statistic = statistic,
-          P_value = p_value,
-          Method = method,
-          Data = paste0("Iso-Grp_", h, "_", j,"_", phasee),
-          Batch = ExperimentData@Batch
-        )
-
-        save<- rbind(save, output_df)
-      }
-    }
-
-    write.csv(save,paste0(ExperimentData@Batch, "_ks.results_", phasee,".csv"))
-    # end ks test between Iso & Grp
-    } # end if statement for testing Iso & Grp containment
-}
-  data.table::fwrite(finaldf2, paste0(ExperimentData@Batch, "_BoutDistribution.csv"))
-  }
-
-if(pref[5] == 1){
-
-  finaldf3 <- finaldf2
-  finaldf3 <- finaldf3[base::order(finaldf3$d1), ]
-
-
-  #function for plots
-  boutDist.fun<- function(data){
-    pdf(paste0(ExperimentData@Batch, '_cumRelFreq.pdf'),
-        width = (length(unique(info[[divisions[3]]]))*1.1+3.3),
-        height = length(unique(info[[divisions[2]]]))*3)
-    bout_plot<- ggplot2::ggplot(data = finaldf3, ggplot2::aes(x = as.numeric(factor), ##########
-                                y = cumProp, color = d1))+
-      ggplot2::facet_grid(rows = ggplot2::vars(d2, TimeofDay),
-                          cols = ggplot2::vars(d3))+
-      ggplot2::geom_point(shape = 1, size = 2, alpha = 1/2)+
-      ggplot2::scale_color_manual(values = c("blue", "red", "pink", "green", "#008B8B", "#808080", "#FFA500")) +
-      ggprism::theme_prism(base_fontface = font) +
-      ggplot2::scale_y_log10(breaks = seq(0.1,1.0, by = 0.9)) +
-      ggplot2::scale_x_log10() +
-      ggplot2::coord_cartesian(xlim = c(1,2000), ylim = c(0.1,1.01))+
-      #ggplot2::scale_y_continuous(limits = c(0.05,1.01), breaks = seq(0.1,1.0, by = 0.9)) +
-      ggplot2::annotation_logticks(sides = "bl", mid = grid::unit(0.1, "cm"), long = grid::unit(0, "cm"),) +
-      ggplot2::labs(y = "Cumulative relative\nfrequency",
-                    x = "Sleep bout duration (min)")+
-      ggplot2::theme(axis.title.x = ggplot2::element_text(size = 16),
-                     axis.title.y = ggplot2::element_text(size = 18, vjust = 0),
-                     axis.text.x = ggplot2::element_text(size = 14, angle = 45),
-                     axis.text.y = ggplot2::element_text(size = 16),
-                     strip.text = ggplot2::element_text(size = 14, face = font),
-                     plot.margin = ggplot2::unit(c(0.05, 0, 0, 0), #top right bottom left
-                                                 "inches"))
-    print(bout_plot)
-    dev.off()
-  }
-
-  boutDist.fun(finaldf3)
-}
+  # if(pref[5] == 1 | pref[6] == 1 | pref[7] == 1) {
+  # # bout distributions
+  # # take treatment, genotype, and phase, subsetting the bout_min table, make frequency counts, write to a table
+  # # nightdf<-daydf<- data.frame()
+  # finaldf<- data.frame()
+  #
+  # for (phasee in c("L", "D")) {
+  #   pdat<- bout_dt_min[phase==phasee]
+  #   adf.save<- data.frame()
+  #   for (h in unique(behavr::meta(pdat)[[divisions[3]]]))
+  #   {
+  #     gd3 <- behavr::meta(pdat)[get(divisions[3]) == h, id]
+  #     d3dat <- pdat[pdat$id %in% gd3]
+  #
+  #   for (j in unique(behavr::meta(d3dat)[[divisions[2]]]))
+  #   {
+  #     gd2 <- behavr::meta(d3dat)[get(divisions[2]) == j, id]
+  #     d2dat <- d3dat[d3dat$id %in% gd2]
+  #
+  #     for (i in unique(behavr::meta(d2dat)[[divisions[1]]])) {
+  #       gd1 <- behavr::meta(d2dat)[get(divisions[1]) == i, id]
+  #       a <- d2dat[d2dat$id %in% gd1]
+  #       amax<-max(a[,duration])
+  #       adf<- data.frame(a[,duration], i, j, h)
+  #       adf.save<- rbind(adf.save, adf)
+  #       factor<-factor(a[,duration],levels=1:amax)
+  #       out <- as.data.frame(table(factor))
+  #       out <- transform(out, cumFreq = cumsum(Freq), relative = prop.table(Freq))
+  #       out <- transform(out, cumProp = cumsum(relative))
+  #       out<-tibble::rownames_to_column(out)
+  #       out$d1 <- i
+  #       out$d2 <- j
+  #       out$d3 <- h
+  #       out[["TimeofDay"]]<- ifelse(phasee == "L", "Day", "Night")
+  #       finaldf<- rbind(finaldf, out)
+  #
+  #       finaldf2<- finaldf[finaldf$Freq !=0,] ## removes min 1-4 since they are 0 by definition
+  #     }}}
+  #
+  #   #see if iso and grp are in d1 & run ks.test if so
+  #   if("Iso" %in% unique(adf.save$d1) & "Grp" %in% unique(adf.save$d1)){
+  #   colnames(adf.save) <-  c("bout_lengths", "d1","d2","d3")
+  #   data.table::fwrite(adf.save, paste0(ExperimentData@Batch, "_RawFrequencyData_", phasee, ".csv"))
+#
+#     # ks test between Iso & Grp
+#     ddat<-adf.save
+#     save<- data.frame()
+#     for (h in unique(ddat$d2)){
+#       for (j in unique(ddat$d3)){
+#         ks_result<- ks.test(ddat[ddat$d1 == "Iso" & ddat$d2 == h & ddat$d3 == j, "bout_lengths"],
+#                             ddat[ddat$d1 == "Grp" & ddat$d2 == h & ddat$d3 == j, "bout_lengths"])
+#         statistic <- ks_result$statistic
+#         p_value <- ks_result$p.value
+#         method <- ks_result$method
+#         data_name <- ks_result$data.name
+#
+#         output_df <- data.frame(
+#           Statistic = statistic,
+#           P_value = p_value,
+#           Method = method,
+#           Data = paste0("Iso-Grp_", h, "_", j,"_", phasee),
+#           Batch = ExperimentData@Batch
+#         )
+#
+#         save<- rbind(save, output_df)
+#       }
+#     }
+#
+#     write.csv(save,paste0(ExperimentData@Batch, "_ks.results_", phasee,".csv"))
+#     # end ks test between Iso & Grp
+#     } # end if statement for testing Iso & Grp containment
+# }
+#   data.table::fwrite(finaldf2, paste0(ExperimentData@Batch, "_BoutDistribution.csv"))
+#   }
+#
+# if(pref[5] == 1){
+#
+#   finaldf3 <- finaldf2
+#   finaldf3 <- finaldf3[base::order(finaldf3$d1), ]
+#
+#
+#   #function for plots
+#   boutDist.fun<- function(data){
+#     pdf(paste0(ExperimentData@Batch, '_cumRelFreq.pdf'),
+#         width = (length(unique(info[[divisions[3]]]))*1.1+3.3),
+#         height = length(unique(info[[divisions[2]]]))*3)
+#     bout_plot<- ggplot2::ggplot(data = finaldf3, ggplot2::aes(x = as.numeric(factor), ##########
+#                                 y = cumProp, color = d1))+
+#       ggplot2::facet_grid(rows = ggplot2::vars(d2, TimeofDay),
+#                           cols = ggplot2::vars(d3))+
+#       ggplot2::geom_point(shape = 1, size = 2, alpha = 1/2)+
+#       ggplot2::scale_color_manual(values = c("blue", "red", "pink", "green", "#008B8B", "#808080", "#FFA500")) +
+#       ggprism::theme_prism(base_fontface = font) +
+#       ggplot2::scale_y_log10(breaks = seq(0.1,1.0, by = 0.9)) +
+#       ggplot2::scale_x_log10() +
+#       ggplot2::coord_cartesian(xlim = c(1,2000), ylim = c(0.1,1.01))+
+#       #ggplot2::scale_y_continuous(limits = c(0.05,1.01), breaks = seq(0.1,1.0, by = 0.9)) +
+#       ggplot2::annotation_logticks(sides = "bl", mid = grid::unit(0.1, "cm"), long = grid::unit(0, "cm"),) +
+#       ggplot2::labs(y = "Cumulative relative\nfrequency",
+#                     x = "Sleep bout duration (min)")+
+#       ggplot2::theme(axis.title.x = ggplot2::element_text(size = 16),
+#                      axis.title.y = ggplot2::element_text(size = 18, vjust = 0),
+#                      axis.text.x = ggplot2::element_text(size = 14, angle = 45),
+#                      axis.text.y = ggplot2::element_text(size = 16),
+#                      strip.text = ggplot2::element_text(size = 14, face = font),
+#                      plot.margin = ggplot2::unit(c(0.05, 0, 0, 0), #top right bottom left
+#                                                  "inches"))
+#     print(bout_plot)
+#     dev.off()
+#   }
+#
+#   boutDist.fun(finaldf3)
+# }
   # Return the final summary table
   return(summary_dt_final)
 }

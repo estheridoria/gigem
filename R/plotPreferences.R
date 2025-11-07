@@ -14,7 +14,7 @@
 plotPreferences <- function(run = "all"){
 
   # r0 <- menu(c("All plots", "No plots", "Select plots"), title="Do you want to generate all, none, or some plots?")
-  # 
+  #
   # if(r0 == 1){
   #   results <- rbind("1","1","1","1","1","1")
   # if(run == "one"){
@@ -35,7 +35,7 @@ plotPreferences <- function(run = "all"){
   r2 <- menu(c("Yes", "No"), title="Do you want to generate 'Population Sleep Profiles'? (i.e. Each unique condition)")
 
   # manualDeadRemoval.R #68
-  r3 <- menu(c("Yes", "No"), title="Do you want to generate 'Overlaid Sleep Profiles'? (i.e. Each condition overlayed according to your first entry in 'Divisions')")
+  r3 <- menu(c("Yes", "No"), title="Do you want to generate 'Overlaid Sleep Profiles'? (i.e. Each condition overlaid according to your first entry in 'Divisions')")
 
   # cleanSummary.R #45
   r4 <- menu(c("Yes", "No"), title="Do you want to generate 'Overlaid Sleep Bout Profiles'?")

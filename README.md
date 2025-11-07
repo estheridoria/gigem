@@ -1,8 +1,8 @@
 README
 ================
-2024-12-09
+2025-08-19
 
-[Github Page](https://github.com/WanheLiLab/gigem)
+[Github Page](https://github.com/estheridoria/gigem)
 
 [Li Lab Page](https://wanheli2022.wixsite.com/wanheli)
 
@@ -12,7 +12,7 @@ Copyright (C) year-range Full Names
 
 Contact: <estheridoria@gmail.com>
 
-## 0. Installation and Setup
+## 0. Installation and Example Data
 
 ### 0.1 Install gigem
 
@@ -30,27 +30,27 @@ library(gigem)
 Run the code below to copy the template files into your working
 directory.
 
-Alternatively, manually copy and paste the code from section 3 into two
+Alternatively, manually copy and paste the code from section 5 into two
 separate files.
 
 ``` main
 # Download "HitRun.R"
-auth_url <- paste0("https://raw.githubusercontent.com/WanheLiLab/gigem/main/HitRun.R")
+auth_url <- paste0("https://raw.githubusercontent.com/estheridoria/gigem/main/HitRun.R")
 download.file(auth_url, destfile = "HitRun.R", method = "libcurl")
 
-# Download "Main.R"
-auth_url <- paste0("https://raw.githubusercontent.com/WanheLiLab/gigem/main/Main.R")
+# Download "Main1.R"
+auth_url <- paste0("https://raw.githubusercontent.com/estheridoria/gigem.Example/main/Main.R")
 download.file(auth_url, destfile = "Main.R", method = "libcurl")
 ```
 
-### 0.3
+### 0.3 Download example analysis
 
 Download the example data into your working directory under
 “ExampleAnalysis” (optional).
 
 ``` main
 dest_dir <- paste0(getwd(),"/ExampleAnalysis")
-system(paste("git clone", "https://github.com/WanheLiLab/gigemExample.git", dest_dir))
+system(paste("git clone", "https://github.com/WanheLiLab/gigem.Example.git", dest_dir))
 ```
 
 ## 1. Experimental Parameters: Creating a ‘Main.R’ File
@@ -102,23 +102,10 @@ info <- data.table::data.table(
                "Monitor21.txt", "Monitor50.txt"), each = 32),
 ```
 
-Add the corresponding monitor numbers to the `monitor` variable in the
-same order, preceded by ‘M’.
-
-``` main
-  # Monitor identifier
-  monitor = rep(c("M22", "M7",
-                  "M14", "M3",
-                  "M15", "M39",
-                  "M53", "M27",
-                  "M52", "M17",
-                  "M21", "M50"), each = 32),
-```
-
 Throughout this file, both `region_id` and the term `each = 32`
 signifies the number of flies each DAM monitor holds. If your monitor
 holds more or fewer flies than 32, you will need to change this number
-for each of the variables.
+for each of the experimental factors.
 
 ``` main
   # Unique numerical identifier for each arena within the DAM
@@ -140,40 +127,39 @@ analysis
 
 The `start_datetime` should be the first light-on time-point after the
 flies have been loaded into the monitor(s). The `stop_datetime` is the
-last light-on time-point (plus a few minutes) before removing them from
+last light-on time-point (plus an  hour) before removing them from
 the monitors. Typically, this will be between two to four Zeitgeber
-cycles (48-96 hours for a typical 24-hour cycle) from the
+cycles (48-96 hours for a typical 24-hour cycle) after the
 `start_datetime` time-point. Please ensure that the time `stop_datetime`
-is a few minutes past the light-on time point; this will ensure none of
-the functions that deal with time are hindered (see section 2.3).
+is an hour past the light-on time point; this will ensure none of
+the flies are mistakenly considered dead during a sleep bout at the end of the last day.
 
 ``` main
   # Start date and time of the monitoring period
   start_datetime = "2019-08-17 10:00:00",
   
   # Stop date and time of the monitoring period
-  stop_datetime = "2019-08-19 10:05:00",
+  stop_datetime = "2019-08-19 11:00:00",
 ```
 
-### 1.4 Organism Specifications
+### 1.4 Experimental Factors: Organism Specifications
 
 Match the `sex` and `genotype` of the flies to their respective monitors
 as listed above. For example,
 
-`file` = `Monitor33.txt` correlates to `monitor` = `M33`, `temp` =
-`21.5C`, `sex` = `M` (for male), `genotype` = `CS` and `treatment` =
-`Iso_2D`, `environment` = `"NA"`, `light` = `"12.12"`
+`file` = `Monitor22.txt` correlates to `Sex` = `M` (for male), `Genotype` = `SIP-L2-2`, `Temperature` = `21.5C`, `Treatment` =
+`Iso_2D`, `Environment` = `"Vial"`, `Light` = `"12:12"`
 
 Therefore, the number of entries in each variable should be the same
 (excepting the ones where each monitor has the same variable attribute,
-as formatted in `start_datetime` or `sex`)
+as formatted in `start_datetime` or `Sex`)
 
 ``` main
  # Sex 
-  sex = "M",
+  Sex = "M",
   
   # Genotypes
-  genotype = rep(c("SIP-L2-2", "SIP-L2-2",
+  Genotype = rep(c("SIP-L2-2", "SIP-L2-2",
                    "SIP-S2-8", "SIP-S2-8",
                    "SIP-S2-1", "SIP-S2-1",
                    "CS", "CS",
@@ -181,17 +167,17 @@ as formatted in `start_datetime` or `sex`)
                    "SIP-L2-1", "SIP-L2-1"), each = 32),
 ```
 
-### 1.5 Experimental Treatments
+### 1.5 Experimental Factors: Experimental Treatments
 
 Specify any experimental treatments for each population such as social
 isolation, change in diet, sexual deprivation, etc..
 
 ``` main
 # Temperature during monitoring
-temp = "21.5C",
+Temperature = "21.5C",
 
 # Treatment applied during monitoring period
-treatment = rep(c("Iso_2D", "Grp_2D",
+Treatment = rep(c("Iso_2D", "Grp_2D",
                     "Iso_2D", "Grp_2D",
                     "Iso_2D", "Grp_2D",
                     "Iso_2D", "Grp_2D",
@@ -208,30 +194,28 @@ treatment = rep(c("Iso_2D", "Grp_2D",
 
 ### 1.6 Manually Excluding `notOK` flies.
 
-Within certain cuvettes, you may see some factors that would interfere
-with your experimental results (ex. mold growth, or the incorrect sex).
-To remove this fly from analysis, change the following code to set the
-`monitor` equal to `'M'` followed by the monitor number of the
-compromised fly. Set the `regionID` equal to the arena number in that
-monitor that the fly inhabited during analysis. Finally, remove the `#`
+Within certain cuvettes, you may see factors that would interfere
+with your experimental results (mold growth, the incorrect sex, etc.).
+To remove this fly from the analysis, change the following code to set the
+`file` equal to `monitorXX.txt` to indicate which monitor the compromised fly was in. Set the `regionID` equal to the arena number the fly inhabited within that
+monitor. Finally, remove the `#`
 from before `info`. Repeat this process as necessary, adding a new line
 of code each time.
 
 ``` main
 # Change status manually to exclude cuvettes from analysis,
-# info <- SetStatus(info, regionID=4, monitor="M33")
+# info <- SetStatus(info, regionID=4, file="monitor33.txt")
 ```
 
 ## 2. Running the Package: Creating a HitRun.r File
 
 Create a new R script in the parent directory named “HitRun.R”. In this
-file, enter all of the following script excepting optional sections that
+file, enter all of the following script excepting the optional sections
 you do not want.
 
-### 2.1 Set the Environment (No Editing Necessary)
+### 2.1 Set the Environment
 
-Ensure the Library is loaded and set the working directory.
-
+Ensure the Library is loaded and set the working directory by running this code.
 ``` main
 # Attach gigem to the path
 library(gigem)
@@ -241,119 +225,119 @@ parent_dir <- dirname(rstudioapi::getSourceEditorContext()$path)
 setwd(parent_dir)
 ```
 
-### 2.2 Set Plot Parameters
+### 2.2 Run All or One Experimental Batch(es)
 
-The variables that are selected for this vector of `divisions` will
-directly impact how the plots are divided (faceted). In this example,
-`sex` makes the `Sleep plot` and `Point plot` show two side-by-side
-plots where one side shows the `M(ales)` and the other shows the
-`F(emales)`.
+These are the main functions of gigem. 
 
-`Sleep plot` refers to the mean circadian plots that are produced while
-`Point plot` refers to the mean quantified sleep and bouts plots.
-
-``` main
-# Determine which variables to divide the plots by:
-  # (e.g. temp, sex, genotype, treatment, environment, or light)
-divisions<- c("treatment",            # 1: Sleep plot, overlay and color
-              "sex",                  # 2: Sleep plot, rows
-              "genotype",             # 3: Sleep plot, columns
-              "treatment",            # 4: Point plot, x-axis and color
-              "sex",                  # 3: Point plot, rows
-              "genotype")             # 6: Point plot, columns
-```
-
-### 2.3 Truncated Length of Analysis
-
-Decide the number of days you wish to analyze from the experiment. This
-should be less than the number of days between `start_datetime` and
-`stop_datetime`.
-
-``` main
-# Set the number of days you wish to analyze
-num_days = 2
-```
-
-### 2.4 Run the Batches
-
-This is the main function of gigem.
-
-List a `genotype` and `treatment` which will serve as your controls.
-
+For analyzing a single batch:
 ``` main
 # Run the Analysis
-runAllBatches(controlgeno = "CS", controltreat = "Grp")
+runOneBatch(oneBatch = "Batch9_2Days", numDays = 2, 
+              overlayVar = "Treatment", rowVar = "Sex", columnVar = "Genotype", 
+              plotSelection = "All", font = "bold", pValues = TRUE)
 ```
 
-#### 2.4.0 Select Plot Preferences
+For analyzing multiple batches simultaneously:
+``` main
+# Run the Analysis
+runAllBatches(numDays = 2, 
+              overlayVar = "Treatment", rowVar = "Sex", columnVar = "Genotype", 
+              plotSelection = "All", font = "bold", pValues = TRUE)
+```
 
-In the console, 6 prompts will appear sequentially to which you will
-type and enter ‘1’ or ‘2’ back into the console. Responding with ‘2’
-will prevent the specified type of plot from generating. Below are
-example plots for each of the questions.
+#### 2.2.1 Set oneBatch (if running runOneBatch)
 
-##### 2.4.1 Sleep/Activity Profile
+Set `oneBatch` to the same name as the sub-directory folder containing the experiment of interest
+``` main
+oneBatch = "Batch9_2Days"
+```
 
-Do you want to generate each monitor’s sleep and activity profile?
+#### 2.2.2 Define Length of Analysis
 
-1: Yes 2: No
+Decide the number of days you wish to analyze from the experiment. This
+should be equal to or less than the number of days between `start_datetime` and
+`stop_datetime`.
+``` main
+numDays = 2
+```
 
-![Sleep Profile](images/sleepProfile.jpg) ![Sleep
-Profile](images/sleepProfile.pdf) ![Activity
-Profile](images/activityProfile.jpg) ![Activity
-Profile](images/activityProfile.pdf)
+#### 2.2.3 Select Plot Outputs
 
-##### 2.4.2 Population Plots (full-length and 24-hour summary)
+Decide if you want `All`, `None`, or `Select` plots generated within each batch.
+``` main
+plotSelection = "All"
+```
 
-Do you want to generate population plots? (i.e. Each unique condition)
+#### 2.2.4 Partition Output Plots
 
-1: Yes 2: No
+Determine which experimental factors to partition the plots by. (See section 3 for reference)
 
-![Population Sleep Plots](images/popSleep.jpg) ![Population Sleep
-Plots](images/popSleep.pdf) ![Summary Sleep Plots](images/popSleep2.jpg)
-![Summary Sleep Plots](images/popSleep2.pdf)
+Conditions within `Treatment` will each have a different color and will be superimposed in "overlay" plots
 
-##### 2.4.3 Population Overlay (full-length and 24-hour summary)
+``` main
+overlayVar = "Treatment"
+```
 
-Do you want to generate population plot overlays? (i.e. Each condition
-overlayed according to your first entry in ‘Divisions’)
+`M(ales)` and `F(emales)` will be separated to show Males in the bottom row of the plots and Females in the top row.
 
-1: Yes 2: No
+``` main
+rowVar = "Sex"
+```
 
-![Population Overlay Plots](images/popOverlay.jpg) ![Population Overlay
-Plots](images/popOverlay.pdf) ![Summary Overlay
-Plots](images/popOverlay2.jpg) ![Summary Overlay
-Plots](images/popOverlay2.pdf)
+Different `Genotypes` will be placed side-by-side in different columns.
 
-##### 2.4.4 Batch-Grouped Sleep Bouts
+``` main
+columnVar = "Genotype",
+```
 
-Do you want to generate sleep bout plots grouped by batch?
+#### 2.2.5 Set Font
 
-1: Yes 2: No
+The default is `"plain"`, but options include `"plain"`, `"bold"`, `"italic"`, and `"bold.italic"`.
 
-![Sleep Bout Plots](images/sleepBouts.jpg) ![Sleep Bout
-Plots](images/sleepBouts.pdf)
+``` main
+font = "bold",
+```
 
-##### 2.4.5 Batch-Grouped Quantitative Point Plots
+#### 2.2.6 Set pValues
 
-Do you want to generate quantitative sleep plots grouped by batch?
+Setting `pValues` to `TRUE` causes the plot *combinedPlots* to display *t*-test values. (This only applies when exactly 2 conditions exist within the `overlayVar` experimental factor.)
 
-1: Yes 2: No
+``` main
+pValues = TRUE,
+```
 
-![Total minutes of sleep](images/pointPlots.jpg) ![Total minutes of
-sleep](images/pointPlots.pdf) ![Number of bouts](images/pointPlots2.jpg)
-![Number of bouts](images/pointPlots2.pdf)
+## 3 Run Multi-Batch Analysis Plots (optional)
 
-##### 2.4.6 Genotype-Grouped All-of-the-Above
+If you run runAllBatches, you can generate further plots to analyze the relationship between conditions within your experimental factors and sleep parameters across the batches.
 
-Do you want to generate all plots grouped by genotype?
+### 3.1 Plot rankedDisplay
 
-1: Yes 2: No
+This function produces a bar graph with raw sleep values (min), change in sleep (`condition1` - `condition2`, min), or percentage of sleep change ([`condition1` - `condition2`] / `condition2`, %). 
 
-![All Plots compiled by Genotype](images/byGeno.jpg) ![All Plots
-compiled by Genotype](images/byGeno.pdf)
+`x` is set to an experimental factor, and (optionally) a `control` condition from within the selected experimental factor may be designated. 
 
-### 2.5 Plot a correlation matrix (optional)
+`condition1` may be set to a condition within one of the non-`x` experimental factors. `condition2` should then be set to a control condition within the same non-`x` experimental factor. 
+
+If the conditions are set, the `method` should be set to "Diff" for change in sleep or "Perc.Change" for percentage of sleep change. "Diff" is the default value when the conditions are set.
+
+The plot data can be narrowed to include only particular conditions within the experimental factors by setting `treat`, `temp`, `enviro`, `sex`, `lights`, and/or `geno` to the desired condition(s). In this case, we produced two plots, one for the `Environment` "2D" and one for "5D".
+
+``` main
+# Plot normalized sleep loss for the variable desired (optional)
+rankedDisplayOrder <- rankedDisplay(x = "Genotype", control = "CS", condition1 = "Iso", condition2 = "Grp",
+              enviro = "2D")
+rankedDisplay(x = "Genotype", control = "CS", condition1 = "Iso", condition2 = "Grp",
+              enviro = "5D", ranking = rankedDisplayOrder)
+```
+
+The output will produce a PDF as well as list the order of `x` condition in the *x*-axis after the x is arranged by accending values. This output can be inputted into the variable `ranking` to impose the same x arrangement onto another produced rankedDisplay plot.
+
+The variable `fitted` and `formula` refer to fitting the data to a linear model with the `formula` equal to an equation composed of Experimental factors and/or Batch (ex. "Genotype * Treatment + Batch").
+
+`font` may be set to `"plain"`, `"bold"`, `"italic"`, and `"bold.italic"` with "plain" as the default.
+
+
+### 3.2 Plot a Correlation Matrix (optional)
 
 Select two `treatment` groups to compare in any order.
 
@@ -363,58 +347,111 @@ corMat(Compare1 = "Grp_2D", Compare2 = "Iso_2D")
 corMat(Compare1 = "Grp_5D", Compare2 = "Iso_5D")
 ```
 
-### 2.6 Plot kmeans sleeploss Clusters with groupings (optional)
+### 3.3 Plot a Scatterplot Matrix with kmeans clustering & *a priori* groupings (optional)
 
-Select two `treatment` groups to compare with the control listed as
-`Compare1`.
-
-If you have hypothesized similarities, list the common denominators in
-`groupings` with the variable that common denominator is in in
-`column_name` (number of `groupings` is restricted to one or more
-entries). For example, the variable `genotype` has many entries, but I
+A more thorough visualization of the Correlation Matrix may be seen in this scatterplot matrix. The arrangement of many scatterplots `aPrioriConditions` with the variable that common denominator is in in
+`aPrioriFactor` (number of `aPrioriConditions` is restricted to one or more
+entries). For example, the variable `aPrioriConditions` has many entries, but I
 suspect the ones with “L1” in their names are similar to each other.
 Likewise with “L2”, “S1”, “S2” and “CS”. Any entries in the designated
-`column_name` variable that do not match a specified `grouping` will be
+`aPrioriFactor` variable that do not match the specified `aPrioriConditions` will be
 grouped together into an “NA” grouping.
 
 The plot will show the actual similarity of monitors while indicating
-the `groupings` hypothesized.
+the `aPrioriConditions` hypothesized.
 
-Repeat with different variables as necessary.
-
-``` main
-# Plot cluster groups for 2 days and 5 days (optional)
-kmeansCluster(Compare1 = "Grp_5D", Compare2 = "Iso_5D", 
-              groupings = c("L1", "L2", "S1", "S2", "CS"), column_name = "genotype")
-kmeansCluster(Compare1 = "Grp_2D", Compare2 = "Iso_2D", 
-              groupings = c("L1", "L2", "S1", "S2", "CS"), column_name = "genotype")
-```
-
-### 2.7 Plot Comparable Normalized sleeploss
-
-Decide which `treatment`(s) you want to plot the sleeploss of with the
-most extreme `treatment` first. These must be different from what
-`controltreat` was set to (see section 2.4) as that is what is used to
-calculate the normalized values. Only one `treatment` is necessary.
-
-Designate a column_name, a variable from the ‘Main.R’ file, which serves
-as the x-axis of the produced plot.
-
-Designate a `Control` from within the variable `column_name`.
-
-Each unique combination of `treatment` and `column_name` entries have
-been previously normalized to the `controltreat` and `controlgeno` from
-the same Batch, so the subsequent plot contains these attributes as
-well.
+Repeat with different variables as necessary. In this case, we produced scatter plots for 2 Days and 5 Days
 
 ``` main
-# Plot normalized sleep loss for the variable desired (optional)
-normDisplay(treat = "Iso_5D", treat2 = "Iso_2D", column_name = "genotype", Control = "CS")
+# Plot scatterplots for 2 days and 5 days (optional)
+corScatter(condition1 = "Iso", condition2 = "Grp", enviro = "2D",
+              aPrioriConditions = c("L1", "L2", "S1", "S2", "CS"),
+              aPrioriFactor = "Genotype", font = "bold")
+              
+corScatter(condition1 = "Iso", condition2 = "Grp", enviro = "5D",
+              aPrioriConditions = c("L1", "L2", "S1", "S2", "CS"),
+              aPrioriFactor = "Genotype", font = "bold")
 ```
 
-## 3. Templates
+## 4. Plots generated via plotSelection (see 2.2.3)
 
-### 3.1 “Main.R” template
+### 4.1 Sleep/Activity Profile
+
+Should you set "`plotSelection` = `Select`", 6 or 7 prompts will appear sequentially in the console.
+The user must type and enter ‘1’ or ‘2’ into the console to generate or not generate the particular plots. Below are
+example plots for each of the questions.
+
+
+Do you want to generate each monitor's 'Activity and Sleep Actograms'?
+
+1: Yes 2: No
+
+![Sleep Profile](images/sleepProfile.jpg) ![Sleep
+Profile](images/sleepProfile.pdf) ![Activity
+Profile](images/activityProfile.jpg) ![Activity
+Profile](images/activityProfile.pdf)
+
+### 4.1 Population Plots (full-length and 24-hour summary)
+
+Do you want to generate 'Population Sleep Profiles'? (i.e. Each unique condition)
+
+1: Yes 2: No
+
+![Population Sleep Plots](images/popSleep.jpg) ![Population Sleep
+Plots](images/popSleep.pdf) ![Summary Sleep Plots](images/popSleep2.jpg)
+![Summary Sleep Plots](images/popSleep2.pdf)
+
+### 4.3 Population Overlay (full-length and 24-hour summary)
+
+Do you want to generate 'Overlaid Sleep Profiles'? (i.e. Each condition overlaid according to your first entry in 'Divisions')
+
+1: Yes 2: No
+
+![Population Overlay Plots](images/popOverlay.jpg) ![Population Overlay
+Plots](images/popOverlay.pdf) ![Summary Overlay
+Plots](images/popOverlay2.jpg) ![Summary Overlay
+Plots](images/popOverlay2.pdf)
+
+### 4.4 Batch-Grouped Sleep Bouts
+
+Do you want to generate 'Overlaid Sleep Bout Profiles'?
+
+1: Yes 2: No
+
+![Sleep Bout Plots](images/sleepBouts.jpg) ![Sleep Bout
+Plots](images/sleepBouts.pdf)
+
+### 4.5 Batch-Grouped Quantitative Point Plots
+
+Do you want to generate 'Quantifications of Sleep Traits'?
+
+1: Yes 2: No
+
+![Total minutes of sleep](images/pointPlots.jpg) ![Total minutes of
+sleep](images/pointPlots.pdf) ![Number of bouts](images/pointPlots2.jpg)
+![Number of bouts](images/pointPlots2.pdf)
+
+### 4.6 Combined Plots for 'Overlaid Sleep Profiles (24Hr)' beside 'Quantifications' (Within Batches)
+
+Do you want to generate 'Combined Plots (Within Batches)'?(i.e. All plots grouped by unique combination of variable conditions)
+
+1: Yes 2: No
+
+![Combined Plots Within Batches](images/CombinedPlots(oneBatch).jpg) ![Combined Plots Within Batches](images/CombinedPlots(oneBatch).pdf)
+
+### 4.7 Combined Plots for 'Overlaid Sleep Profiles (24Hr)' beside 'Quantifications' (Across Batches)
+*Note: This prompt will only appear if you are running 'runAllBatches.'*
+
+Do you want to generate 'Combined Plots (Across Batches)'? (i.e. All plots grouped by unique combination of variable conditions)
+
+1: Yes 2: No
+
+![Combined Plots Across Batches](images/CombinedPlots(MultiBatch).jpg) ![Combined Plots Across Batches](images/CombinedPlots(MultiBatch).pdf)
+
+
+## 5. Templates
+
+### 5.1 “Main.R” template
 
 ``` main
 # Set a title for the data analysis
@@ -499,7 +536,7 @@ info <- data.table::data.table(
 # info <- SetStatus(info, regionID=4, monitor="M33")
 ```
 
-### 3.2 “HitRun.R” template
+### 5.2 “HitRun.R” template
 
 ``` main
 library(gigem)

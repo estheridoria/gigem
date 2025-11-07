@@ -91,15 +91,15 @@ rankedDisplays <- function(
       new_formula <- as.formula(formula_string)
       # Fit the linear model using dataset
       # # Initialize an empty vector to store the matched variables
-      matched_vars <- c()
+       matched_vars <- c()
       # # Loop through each element in meta_vars
-      for (var in categorical_vars) {
-        # Check if the current meta_var is found within formula
-        # grepl returns TRUE if a match is found, FALSE otherwise
-        if (any(grepl(var, new_formula, fixed = TRUE))) {
-          matched_vars <- c(matched_vars, var) # Add to our results if matched
-        }
-      }
+       for (var in categorical_vars) {
+         # Check if the current meta_var is found within formula
+         # grepl returns TRUE if a match is found, FALSE otherwise
+         if (any(grepl(var, new_formula, fixed = TRUE))) {
+           matched_vars <- c(matched_vars, var) # Add to our results if matched
+         }
+       }
       # vars_to_factorize <- matched_vars#[matched_vars != "Batch"]
       # # Loop through the column names to factorize
       # for (var_name in vars_to_factorize) {
@@ -111,7 +111,7 @@ rankedDisplays <- function(
       #     message(paste0("Warning: Column '", var_name, "' not found in data frame. Skipping factorization."))
       #   }
       # }
-      # print(new_formula)
+       # print(new_formula)
       fit <- lm(new_formula, data = dataset)
       saved.fit<-rbind(saved.fit, summary(fit)$r.squared)
       # Create new_data for predictions
@@ -131,7 +131,7 @@ rankedDisplays <- function(
       # Predict using the model
       tryCatch({
         predict<- predict(fit, newdata = new_data)
-      }, error = function(e) {
+        }, error = function(e) {
         if (grepl("rank-deficient", e$message)) {
           stop("Prediction failed due to a rank-deficient model fit.\n",
                "Too many variable conditions may be interfering with the regression.\n",
@@ -190,19 +190,19 @@ rankedDisplays <- function(
       }
       y_label <- "Change in Sleep (min)"
       plot_cols <- c("Total_Sleep_Difference", "Daytime_Sleep_Difference", "Nighttime_Sleep_Difference")
-    }else{
+      }else{
       sleep_diff <- (c1_sorted[, param_cols] - c2_sorted[, param_cols]) / c2_sorted[, param_cols]
       sleep_diff <- sleep_diff*100 #get percentage
       df <- cbind(sleep_diff, c1_sorted[, setdiff(c(fit_meta_vars, "Batch"), match_col), drop = FALSE])
       colnames(df)[1:3] <- c("Total_Sleep_Change", "Daytime_Sleep_Change", "Nighttime_Sleep_Change")
 
-      if (is.null(ranking)) {
-        ranking_df <- df |>
-          dplyr::group_by(.data[[x]]) |>
-          dplyr::summarise(Total_Sleep_Change = mean(Total_Sleep_Change, na.rm = TRUE)) |>
-          dplyr::arrange(Total_Sleep_Change)
-        ranking <- ranking_df[[x]]
-      }
+    if (is.null(ranking)) {
+      ranking_df <- df |>
+        dplyr::group_by(.data[[x]]) |>
+        dplyr::summarise(Total_Sleep_Change = mean(Total_Sleep_Change, na.rm = TRUE)) |>
+        dplyr::arrange(Total_Sleep_Change)
+      ranking <- ranking_df[[x]]
+    }
       y_label <- "Change in Sleep (%)"
       plot_cols <- c("Total_Sleep_Change", "Daytime_Sleep_Change", "Nighttime_Sleep_Change")
     }
@@ -232,7 +232,7 @@ rankedDisplays <- function(
   }
 
   plots <- lapply(plot_cols, function(col) {
-    plot_df(df_predicted, col, x, paste(gsub("_", " ",col), title_text))
+    plot_df(df, col, x, paste(gsub("_", " ",col), title_text))
   })
   combined_plot <- cowplot::plot_grid(plotlist = plots, ncol = 1)
   rel_widths <- length(unique(df[[x]]))/5
@@ -255,10 +255,9 @@ rankedDisplays <- function(
   title_text <- gsub(":", ".", title_text)
   title_text <- gsub(" ", "_", title_text)
 
-  ggplot2::ggsave(paste0("Test_RankedSleep_",title_text, pdftitle, ".pdf"),
+  ggplot2::ggsave(paste0("RankedSleep_",title_text, pdftitle, ".pdf"),
                   combined_plot, width = sum(rel_widths), height = 9)
   if(fitted){
     write.csv(dataset, paste0("PopulationSleep_",title_text, pdftitle, ".csv"))}
   return(ranking)
 }
-

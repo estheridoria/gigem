@@ -68,7 +68,7 @@ manualDeadRemoval <- function(ExperimentData, dt, numDays, divisions, pref, font
       ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[1]),
                                                !!rlang::sym(divisions[2])),
                           cols = ggplot2::vars(!!rlang::sym(divisions[3]))) + #added
-      ggplot2::labs(y = "% Flies Sleeping") +
+      ggplot2::labs(y = "Sleep (%)") +
       ggplot2::scale_y_continuous(limits = c(0,1), labels = scales::percent) +
       ggplot2::theme(axis.title.x = ggplot2::element_text(size = 20),
                      axis.title.y = ggplot2::element_text(size = 20),
@@ -104,7 +104,7 @@ manualDeadRemoval <- function(ExperimentData, dt, numDays, divisions, pref, font
       ggprism::theme_prism(base_fontface = font, base_line_size = 0.7) +
       ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[2])),
                           cols = ggplot2::vars(!!rlang::sym(divisions[3])))+
-      ggplot2::labs(y = "% Flies Sleeping") +
+      ggplot2::labs(y = "Sleep (%)") +
       ggplot2::scale_y_continuous(limits = c(0,1), labels = scales::percent) +
       ggplot2::theme(axis.title.x = ggplot2::element_text(size = 20),
                      axis.title.y = ggplot2::element_text(size = 20),
