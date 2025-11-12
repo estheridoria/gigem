@@ -17,23 +17,10 @@ aliveVsDead <- function(ExperimentData, dt) {
   dt_curated_1 <- sleepr::curate_dead_animals(dt)
 
   # Identify and save IDs being removed
-  removed_ids <- setdiff(dt[, id, meta = TRUE], dt_curated_1[, id, meta = TRUE])
+  removed_ids <- setdiff(behavr::meta(dt)$id, behavr::meta(dt_curated_1)$id)
   curated_1_list <- data.table::data.table(removed_ids)
   data.table::fwrite(curated_1_list, paste0("removed_list1_", ExperimentData@Batch, ".csv"))
 
-  # Generate sleep data plots before and after curation
-    # Helper function to create and save a sleep plot
-    create_sleep_plot <- function(data, filename) {
-      pdf(filename)
-      sleep_plot <- ggetho::ggetho(data, ggplot2::aes(z = asleep)) +
-        ggetho::stat_ld_annotations(ypos = "top") +
-        ggplot2::theme(panel.background = ggplot2::element_rect(fill = "white", colour = "white"),
-                       strip.background = ggplot2::element_rect(fill="white"),
-                       axis.text.y = ggplot2::element_text(size = 2))+
-        ggetho::stat_tile_etho()
-      print(sleep_plot)
-      dev.off()
-    }
 
     # Plot sleep data before and after removing dead IDs
     suppressWarnings(
@@ -41,4 +28,4 @@ aliveVsDead <- function(ExperimentData, dt) {
     suppressWarnings(
       create_sleep_plot(dt_curated_1, paste0(ExperimentData@Batch, '_sleep_after_deadcheck.pdf')))
     return(dt_curated_1)
-    }
+}

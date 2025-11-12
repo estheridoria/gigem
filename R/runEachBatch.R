@@ -1,4 +1,4 @@
-#' Run the Each Batch Analysis (Internal)
+#' Run Complete Single Batch Analysis Workflow
 #'
 #' This function processes data for each single batch by performing various steps including data cleaning,
 #' generating activity and sleep plots, trimming dead animals, calculating summary statistics, and
@@ -7,9 +7,10 @@
 #' @param numDays A numerical value specifying the number of days to be used in analysis.
 #' @param oneBatch A character string of the Batch folder to be analyzed.
 #' @param font A string variable determining the font style of the produced plots.
-#' @param pref A vector of preferences for generating specific plots (e.g., whether to generate concatenated plots).
-#' @param divisions A vector of meta variables to use the conditions within for fasceting plots
+#' @param pref A numeric vector of plot preferences (e.g., pref[1] controls actograms, pref[6] controls combined plots).
+#' @param divisions A character vector (length 3) containing the names of the meta-variables used for plot overlay and facetting (e.g., c("Treatment", "Genotype", "Environment")).
 #' @param pValues A TRUE/FALSE vector for if combined plots will display p values for 2-condition overlays.
+#' @param incodeinfo A data.table or data.frame containing the batch metadata (e.g., Sex, Genotype, Monitor ID) loaded from the "Main" R file.
 #' @return This function does not return a value but performs a series of steps to process the data,
 #' generate plots, and calculate statistics.
 #'
@@ -25,7 +26,7 @@
 #' 8. Writes relevant output files, including the final summary and normalized statistics.
 #'
 #' @keywords Internal
-runEachBatch <- function(numDays, oneBatch, font, pref, divisions, pValues, incodeinfo) {
+runEachBatch <- function(numDays, oneBatch, font, pref, divisions, pValues, incodeinfo, Title) {
 
   # Create an object that contains all of your inputs
   ExperimentData <- new("ExperimentData",
@@ -35,10 +36,12 @@ runEachBatch <- function(numDays, oneBatch, font, pref, divisions, pValues, inco
                         loadinginfo = incodeinfo)
 
   # Store this as a CSV file, used to curate summary tables
-  loading_metadata <- writeLoading(ExperimentData)
+  data.table::fwrite(ExperimentData@loadinginfo, paste("loadinginfo_",ExperimentData@Batch,".csv",sep = ""))
+  # Link metadata
+  loadinginfo_linked <- damr::link_dam_metadata(ExperimentData@loadinginfo, result_dir = getwd())
 
   # Create activity plots and sleep plots of each monitor at time t
-  dt_activity <- activityAndSleep(ExperimentData, loading_metadata, pref)
+  dt_activity <- activityAndSleep(ExperimentData, loadinginfo_linked, pref)
 
   # Create activity plots before and after removing "dead", providing list of IDs removed from first trimming
   dt_curated <- aliveVsDead(ExperimentData, dt_activity)
@@ -63,8 +66,10 @@ runEachBatch <- function(numDays, oneBatch, font, pref, divisions, pValues, inco
   }
   dt_final <- combine_with_warning_check(ExperimentData, dt_curated, numDays, divisions, pref, font)
 
+  batchMeta <- behavr::meta(dt_final)
+
   # Write bout length pdf, and calculate bout and latency stats
-  dt_finalSummary <- cleanSummary(ExperimentData, dt = dt_final, numDays, loadinginfo_linked = loading_metadata, divisions, pref, font)
+  dt_finalSummary <- cleanSummary(ExperimentData, dt = dt_final, batchMeta, numDays, loadinginfo_linked = loading_metadata, divisions, pref, font)
 
   if (pref[6] == 1){
     # Generate concatenated plots

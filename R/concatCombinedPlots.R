@@ -5,12 +5,10 @@
 #'
 #' @param combined_sleepdata A `data.table` summarized accross all batches containing curated sleep data with columns such as `id` and `asleep`.
 #' @param combined_sleepmeta A `data.table` summarized accross all batches containing the metadata associated with combined_sleepdata.
-#' @param summary_dt_final A `data.table` containing summary statistics with columns including `Light`, `Environment`,
-#'   `Genotype`, `Treatment`, `Sex` and various sleep metrics.
-#' @param control A character string specifying the control from `divisions[1]`.
+#' @param summary_dt_final A `data.table` containing summary statistics with columns including `Light`, `Environment`, `Genotype`, `Treatment`, `Sex` and various sleep metrics.
 #' @param font A character string variable determining the font style of the produced plots.
 #' @param pValues A TRUE/FALSE vector for if combined plots will display p values for 2-condition overlays.
-#'
+#' @param divisions A character vector (length 3) containing the names of the meta-variables used for plot overlay and facetting (e.g., c("Treatment", "Genotype", "Environment")).
 #' @details
 #' The function iterates through all unique combinations of `Light`, `Environment`, `Treatment`, `Sex`, and `Genotype`.
 #' For each combination:
@@ -24,13 +22,13 @@
 #' @return None. Plots are saved as PDF files.
 #' @keywords internal
 
-concatCombinedPlots <- function(combined_sleepdata, combined_sleepmeta, 
+concatCombinedPlots <- function(combined_sleepdata, combined_sleepmeta,
                                 summary_dt_final, font, divisions, pValues) {
-  
+
   data.table::setDT(combined_sleepdata)
   data.table::setDT(combined_sleepmeta)
   data.table::setDT(summary_dt_final)
-  
+
   #link metadata and behavr data
   data.table::setkey(combined_sleepdata, id)
   data.table::setkey(combined_sleepmeta, id)

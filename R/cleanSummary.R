@@ -6,7 +6,7 @@
 #'   Must include `Batch` (identifier for the batch being processed).
 #' @param dt A `behavr` table containing sleep and activity data.
 #' @param numDays Number of days for displaying and calculating average metrics.
-#' @param loadinginfo_linked Linked metadata for the behavioral data.
+#' @param loadinginfo_linked A data object linked with `behavr` metadata. Used to load Drosophila Activity Monitor (DAM) data.
 #' @param divisions A list of grouping columns used for facetting plots.
 #' @param pref A preference vector to control plot generation.
 #' @param font A string variable determining the font style of the produced plots.
@@ -14,7 +14,7 @@
 #' @return A summarized `data.table` (`summary_<Batch>.csv`) containing sleep metrics and bout data for each ID.
 #'
 #' @keywords internal
-cleanSummary <- function(ExperimentData, dt, numDays, loadinginfo_linked, divisions, pref, font) {
+cleanSummary <- function(ExperimentData, dt, batchMeta, numDays, loadinginfo_linked, divisions, pref, font) {
 
   # # Add linked information and prepare data
   # dt <- behavr::behavr(dt, loadinginfo_linked)
@@ -38,17 +38,17 @@ cleanSummary <- function(ExperimentData, dt, numDays, loadinginfo_linked, divisi
   # Perform bout analysis for sleep architecture
   bout_dt <- sleepr::bout_analysis(asleep, dt)[asleep == TRUE, -"asleep"]
 
+  # plotting
   if(pref[4] == 1){
   # Plot bout duration by time of day
   pdf(paste0(ExperimentData@Batch, '_Overlaid_Sleep_Bout_Profiles.pdf'),
-      width = 5*length(unique(info[[divisions[3]]]))+2,
-      height = 3*length(unique(info[[divisions[2]]]))+2)
+      width = 5*length(unique(batchMeta[[divisions[3]]]))+2,
+      height = 3*length(unique(batchMeta[[divisions[2]]]))+2)
 
       plot<- ggetho::ggetho(bout_dt, ggplot2::aes(x = t, y = duration / 60, colour = .data[[divisions[1]]]), time_wrap = behavr::hours(24)) +
         ggetho::stat_pop_etho() +
         ggetho::stat_ld_annotations() +
         ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
-        ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
         ggprism::theme_prism(base_fontface = font) +
         ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[2])),
                             cols = ggplot2::vars(!!rlang::sym(divisions[3]))) +
@@ -67,7 +67,6 @@ cleanSummary <- function(ExperimentData, dt, numDays, loadinginfo_linked, divisi
   summary_dt_final <- processDays(numDays, bout_dt, dt, summary_dt_final)
 
   # Calculate bout lengths during Light (L) and dark (D) phases, filtering by duration
-
   bout_dt_min <- sleepr::bout_analysis(asleep, dt)[, .(
     id, duration = duration / 60, t = t / 60,
     phase = ifelse(t %% behavr::hours(24) < behavr::hours(12), "L", "D")
@@ -91,7 +90,18 @@ cleanSummary <- function(ExperimentData, dt, numDays, loadinginfo_linked, divisi
   # LightCol <- summary_dt_final[,Light]
   # summary_dt_final[, Light := paste0('"', Light, '"')]
 
-  summary_dt_final<- data.table::data.table(summary_dt_final[,1:13], Batch = ExperimentData@Batch, summary_dt_final[,14:ncol(summary_dt_final)])
+  #summary_dt_final<- data.table::data.table(summary_dt_final[,1:13],
+    # Batch = ExperimentData@Batch, summary_dt_final[,14:ncol(summary_dt_final)])
+  # add batch column
+  summary_dt_final[, Batch := ExperimentData@Batch]
+
+  # move Batch to before Sleep_Time_All
+  target_index <- match("Sleep_Time_All", names(summary_dt_final))
+  data.table::setcolorder(
+    summary_dt_final,
+    neworder = c("Batch"),
+    before = target_index # This tells data.table to insert 'Batch' *before* the column at this index.
+  )
 
   # Now write to the file
   data.table::fwrite(
@@ -99,54 +109,55 @@ cleanSummary <- function(ExperimentData, dt, numDays, loadinginfo_linked, divisi
     paste0("summary_", ExperimentData@Batch, ".csv"),
     quote = TRUE
   )
-  # summary_dt_final[, Light := LightCol]
   if(pref[5] ==1){
-  # Helper function to create sleep plots for specified metrics
-  create_sleeptime_plot <- function(plot_data, yParam,Yname, divisions, limits, geom) {
-    pdf(paste0(ExperimentData@Batch, '_', yParam, '.pdf'), width = (prod(sapply(divisions[c(1,3)], function(col) length(unique(info[[col]]))))*1.5+2), ## swapped 6 and 5 between this line and the next
-        height = length(unique(info[[divisions[2]]]))*3.7 +2)
-    sleeptime_plot <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data[[divisions[1]]],
-                                                     y = .data[[yParam]]))+
-      ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[2])),
-                          cols = ggplot2::vars(!!rlang::sym(divisions[3])))
-      if(geom == "bar"){
-        sleeptime_plot <- sleeptime_plot +
-          ggplot2::stat_summary(fun = "mean", geom = geom, width = .5, fill="grey90")}
-        if(geom == "violin"){
-      sleeptime_plot <- sleeptime_plot +
-        ggplot2::geom_violin(fill="grey90")}
-    sleeptime_plot <- sleeptime_plot +
-      ggbeeswarm::geom_beeswarm(ggplot2::aes(fill = .data[[divisions[1]]], color = .data[[divisions[1]]]),
-                                dodge.width = 0.9, shape = 21, cex = 3.5) +
-      ggplot2::scale_color_manual(values = scales::alpha(c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6"), alpha = .7)) +
-      ggplot2::scale_fill_manual(values = scales::alpha(c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6"), alpha = .6)) +
-      ggplot2::geom_errorbar(stat = "summary", fun.data = ggplot2::mean_cl_boot, width = 0.2,
-                             color = "black") +
-      ggplot2::geom_point(size = 1.5, stat = "summary", fun = mean, shape = 3,
-                          color = "black") +
-      ggprism::theme_prism(base_fontface = font)  +
-      ggplot2::scale_y_continuous(name = Yname) +
-      ggplot2::coord_cartesian(ylim = c(0,limits)) +
-      ggplot2::scale_x_discrete(name = NULL)+
-        ggplot2::theme(axis.title.y = ggplot2::element_text(size = 20),
-                       axis.text.x = ggplot2::element_text(size = 16, angle = 45, vjust = 1, hjust= 1),
-                       axis.text.y = ggplot2::element_text(size = 16),
-                       strip.text = ggplot2::element_text(size = 20),
-                       legend.text = ggplot2::element_text(size = 16, face = font),
-                       legend.position = "right")
-    suppressWarnings(print(sleeptime_plot))
-    dev.off()
-  }
+    #Generate sleep time and bout plots for Light and dark phases
+      # Define plot parameters in a list of lists for easy iteration
+      plot_params <- list(
+        list(yParam = "Sleep_Time_All", Yname = "Total Sleep (min)", limits = 1500, geom = "bar"),
+        list(yParam = "Sleep_Time_L", Yname = "Daytime Sleep (min)", limits = 1000, geom = "bar"),
+        list(yParam = "Sleep_Time_D", Yname = "Nighttime Sleep (min)", limits = 1000, geom = "bar"),
+        list(yParam = "n_Bouts_L", Yname = "# Daytime Sleep Bouts", limits = 80, geom = "violin"),
+        list(yParam = "n_Bouts_D", Yname = "# Nighttime Sleep Bouts", limits = 80, geom = "violin"),
+        list(yParam = "mean_Bout_Length_L", Yname = "Daytime Bout Length", limits = 250, geom = "violin"),
+        list(yParam = "mean_Bout_Length_D", Yname = "Nighttime Bout Length", limits = 250, geom = "violin")
+      )
 
-  # Generate sleep time and bout plots for Light and dark phases
-    create_sleeptime_plot(summary_dt_final, "Sleep_Time_All", "Total Sleep (min)", divisions, 1500, "bar")
-    create_sleeptime_plot(summary_dt_final, "Sleep_Time_L", "Daytime Sleep (min)", divisions, 1000, "bar")
-    create_sleeptime_plot(summary_dt_final, "Sleep_Time_D", "Nighttime Sleep (min)", divisions, 1000, "bar")
-    create_sleeptime_plot(summary_dt_final, "n_Bouts_L", "# Daytime Sleep Bouts", divisions, 80, "violin")
-    create_sleeptime_plot(summary_dt_final, "n_Bouts_D", "# Nighttime Sleep Bouts", divisions, 80, "violin")
-    create_sleeptime_plot(summary_dt_final, "mean_Bout_Length_L", "Daytime Bout Length", divisions, 250, "violin")
-    create_sleeptime_plot(summary_dt_final, "mean_Bout_Length_D", "Nighttime Bout Length", divisions, 250, "violin")
-}
+      # Calculate dynamic size components once
+      # Assumes batchMeta and divisions are available in the scope of cleanSummary
+      plot_width <- prod(sapply(divisions[c(1,3)], function(col) length(unique(batchMeta[[col]])))) * 1.5 + 2
+      plot_height <- length(unique(batchMeta[[divisions[2]]])) * 3.7 + 2
+
+      # Loop through all metrics to generate and save each plot individually
+      for (p in plot_params) {
+
+        # 1. Generate the ggplot object using the unified function
+        sleeptime_plot <- create_sleeptime_plot(
+          plot_data = summary_dt_final,
+          yParam = p$yParam,
+          Yname = p$Yname,
+          divisions = divisions,
+          limits = p$limits,
+          geom = p$geom,
+          font = font,
+          p_value = NULL,           # No P-value needed for batch summary plots
+          is_faceted = TRUE         # Set to TRUE to enable facetting
+        )
+
+        # 2. Define a unique filename using the yParam
+        filename <- paste0(ExperimentData@Batch, '_', p$yParam, '.pdf')
+
+        # 3. Save the plot with dynamic dimensions
+        # Suppress warnings often caused by coord_cartesian when used with ggsave
+        suppressWarnings(
+          ggplot2::ggsave(
+            filename = filename,
+            plot = sleeptime_plot,
+            width = plot_width,
+            height = plot_height
+          )
+        )
+      }
+  }
 
   # if(pref[5] == 1 | pref[6] == 1 | pref[7] == 1) {
   # # bout distributions
@@ -232,8 +243,8 @@ cleanSummary <- function(ExperimentData, dt, numDays, loadinginfo_linked, divisi
 #   #function for plots
 #   boutDist.fun<- function(data){
 #     pdf(paste0(ExperimentData@Batch, '_cumRelFreq.pdf'),
-#         width = (length(unique(info[[divisions[3]]]))*1.1+3.3),
-#         height = length(unique(info[[divisions[2]]]))*3)
+#         width = (length(unique(batchMeta[[divisions[3]]]))*1.1+3.3),
+#         height = length(unique(batchMeta[[divisions[2]]]))*3)
 #     bout_plot<- ggplot2::ggplot(data = finaldf3, ggplot2::aes(x = as.numeric(factor), ##########
 #                                 y = cumProp, color = d1))+
 #       ggplot2::facet_grid(rows = ggplot2::vars(d2, TimeofDay),

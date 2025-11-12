@@ -48,13 +48,13 @@
 #' 3. It concatenates the normalized and general summary statistics for each batch into separate CSV files.
 #' 4. The final CSV files, \code{all_batches_norm_summary.csv} and \code{all_batches_summary.csv},
 #'    are saved in the parent directory, containing combined results for all batches.
-runAllBatches <- function(numDays,
-                          overlayVar = c("Treatment", "Sex", "Genotype", "Temperature", "Environment", "Light"),
-                          rowVar = c("Genotype", "Sex", "Temperature", "Treatment", "Environment", "Light"),
-                          columnVar = c("Environment", "Sex", "Genotype", "Temperature", "Treatment", "Light"),
-                          plotSelection = c("All", "None", "Select"),
-                          font = c("plain", "bold", "italic", "bold.italic"),
-                          pValues = c(FALSE, TRUE)) {
+runAllBatches <- function(numDays = 2,
+                          overlayVar = "Treatment",
+                          rowVar = "Genotype",
+                          columnVar = "Environment",
+                          plotSelection = "All",
+                          font = "plain",
+                          pValues = FALSE) {
   # Warnings/Errors-------------------------------------------------------------
   if (missing(numDays) || !is.numeric(numDays)){
     stop("'numDays' must be specified as a whole number.")
@@ -63,12 +63,12 @@ runAllBatches <- function(numDays,
     stop("'overlayVar', 'rowVar', and 'columnVar' cannot contain the same variable names.")
     }
   divisions<- character()
-  divisions[1]<- match.arg(overlayVar)
-  divisions[2]<- match.arg(rowVar)
-  divisions[3]<- match.arg(columnVar)
+  divisions[1]<- match.arg(overlayVar, c("Treatment", "Sex", "Genotype", "Temperature", "Environment", "Light"))
+  divisions[2]<- match.arg(rowVar, c("Genotype", "Sex", "Temperature", "Treatment", "Environment", "Light"))
+  divisions[3]<- match.arg(columnVar, c("Environment", "Sex", "Genotype", "Temperature", "Treatment", "Light"))
   #divisions<- c(overlayVar, rowVar, columnVar)
-  plotSelection <- match.arg(plotSelection)
-  font <- match.arg(font)
+  plotSelection <- match.arg(plotSelection, c("All", "None", "Select"))
+  font <- match.arg(font, c("plain", "bold", "italic", "bold.italic"))
   if(!is.logical(pValues)){
     stop("'pValues' must be either 'TRUE' or 'FALSE'")
 }
@@ -166,16 +166,19 @@ runAllBatches <- function(numDays,
 
   for (i in seq_along(concatList)){
 
-    all_tables <- list()
+    # Get all file paths matching the pattern across all batch directories
+    all_file_paths <- unlist(sapply(batch_dirs, function(dir) {
+      list.files(dir, pattern = concatList[i], full.names = TRUE)
+    }))
 
-    # Iterate over each batch directory and read the concat-specified files
-    for (batch_dir in batch_dirs) {
+    if (length(all_file_paths) > 0) {
+      # OPTIMIZATION: Read all files into a single data.table using data.table::fread list input
+      # This is significantly faster than reading/binding one by one
+      combined_data <- data.table::rbindlist(lapply(all_file_paths, data.table::fread), fill = TRUE)
 
-      all_tables <- concatenate(batch_dir, all_tables, concatList[i])
-    }
-
-    # Concatenate all data frames into one large data frame
-    combined_data <- do.call(rbind, all_tables)
+      # Save the combined data frame to a CSV file in the parent directory
+      output_file <- file.path(original_wd, concatNames[i])
+      data.table::fwrite(combined_data, output_file, row.names = FALSE)
 
     if(i == 2){
       summary_dt_final<-combined_data
@@ -187,9 +190,6 @@ runAllBatches <- function(numDays,
       combined_sleepmeta<-combined_data
     }
 
-    # Save the combined data frame to a CSV file in the parent directory
-    output_file <- file.path(original_wd, concatNames[i])
-    data.table::fwrite(combined_data, output_file, row.names = FALSE)
   }
 
   if(pref[7] ==1){

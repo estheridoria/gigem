@@ -19,13 +19,13 @@
 #'
 #'
 #' @keywords export
-runOneBatch <- function(oneBatch, numDays,
-                        overlayVar = c("Treatment", "Sex", "Genotype", "Temperature", "Environment", "Light"),
-                        rowVar = c("Genotype", "Sex", "Temperature", "Treatment", "Environment", "Light"),
-                        columnVar = c("Environment", "Sex", "Genotype", "Temperature", "Treatment", "Light"),
-                        plotSelection = c("All", "None", "Select"),
-                        font = c("plain", "bold", "italic", "bold.italic"),
-                        pValues = c(FALSE, TRUE)) {
+runOneBatch <- function(oneBatch, numDays = 2,
+                        overlayVar = "Treatment",
+                        rowVar = "Genotype",
+                        columnVar = "Environment",
+                        plotSelection = "All",
+                        font = "plain",
+                        pValues = FALSE) {
   # Warnings/Errors-------------------------------------------------------------
   if (missing(oneBatch)){
     stop("'oneBatch' must be specified")
@@ -34,19 +34,19 @@ runOneBatch <- function(oneBatch, numDays,
   if (length(grep(oneBatch, all_dirs)) != 1){
     stop("The 'oneBatch' specified is not a subdirectory inside the current working directory. Please make sure your current directory is correct.")
   }
-  if (missing(numDays) || !is.numeric(numDays)){
+  if (!is.numeric(numDays)){
     stop("'numDays' must be specified as a whole number.")
   }
   if(length(unique(c(overlayVar, rowVar, columnVar))) < 3){  # divisions for fascetting plots
     stop("'overlayVar', rowVar, and columnVar cannot contain the same variable names.")
   }
   divisions<- character()
-  divisions[1]<- match.arg(overlayVar)
-  divisions[2]<- match.arg(rowVar)
-  divisions[3]<- match.arg(columnVar)
-  plotSelection <- match.arg(plotSelection)
+  divisions[1]<- match.arg(overlayVar, c("Treatment", "Sex", "Genotype", "Temperature", "Environment", "Light"))
+  divisions[2]<- match.arg(rowVar, c("Genotype", "Sex", "Temperature", "Treatment", "Environment", "Light"))
+  divisions[3]<- match.arg(columnVar, c("Environment", "Sex", "Genotype", "Temperature", "Treatment", "Light"))
   #divisions<- c(overlayVar, rowVar, columnVar)
-  font<- match.arg(font)
+  plotSelection <- match.arg(plotSelection, c("All", "None", "Select"))
+  font <- match.arg(font, c("plain", "bold", "italic", "bold.italic"))
   if(!is.logical(pValues)){
     stop("'pValues' must be either 'TRUE' or 'FALSE'")
   }
@@ -61,12 +61,27 @@ runOneBatch <- function(oneBatch, numDays,
   # Get the list of R files in the directory
   r_files <- list.files(getwd(), pattern = "^Main[0-9_a-zA-Z]*\\.R$", full.names = TRUE)
 
-  # Source each R file (run info)
+  # Store all 'info' objects in a list, in case multiple R files exist
+  all_info_list <- list()
+
+  # Execute each R file within a temporary local environment
   for (r_file in r_files) {
-    source(r_file)
+    # 1. Create a new, temporary environment for execution
+    temp_env <- new.env()
+
+    # 2. Execute the script within that environment
+    source(r_file, local = temp_env)
+
+    # 3. Check if 'info' was created and extract it
+    if (exists("info", envir = temp_env, inherits = FALSE)) {
+      incodeinfo <- temp_env$info
+      Title <- temp_env$Title
+    } else {
+      warning(paste("Script did not define an 'info' object:", r_file))
+    }
   }
 
-  incodeinfo <- info
+
   # add "monitor" to the info file
   incodeinfo[["monitor"]]<- paste0("M", gsub("\\D", "", incodeinfo$file))
   #change any NA values to "NA" to prevent errors
@@ -87,7 +102,7 @@ runOneBatch <- function(oneBatch, numDays,
   }
 
   # Analyze the batch
-  runEachBatch(numDays, oneBatch, font, pref, divisions, pValues, incodeinfo)
+  runEachBatch(numDays, oneBatch, font, pref, divisions, pValues, incodeinfo, Title)
 
   setwd(original_wd)
 

@@ -4,29 +4,60 @@
 #'
 #' @param condition1 A string specifying a condition within one of the experimental variables. The difference is calculated as: `condition1`-`condition2`
 #' @param condition2 A string specifying a condition within the same experimental variable as `condition1` that is associated with the difference seen in sleep.
-#' @param method The equation to be used either as the difference `condition1`-`condition2` or percent change, (`condition1`-`condition2`) / `condition2`
-#' @param treat A string specifying a Treatment to subset the data by. Default is NULL
-#' @param temp A string specifying a Temperature condition to subset the data by. Default is NULL
-#' @param enviro A string specifying a Environment condition to subset the data by. Default is NULL
-#' @param sex A string specifying a sex condition to subset the data by. Default is NULL
-#' @param lights A string specifying a Light condition to subset the data by. Default is NULL
-#' @param geno A string specifying a Genotype condition to subset the data by. Default is NULL
-#' @param formula Independent variables & their interactions in predicting sleep. Should be NULL if fitted = FALSE.
+#' @param method method is an argument for which calculation to use (Diff or Perc.Change). Diff computes `condition1`-`condition2`; Perc.Change computes (`condition1`-`condition2`) / `condition2`.
+#' @param treat A string specifying a Treatment to subset the data by.
+#' @param temp A string specifying a Temperature condition to subset the data by.
+#' @param enviro A string specifying a Environment condition to subset the data by.
+#' @param sex A string specifying a sex condition to subset the data by.
+#' @param lights A string specifying a Light condition to subset the data by.
+#' @param geno A string specifying a Genotype condition to subset the data by.
+#' @param formula Independent variables & their interactions in predicting sleep.The specified formula is used in fitting a linear model to the data
 #' @param font A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic"). Default is "plain"
 #'
 #'
 #'
-#' @details Two `ggplot` objects containing the correlation matrix plot with significance annotations for percentage of sleep lost and raw number of minutes lost.
-#'         The plots are saved as PDF files.
-#'         A CSV file with correlation p-values is saved.
+#' @details The function reads data, optionally fits a linear model, and computes the correlation and FDR-adjusted p-values for the final sleep metrics. A single ggplot object (the correlation matrix plot with significance annotations) is saved as a PDF file, and the correlation p-values are saved as a CSV.
+#'         Note: If 'Batch' is in your model, fix it at the first level to ensure a consistent baseline
 #'
-#' @return None. Plots are saved as PDF files, while p-values are saved as csv files.
+#' @return \code{NULL}. The function's primary output is saved to the working directory: a PDF file containing the correlation plot and a CSV file with the FDR-adjusted correlation p-values.
 #'
 #' @export
 
 corMatrix <- function(condition1 = NULL, condition2 = NULL, method = c("Diff", "Perc.Change"),
                    treat = NULL, temp = NULL, enviro = NULL, sex = NULL, lights = NULL, geno = NULL,
                    formula = NULL, font = c("plain", "bold", "italic", "bold.italic")){
+
+  # # test 1: raw values no conditions
+  # condition1 = NULL
+  # condition2 = NULL
+  # method = "Diff"
+  # treat = NULL
+  # temp = NULL
+  # enviro = "5D"
+  # sex = NULL
+  # lights = NULL
+  # geno = NULL
+  # formula = NULL
+  # font = "plain"
+  # # test 2: raw values yes conditions diff
+  # condition1 = "Iso"
+  # condition2 = "Grp"
+  # # test 3: raw values yes conditions perc
+  # method = "Perc.Change"
+  # # test 4: fitted values no conditions
+  # condition1 = NULL
+  # condition2 = NULL
+  # formula = "Genotype*Treatment + Batch"
+  # # test 5: fitted values yes conditions diff
+  # condition1 = "Iso"
+  # condition2 = "Grp"
+  # formula = "Genotype*Treatment + Batch"
+  #   method = "Diff"
+  # # test 6: fitted values yes conditions perc
+  #   formula = "Genotype*Treatment + Batch"
+  #   method = "Perc.Change"
+
+
   # Read the data from CSV file
   # Check if 'all_batches_summary.csv' exists in the current directory, and if not, stop execution.
   if (!file.exists("all_batches_summary.csv")) {
@@ -35,13 +66,13 @@ corMatrix <- function(condition1 = NULL, condition2 = NULL, method = c("Diff", "
   font <- match.arg(font)
   method <- match.arg(method)
 
+  combined_data <- read.csv("all_batches_summary.csv")
+  # data.table::setDT(combined_data)
   # define later variables
-  param_cols<- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L","n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
+  param_cols <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L","n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
   meta_vars <- c("Sex", "Genotype", "Temperature", "Treatment", "Environment", "Light")
   meta_inputs <- list(sex, geno, temp, treat, enviro, lights)
   names(meta_inputs) <- meta_vars
-
-  combined_data <- read.csv("all_batches_summary.csv")
 
   # Subset the data & define the title
   title_parts <- character()
@@ -56,6 +87,7 @@ corMatrix <- function(condition1 = NULL, condition2 = NULL, method = c("Diff", "
     }
   }
   title_text <- paste(title_parts, collapse = "_")
+
 
   # Summarize sleep data by temp, Sex, Treatment, and Genotype, enviro calculating means for sleep-related variables.
   dataset <- combined_data |>
@@ -79,24 +111,30 @@ corMatrix <- function(condition1 = NULL, condition2 = NULL, method = c("Diff", "
       # # Initialize an empty vector to store the matched variables
       matched_vars <- c()
 
-      # Loop through each element in meta_vars to find which vars are in the formula --> matched_vars
-      for (var in categorical_vars) {
-        # Check if the current meta_var is found within formula
-        # grepl returns TRUE if a match is found, FALSE otherwise
-        if (any(grepl(var, new_formula, fixed = TRUE))) {
-          matched_vars <- c(matched_vars, var) # Add to our results if matched
-        }
-      }
+
+      # Get all variable names from the right-hand side of the formula
+      independent_vars <- all.vars(new_formula)
+      # Filter for the categorical variables included in the model
+      matched_vars <- intersect(categorical_vars, independent_vars)
+      # # Loop through each element in meta_vars to find which vars are in the formula --> matched_vars
+      # for (var in categorical_vars) {
+      #   # Check if the current meta_var is found within formula
+      #   # grepl returns TRUE if a match is found, FALSE otherwise
+      #   if (any(grepl(var, new_formula, fixed = TRUE))) {
+      #     matched_vars <- c(matched_vars, var) # Add to our results if matched
+      #   }
+      # }
 
       fit <- lm(new_formula, data = dataset)
       saved.fit<-rbind(saved.fit, summary(fit)$r.squared)
       # Create new_data for predictions
       new_data_list <- list()
       for (var in matched_vars) {
+        # Collect unique levels from the original dataset for each matched variable
         new_data_list[[var]] <- unique(dataset[[var]])
       }
 
-      # If 'Batch' was in your model, and you want to fix it at the first level
+      # If 'Batch' is in your model, fix it at the first level to ensure a consistent baseline
       if ("Batch" %in% matched_vars) {
         new_data_list[["Batch"]] <- levels(as.factor(dataset$Batch))[1]
       }
@@ -104,9 +142,11 @@ corMatrix <- function(condition1 = NULL, condition2 = NULL, method = c("Diff", "
       # # Generate all combinations using expand.grid
       new_data <- expand.grid(new_data_list)
 
+      # Initialize prediction variable
+      prediction_results <- NULL
       # Predict using the model
       tryCatch({
-        predict<- predict(fit, newdata = new_data)
+        prediction_results <- predict(fit, newdata = new_data)
       }, error = function(e) {
         if (grepl("rank-deficient", e$message)) {
           stop("Prediction failed due to a rank-deficient model fit.\n",
@@ -118,9 +158,9 @@ corMatrix <- function(condition1 = NULL, condition2 = NULL, method = c("Diff", "
         }})
       # Assign to your 'dataset' variable
       if(i == 1){
-        dataa <- cbind(new_data, predict)
+        all_prediction_results <- cbind(new_data, prediction_results)
       } else{
-        dataa<-cbind(dataa, predict)
+        all_prediction_results<-cbind(all_prediction_results, prediction_results)
       }
 
     }
@@ -130,19 +170,25 @@ corMatrix <- function(condition1 = NULL, condition2 = NULL, method = c("Diff", "
     rownames(saved.fit)<- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L","n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
     colnames(saved.fit)<- c("r-squared")
     write.csv(saved.fit, paste0("FittedStatistics_", titlee, ".csv"))
-    colnames(dataa)[(ncol(dataa)-6):ncol(dataa)] <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L","n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
+    colnames(all_prediction_results)[(ncol(all_prediction_results)-6):ncol(all_prediction_results)] <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L","n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
 
-    dataset<- dataa
-    fit_meta_vars <- matched_vars
+    # average across the control characteristic (which would have been 1 population per batch)
+    dataset <- all_prediction_results |>
+      dplyr::group_by(across(all_of(intersect(matched_vars,meta_vars)))) |># exclude batch so the control aPrioriCondition (which should be in every batch) does not artificially weigh in the linear model
+      dplyr::summarise(across(all_of(param_cols), ~ mean(.x, na.rm = TRUE)), .groups = "keep")
+    fit_meta_vars <- intersect(matched_vars,meta_vars)
     pdftitle <- "_fittedValues"
 
   } else {
+    dataset <- combined_data |>
+      dplyr::group_by(across(all_of(c(meta_vars)))) |> # exclude batch so the control aPrioriCondition (which should be in every batch) does not artificially weigh in the linear model
+      dplyr::summarise(across(all_of(param_cols), ~ mean(.x, na.rm = TRUE)), .groups = "keep")
     pdftitle <- ""
     fit_meta_vars <- meta_vars
   }
 
 
-  # difference between conditions or absolute values
+  # absolute / %-change between conditions: raw values / predicted values
   if (!is.null(condition1) && !is.null(condition2)) {
     match_col <- intersect(names(dataset), fit_meta_vars)[sapply(fit_meta_vars, function(var) {
       any(grepl(condition1, dataset[[var]])) && any(grepl(condition2, dataset[[var]]))
@@ -160,28 +206,46 @@ corMatrix <- function(condition1 = NULL, condition2 = NULL, method = c("Diff", "
     c1_sorted <- c1_data[do.call(order, c1_data[fit_meta_vars]), ]
     c2_sorted <- c2_data[do.call(order, c2_data[fit_meta_vars]), ]
 
-    # add percent or difference option
-
+    # percent or difference method
     sleep_diff <- (c1_sorted[, param_cols] - c2_sorted[, param_cols])
-    df <- cbind(sleep_diff, c1_sorted[, setdiff(c(fit_meta_vars, "Batch"), match_col), drop = FALSE])
+    meta_cols_for_df <- setdiff(c(fit_meta_vars), match_col)
+    if (method == "Diff"){
+      df <- cbind(sleep_diff, c1_sorted[, meta_cols_for_df, drop = FALSE])
 
-    # Rename the columns for better clarity.
-    colnames(df) <- c("Sleepchange_All", "Sleepchange_L", "Sleepchange_D", "nBoutschange_L",
-                      "nBoutschange_D", "Boutlenchange_L", "Boutlenchange_D")
-    title_text <- trimws(paste0(title_text, " ", condition1, "-", condition2))
+      # Rename the columns for better clarity.
+      colnames(df)[1:7] <- final_param_cols <- c("Sleepchange_All", "Sleepchange_L", "Sleepchange_D", "nBoutschange_L",
+                                                 "nBoutschange_D", "Boutlenchange_L", "Boutlenchange_D")
+      title_text <- trimws(paste0(title_text, " ", condition1, "-", condition2))
+      # meta <-  dataset[dataset[[match_col]] == condition2, fit_meta_vars]
+    } else { # calculate the percentage of sleep change following condition1 compared to condition2 (control)
+      if (method == "Perc.Change"){
+        perc.change <- sleep_diff *100 / c2_sorted[, param_cols]
+        df <- cbind(perc.change, c1_sorted[, meta_cols_for_df, drop = FALSE])
+
+        # Rename the columns for better clarity.
+        colnames(df)[1:7] <- final_param_cols <- c("%Sleepchange_All", "%Sleepchange_L", "%Sleepchange_D", "%nBoutschange_L",
+                                                   "%nBoutschange_D", "%Boutlenchange_L", "%Boutlenchange_D")
+        title_text <- trimws(paste0(title_text, " Percent ", condition1, " Sleep"))
+      } else {
+        stop("`Method` is undefined")
+      }
+    }
+
   } else {
     df <- dataset[, param_cols]
     # Rename the columns for better clarity.
-    colnames(df) <- c("Sleeptime_All", "Sleeptime_L", "Sleeptime_D", "NBouts_L",
+    colnames(df) <- final_param_cols <- c("Sleeptime_All", "Sleeptime_L", "Sleeptime_D", "NBouts_L",
                       "NBouts_D", "Boutlen_L", "Boutlen_D")
   }
 
   # where the magic happens - before this is the data curration
-  # Compute the correlation matrix for the data.
-  corr <- round(cor(df[,1:7]), 3)
 
-  # Generate the p-value matrix for the correlation.
-  p_matrix <- ggcorrplot::cor_pmat(df[,1:7])
+  # Check which parameters are actually in the resulting 'df'
+  cols_to_correlate <- intersect(final_param_cols, names(df))
+  # Compute the correlation matrix for the data.
+  corr <- round(cor(df[, cols_to_correlate]), 3)
+  # Apply the same change to the p-value calculation:
+  p_matrix <- ggcorrplot::cor_pmat(df[, cols_to_correlate])
   # Step 2: Flatten the p-value matrix, adjust using FDR
   p_vector <- as.vector(p_matrix)
   p_adjusted_vector <- p.adjust(p_vector, method = "fdr")
@@ -195,17 +259,17 @@ corMatrix <- function(condition1 = NULL, condition2 = NULL, method = c("Diff", "
 
   # Step 5: Convert the adjusted p-value matrix into a data frame
   p.df <- as.data.frame(p_adjusted_matrix)
-  title_texte <- gsub(" ", "", title_text)
-  title_texte <- gsub(":", ".", title_texte)
+  filename_base <- gsub(" ", "", title_text)
+  filename_base <- gsub(":", ".", filename_base)
 
   # Save the p-value matrix as a CSV file.
-  data.table::fwrite(p.df, paste0("Correlation_pValues", title_texte, ".csv"))
+  data.table::fwrite(p.df, paste0("Correlation_pValues", filename_base, ".csv"))
 
   # Define a function to assign significance labels (e.g., "*" for p-values < 0.05).
   labs.function <- function(x){
     dplyr::case_when(
       x >= 0.10 ~ "",
-      x < 0.10 & x >= 0.05 ~ "",
+      x < 0.10 & x >= 0.05 ~ "·",
       x < 0.05 & x >= 0.01 ~ "*",
       x < 0.01 & x >= 0.001 ~ "**",
       x < 0.001 & x >= 0.0001 ~ "***",
@@ -222,7 +286,7 @@ corMatrix <- function(condition1 = NULL, condition2 = NULL, method = c("Diff", "
   # Initial ggcorrplot
   suppressMessages({
     cor.plot <- ggcorrplot::ggcorrplot(corr, type = "lower", lab = TRUE, show.diag = TRUE, lab_size = 5) +
-      ggplot2::labs(y = NULL, x = NULL, title = trimws(paste0("Sleep Trait Correlations ", title_text))) +
+      ggplot2::labs(y = NULL, x = NULL, title = trimws(paste0("Sleep Correlations ", title_text))) +
       ggplot2::scale_fill_gradient2(low = "blue", high =  "red2", mid = "white",
                                     midpoint = 0, limit = c(-1,1))+
 
@@ -249,5 +313,6 @@ corMatrix <- function(condition1 = NULL, condition2 = NULL, method = c("Diff", "
                        label = p.labs$lab, nudge_y = 0.25, size = 5)
 
   # Save the plot as a PDF file.
-  ggplot2::ggsave(paste0("Correlation", title_texte,pdftitle, ".pdf"), cor.plot.labs, height = 7, width = 7)
+  ggplot2::ggsave(paste0("Correlation", filename_base, pdftitle,".pdf"), cor.plot.labs, height = 7, width = 7)
 }
+

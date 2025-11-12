@@ -47,65 +47,6 @@ combinedPlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
 
     p_values <- data.table::data.table()
 
-  # Function to create sleep duration plots
-  create_sleeptime_plot <- function(plot_data, yParam, Yname, limits, geom, font, p_value) {
-    pointplot <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data[[divisions[1]]], y = .data[[yParam]]))
-    if(geom == "bar"){
-      pointplot <- pointplot +
-        ggplot2::stat_summary(fun = "mean", geom = geom, width = .5, fill="grey90")}
-
-    if(geom == "violin"){
-      pointplot <- pointplot +
-        ggplot2::geom_violin(fill="grey90")}
-
-    # Add beeswarm plot (for both bar and violin)
-    pointplot <- pointplot +
-      ggbeeswarm::geom_beeswarm(ggplot2::aes(fill = .data[[divisions[1]]], color = .data[[divisions[1]]]),
-                                dodge.width = 0.9, shape = 21, cex = 3.5) +
-      ggplot2::scale_color_manual(values = scales::alpha(c("#0000FF", "#FF0000", "#008B8B", "#808080", "#ADD8E6", "#FFA500","#FFD700", "#32CD32","#800080", "#000080"), alpha = .7)) +
-      ggplot2::scale_fill_manual(values = scales::alpha(c("#0000FF", "#FF0000", "#008B8B", "#808080", "#ADD8E6", "#FFA500","#FFD700", "#32CD32","#800080", "#000080"), alpha = .6)) +
-      ggplot2::geom_errorbar(stat = "summary", fun.data = ggplot2::mean_cl_boot, width = 0.2, color = "black") +
-      ggplot2::geom_point(size = 1.5, stat = "summary", fun = mean, shape = 3, color = "black") +
-      ggplot2::scale_y_continuous(name = Yname) +
-      ggplot2::coord_cartesian(ylim = c(0,limits))+
-      ggplot2::scale_x_discrete(name = NULL)+
-      ggprism::theme_prism(base_fontface = font)  +
-      ggplot2::theme(axis.title.y = ggplot2::element_text(size = 20),
-                     axis.text.x = ggplot2::element_text(size = 16, angle = 45, vjust = 1, hjust= 1),
-                     axis.text.y = ggplot2::element_text(size = 16),
-                     legend.position = "none")
-    if (p_value == "No") {
-      invisible()
-    }else{
-      # Define thresholds and corresponding labels
-      thresholds <- c(0.0001, 0.001, 0.01, 0.05, 0.07)
-      labels <- c("****", "***", "**", "*", " ")
-
-      # Find the corresponding label directly using logical comparisons
-      p_label <- ifelse(p_value < thresholds[1], labels[1],
-                 ifelse(p_value < thresholds[2], labels[2],
-                 ifelse(p_value < thresholds[3], labels[3],
-                 ifelse(p_value < thresholds[4], labels[4],
-                 ifelse(p_value < thresholds[5], labels[5],
-                        "")))))
-
-      # If a label is assigned, annotate the plot
-      if (p_label !="") {
-        pointplot <- pointplot +
-          ggplot2::annotate("text", x = 1.5, y = (limits),
-                            label = paste("p =", round(p_value, 4)), size = 4.5,
-                            color = "black", fontface = font) +
-          ggplot2::annotate("text", x = 1.5, y = (limits- (limits / 13)),
-                            label = p_label, size = 5, color = "black", fontface = font) +
-          ggplot2::geom_segment( mapping = NULL, x = 1, xend = 2,
-                                 y = (limits -(limits/20)- (limits / 20)),
-                                 yend = (limits - (limits / 20)- (limits / 20)),
-                                color = "black", linewidth = 1)
-       }
-      }
-    return(pointplot)
-  }
-
   yParams<- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
 
   # Apply the logic for subsetting and plotting using data.table------------
@@ -127,70 +68,70 @@ combinedPlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
 
     label_map <- stats::setNames(group_counts$label, group_counts$by)
 
-        # Create overlay sleep plot--------------
-          p1 <- ggetho::ggetho(plot_subdata, ggplot2::aes(x = t, y = asleep, colour = .data[[divisions[1]]]), time_wrap = behavr::hours(24)) +
-            ggetho::stat_pop_etho(show.legend = T) +
-            ggetho::stat_ld_annotations() +
-            ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6"), labels = label_map) +
-            ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6"), labels = label_map) +
-            ggplot2::labs(title = p1title, y= "Sleep (%)") +
-            ggplot2::scale_y_continuous(limits = c(0,1), labels = scales::percent)+
-            ggprism::theme_prism(base_fontface = font) +
-            ggplot2::theme(title = ggplot2::element_text(size = 22),
-                           axis.title.x = ggplot2::element_text(size = 20),
-                           axis.title.y = ggplot2::element_text(size = 20),
-                           axis.text.x = ggplot2::element_text(size = 16),
-                           axis.text.y = ggplot2::element_text(size = 16),
-                           legend.text = ggplot2::element_text(size = 16, face = font))
-            if(length(unique(plot_subdata2[[divisions[1]]])) <= 2){
-              p1 <- p1 + ggplot2::theme(legend.position = c(0.75,0.15)) ###continued warning about legend position inside
-              addedspace <- 6
-            } else {
-                addedspace <- 8
-              }
+    # Call the helper to get the p1 plot object (using NULL for dimensions/facets)
+    p1_results <- render_sleep_profile_plot(
+      plot_data = plot_subdata,
+      divisions = divisions,
+      batchMeta = plot_subdata2, # Using plot_subdata2 as a stand-in for meta
+      numb_days = 1, # Set to 1 because combinedPlots is always 24h wrapped
+      font = font,
+      overlay_mode = TRUE,
+      wrap_time = behavr::hours(24),
+      p1title = p1title
+    )
 
-    if(pValues){
+    p1 <- p1_results$plot
 
-    # find out if there is a control for each combination of conditions
-    if (length(unique(plot_subdata2[[divisions[1]]])) == 2) {
-      controlee <- unique(plot_subdata2[[divisions[1]]])[1]
-
-      # Perform t-test if the 'divisions[1]'  has 'control'
-      all_conditions <- unique(plot_subdata2[,.SD,.SDcols = columns_to_consider])
-      t.test_y_vars <- setdiff(unique(plot_subdata2[[divisions[1]]]), controlee) # should be same as above line
-
-      #set up for p_values & run the t.test
-      p_value <- matrix(, nrow = length(t.test_y_vars), ncol = length(yParams)+2)
-      p_vals <- list()
-
-      for(j in seq_along(yParams)){
-        for (i in seq_along(t.test_y_vars)){
-          t_test_result <- t.test(plot_subdata2[get(divisions[1]) == controlee, get(yParams[j])], # needs to be generalized
-                                  plot_subdata2[get(divisions[1]) == t.test_y_vars[i], get(yParams[j])])
-          p_value[i,j] <- t_test_result$p.value
-        }
-      }
-    }else {
-      p_value <- matrix("No", nrow = 1, ncol = length(yParams))#+2)
+    # Recalculate addedspace and apply specific legend theme *AFTER* plot generation
+    if(length(unique(plot_subdata2[[divisions[1]]])) <= 2){
+      # Note: Using p1_results$plot here since p1 is a ggplot object
+      p1 <- p1 + ggplot2::theme(legend.position = c(0.75,0.15))
+      addedspace <- 6
+    } else {
+      addedspace <- 8
     }
-    }else {
-      p_value <- matrix("No", nrow = 1, ncol = length(yParams))#+2)
+
+    # --- T-Test and P-Value Calculation ---
+    u <- length(unique(plot_subdata2[[divisions[1]]]))
+
+    if (pValues && u == 2) {
+      # Only proceed if pValues is TRUE and exactly 2 unique groups exist
+      controlee <- unique(plot_subdata2[[divisions[1]]])[1]
+      t.test_y_vars <- unique(plot_subdata2[[divisions[1]]])
+      t.test_y_vars <- t.test_y_vars[t.test_y_vars != controlee]
+
+      p_value <- matrix(, nrow = 1, ncol = length(yParams))
+
+      # Run the t.test for all 7 metrics against the control
+      for(j in seq_along(yParams)){
+        t_test_result <- t.test(plot_subdata2[get(divisions[1]) == controlee, get(yParams[j])],
+                                plot_subdata2[get(divisions[1]) == t.test_y_vars[1], get(yParams[j])])
+        p_value[1, j] <- t_test_result$p.value
+      }
+    } else {
+      # Set to "No" if pValues is FALSE or if there are not exactly 2 groups (u != 2)
+      p_value <- matrix("No", nrow = 1, ncol = length(yParams))
     }
 
       p1title <- gsub(" ", "_", p1title)
       p1title <- gsub(":", ".", p1title)
       p_values[, (p1title) := list(list(p_value))]
 
-        # Generate sleep duration plots
-        p2 <- create_sleeptime_plot(plot_subdata2, yParams[1], "Total Sleep (min)", 1500, "bar", font, p_value[,1])
-        p3 <- create_sleeptime_plot(plot_subdata2, yParams[2], "Daytime Sleep (min)", 1000, "bar", font, p_value[,2])
-        p4 <- create_sleeptime_plot(plot_subdata2, yParams[3], "Nighttime Sleep (min)", 1000, "bar", font, p_value[,3])
-        p5 <- create_sleeptime_plot(plot_subdata2, yParams[4], "# Daytime Sleep Bouts", ceiling(max(plot_subdata2[,get(yParams[4])])/50)*50, "violin", font, p_value[,4])
-        p6 <- create_sleeptime_plot(plot_subdata2, yParams[5], "# Nighttime Sleep Bouts", ceiling(max(plot_subdata2[,get(yParams[5])])/50)*50, "violin", font, p_value[,5])
-        p7 <- create_sleeptime_plot(plot_subdata2, yParams[6], "Daytime Bout Length", ceiling(max(plot_subdata2[,get(yParams[6])])/50)*50, "violin", font, p_value[,6])
-        p8 <- create_sleeptime_plot(plot_subdata2, yParams[7], "Nighttime Bout Length", ceiling(max(plot_subdata2[,get(yParams[7])])/50)*50, "violin", font, p_value[,7])
+      # Generate sleep duration plots
+      # Note: p_value is either a 1x7 matrix of p-values or a 1x7 matrix of "No".
+      p2 <- create_sleeptime_plot(plot_subdata2, yParams[1], "Total Sleep (min)", divisions, 1500, "bar", font, p_value[1, 1], is_faceted = FALSE)
+      p3 <- create_sleeptime_plot(plot_subdata2, yParams[2], "Daytime Sleep (min)", divisions, 1000, "bar", font, p_value[1, 2], is_faceted = FALSE)
+      p4 <- create_sleeptime_plot(plot_subdata2, yParams[3], "Nighttime Sleep (min)", divisions, 1000, "bar", font, p_value[1, 3], is_faceted = FALSE)
 
-        # Combine plots
+      # Bout Counts (using dynamic ceiling for Y-limit)
+      p5 <- create_sleeptime_plot(plot_subdata2, yParams[4], "# Daytime Sleep Bouts", divisions, ceiling(max(plot_subdata2[,get(yParams[4])], na.rm = TRUE)/50)*50, "violin", font, p_value[1, 4], is_faceted = FALSE)
+      p6 <- create_sleeptime_plot(plot_subdata2, yParams[5], "# Nighttime Sleep Bouts", divisions, ceiling(max(plot_subdata2[,get(yParams[5])], na.rm = TRUE)/50)*50, "violin", font, p_value[1, 5], is_faceted = FALSE)
+
+      # Bout Lengths (using dynamic ceiling for Y-limit)
+      p7 <- create_sleeptime_plot(plot_subdata2, yParams[6], "Daytime Bout Length", divisions, ceiling(max(plot_subdata2[,get(yParams[6])], na.rm = TRUE)/50)*50, "violin", font, p_value[1, 6], is_faceted = FALSE)
+      p8 <- create_sleeptime_plot(plot_subdata2, yParams[7], "Nighttime Bout Length", divisions, ceiling(max(plot_subdata2[,get(yParams[7])], na.rm = TRUE)/50)*50, "violin", font, p_value[1, 7], is_faceted = FALSE)
+
+      # Combine plots
         rel_width <- 1 + (u / 2) + ((u - 1) * 0.1)
 suppressWarnings(
           combined_plot <- cowplot::plot_grid(p1, p2, p3, p4, p5, p6, p7, p8, ncol = 8, align = "h", axis = "tb",

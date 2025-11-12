@@ -21,22 +21,24 @@
 #' the first bout length, and the latency to the longest bout. The results for each day are added to a summary table,
 #' which is then returned after processing all specified days.
 processDays <- function(numDays, bout_dt, dt, summary_dt_final) {
+
+  #dt[,light]figure out number of minutes and hours lights on/off
+
   for (day in 1:numDays) {
     # Define start and end times for the current day
     start_time <- behavr::days(day - 1)
-    end_time <- start_time + behavr::hours(12)
+    #end_daytime <- start_time + behavr::hours(12)
     end_sleep_time <- start_time + behavr::hours(24)
 
-    # Extract bouts for the current day
-    bout_dt_current_day <- bout_dt[bout_dt$t >= start_time &
-                                     bout_dt$t <= end_time]
+    # Extract bouts for the current daytime
+    bout_dt_current_day <- bout_dt[bout_dt$t >= start_time & bout_dt$t <= end_sleep_time]
     bout_dt_current_day[, t := t - start_time]  # Adjust time for the current day
     dt_current_day <- dt[dt$t >= start_time &
                            dt$t <= end_sleep_time]
     dt_current_day[, t := t - start_time]  # Adjust time for the current day
 
 
-    # Calculate summary statistics for the current day
+    # Calculate summary statistics for the current whole day
     bout_summary <- bout_dt_current_day[, .(
       latency = t[1],
       first_bout_length = duration[1],
@@ -55,6 +57,7 @@ processDays <- function(numDays, bout_dt, dt, summary_dt_final) {
     ), by = id]
 
     # Rename columns for the current day
+      # latency = latency to first bout after lights on
     data.table::setnames(bout_summary, c("latency", "first_bout_length", "latency_to_longest_bout"),
              c(paste0("Day", day, "_latency"), paste0("Day", day, "_first_bout_length"),
                paste0("Day", day, "_latency_to_longest_bout")))

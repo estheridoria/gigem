@@ -1,61 +1,54 @@
-#' Visualize Changes in Sleep Between
+#' Visualize Changes in Sleep Metrics (Ranked Bar Plots)
 #'
-#' This function generates bar plots to visualize the changes in sleep across different Genotypes and Treatments.
-#' It reads a CSV file containing normalized sleep data, calculates the changes in sleep, and then creates plots
-#' for each of the sleep-related metrics (`TotalSleepChange`, `DayTimeSleepChange`, `NightTimeSleepChange`).
-#' Two plots are made showing the normalized sleeploss for the Treatment of interest (`treat`).
-#' One plot contains only the `control` entry in `x` while the other plot contains every entry except `control`.
-#' The plots are saved as PDFs labeled, "NormalizedSleepLoss...".
+#' This function generates ranked bar plots to visualize changes or absolute values of sleep metrics (Total, Day, Night).
+#' It reads the aggregated sleep data from `all_batches_summary.csv`, calculates the difference or percent change
+#' between two conditions if specified, and can optionally use fitted values derived from a linear model (LM)
+#' to control for nuisance variables. The plots are generated for each of the three sleep metrics.
 #'
-#' @param x The name of a variable in "all_batches_norm_summary.csv" to be used as the x-axis in the plot.
-#' @param control The name of the control within the variable x.
-#' @param condition1 A string specifying a condition within one of the experimental variables. Default is NULL
-#' @param condition2 A string specifying a condition within the same experimental variable as `condition1` that is associated with the percent difference seen in sleep. Default is NULL
-#' @param method The equation to be used either as the difference `condition1`-`condition2` or percent change, (`condition1`-`condition2`) / `condition2`
-#' @param treat A string specifying a Treatment to subset the data by. Default is NULL
-#' @param temp A string specifying a Temperature condition to subset the data by. Default is NULL
-#' @param enviro A string specifying a Environment condition to subset the data by. Default is NULL
-#' @param sex A string specifying a sex condition to subset the data by. Default is NULL
-#' @param lights A string specifying a Light condition to subset the data by. Default is NULL
-#' @param geno A string specifying a Genotype condition to subset the data by. Default is NULL
-#' @param ranking A tibble of one column containing the order of conditions displayed in the plot from variable x.
-#' @param fitted Use predicted values after controlling for variables and Batch effects. Default = FALSE
-#' @param formula Independent variables & their interactions in predicting sleep. Should be NULL if fitted = FALSE.
-#' @param font A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic"). Default is "plain"
-#' @param limits A list of two numerics to be the upper and lower limits of the plot. Default is c(-100, 1500)
+#' @param x The name of a categorical variable (e.g., "Genotype", "Treatment") to be used as the x-axis for ranking and plotting.
+#' @param control The name of the control condition within the variable 'x'. If specified, a side-by-side comparison plot is generated showing the control's data broken down by Batch for context (only applicable when not using fitted values).
+#' @param condition1 A string specifying the condition used as the reference/numerator (e.g., "Iso") when calculating difference or percent change. Default is NULL.
+#' @param condition2 A string specifying the condition used as the comparison/denominator (e.g., "Grp") for difference or percent change. Default is NULL.
+#' @param method The calculation method to use when 'condition1' and 'condition2' are specified. Must be "Diff" (calculates `condition1` - `condition2`) or "Perc.Change" (calculates (`condition1` - `condition2`) / `condition2`).
+#' @param treat A string specifying a Treatment to subset the data by. Default is NULL.
+#' @param temp A string specifying a Temperature condition to subset the data by. Default is NULL.
+#' @param enviro A string specifying a Environment condition to subset the data by. Default is NULL.
+#' @param sex A string specifying a sex condition to subset the data by. Default is NULL.
+#' @param lights A string specifying a Light condition to subset the data by. Default is NULL.
+#' @param geno A string specifying a Genotype condition to subset the data by. Default is NULL.
+#' @param ranking A vector of strings specifying the custom order of conditions for the x-axis. If NULL (default), the order is determined by the mean of the Total Sleep metric.
+#' @param formula Independent variables & their interactions in predicting sleep. If non-NULL, predicted values (fitted values) from the LM are used instead of raw means.
+#' @param font A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic"). Default is "plain".
 #'
+#' @details
+#' The primary output is a set of bar plots where the x-axis is ranked based on the Total Sleep metric (or Total Sleep Difference/Change).
+#' The data is summarized at the population mean level before plotting.
 #'
-#' @return conditional. If the ranking is NULL (default), then the ranking used in the plots will be returned to be used as the ranking in subsequent rankedDisplay plots. Otherwise, no return. Saves the plots as a PDF file labeled `RankedSleep...`
+#' @return A vector of strings containing the final, calculated ranking (order) of conditions from the 'x' variable. Saves the plots as a PDF file labeled `RankedSleep...`.
 #' @export
-#'
-#' @keywords internal
-rankedDisplays <- function(
+rankedDisplay <- function(
     x = c("Temperature", "Sex", "Treatment", "Genotype", "Environment", "Light"),
     control = NULL,
     condition1 = NULL,
     condition2 = NULL, method = c("Diff", "Perc.Change"),
     treat = NULL, temp = NULL, enviro = NULL, sex = NULL, lights = NULL, geno = NULL,
-    ranking = NULL, fitted = FALSE, formula = NULL,
+    ranking = NULL, formula = NULL,
     font = c("plain", "bold", "italic", "bold.italic")
 ) {
   if (!file.exists("all_batches_summary.csv")) {
     stop("'all_batches_summary.csv' not found. Please run 'runAllBatches' first.")
   }
   x <- match.arg(x)
-  if(fitted & is.null(formula)|| isFALSE(fitted) & !is.null(formula)){
-    stop("Error: if fitted is 'TRUE', formula must be specified, and vice-versa.")
-  }
   font <- match.arg(font)
   method <- match.arg(method)
 
+  combined_data <- read.csv("all_batches_summary.csv")
+  # data.table::setDT(combined_data)
   # define later variables
   param_cols<- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D")
   meta_vars <- c("Sex", "Genotype", "Temperature", "Treatment", "Environment", "Light")
   meta_inputs <- list(sex, geno, temp, treat, enviro, lights)
   names(meta_inputs) <- meta_vars
-
-  # load data
-  combined_data <- read.csv("all_batches_summary.csv")
 
   # Subset the data & define the title
   title_parts <- character()
@@ -76,8 +69,7 @@ rankedDisplays <- function(
     dplyr::group_by(across(all_of(c(meta_vars, "Batch")))) |>
     dplyr::summarise(across(all_of(param_cols), ~ mean(.x, na.rm = TRUE)), .groups = "keep")
   # Use fitted values if fitted = TRUE
-  if (fitted){
-    #predicted values when controlling for the effects of stuffs
+  if (!is.null(formula)){#predicted values when controlling for the effects of stuffs
 
     # List of your categorical variables
     categorical_vars <- c(meta_vars, "Batch")
@@ -92,6 +84,7 @@ rankedDisplays <- function(
       # Fit the linear model using dataset
       # # Initialize an empty vector to store the matched variables
       matched_vars <- c()
+
       # # Loop through each element in meta_vars
       for (var in categorical_vars) {
         # Check if the current meta_var is found within formula
@@ -117,6 +110,7 @@ rankedDisplays <- function(
       # Create new_data for predictions
       new_data_list <- list()
       for (var in matched_vars) {
+        # Collect unique levels from the original dataset for each matched variable
         new_data_list[[var]] <- unique(dataset[[var]])
       }
 
@@ -128,9 +122,11 @@ rankedDisplays <- function(
       # # Generate all combinations using expand.grid
       new_data <- expand.grid(new_data_list)
 
-      # Predict using the model
+      # Initialize prediction variable
+      prediction_results <- NULL
+      # prediction_results using the model
       tryCatch({
-        predict<- predict(fit, newdata = new_data)
+        prediction_results<- predict(fit, newdata = new_data)
       }, error = function(e) {
         if (grepl("rank-deficient", e$message)) {
           stop("Prediction failed due to a rank-deficient model fit.\n",
@@ -142,9 +138,9 @@ rankedDisplays <- function(
         }})
       # Assign to your 'dataset' variable
       if(i == 1){
-        dataa <- cbind(new_data, predict)
+        all_prediction_results <- cbind(new_data, prediction_results)
       } else{
-        dataa<-cbind(dataa, predict)
+        all_prediction_results<-cbind(all_prediction_results, prediction_results)
       }
     }
     titlee <- gsub(":", ".", title_text)
@@ -153,16 +149,28 @@ rankedDisplays <- function(
     rownames(saved.fit)<- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D")
     colnames(saved.fit)<- c("r-squared")
     write.csv(saved.fit, paste0("FittedStatistics_", titlee, ".csv"))
-    colnames(dataa)[(ncol(dataa)-2):ncol(dataa)] <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D")
+    colnames(all_prediction_results)[(ncol(all_prediction_results)-2):ncol(all_prediction_results)] <- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D")
 
-    dataset<- dataa
-    fit_meta_vars <- matched_vars
+    # average across the control characteristic (which would have been 1 population per batch)
+    dataset <- all_prediction_results |>
+      dplyr::group_by(across(all_of(intersect(matched_vars,meta_vars)))) |># exclude batch so the control aPrioriCondition (which should be in every batch) does not artificially weigh in the linear model
+      dplyr::summarise(across(all_of(param_cols), ~ mean(.x, na.rm = TRUE)), .groups = "drop")
+    fit_meta_vars <- intersect(matched_vars,meta_vars)
     pdftitle <- "_fittedValues"
-  }else {
+
+  } else {
+    if(is.null(control)){
+    dataset <- combined_data |>
+      dplyr::group_by(across(all_of(c(meta_vars)))) |> # exclude batch so the control aPrioriCondition (which should be in every batch) does not artificially weigh in the linear model
+      dplyr::summarise(across(all_of(param_cols), ~ mean(.x, na.rm = TRUE)), .groups = "drop")
+      fit_meta_vars <- meta_vars
+    } else{
+        fit_meta_vars <- c(meta_vars, "Batch")
+      }
     pdftitle <- ""
-    fit_meta_vars <- meta_vars
   }
 
+  # absolute / %-change between conditions: raw values / predicted values
   if (!is.null(condition1) && !is.null(condition2)) {
     match_col <- intersect(names(dataset), fit_meta_vars)[sapply(fit_meta_vars, function(var) {
       any(grepl(condition1, dataset[[var]])) && any(grepl(condition2, dataset[[var]]))
@@ -174,55 +182,58 @@ rankedDisplays <- function(
     c2_data <- dataset[dataset[[match_col]] == condition2, ]
     if (nrow(c1_data) != nrow(c2_data)) stop("Unpaired condition1 and condition2 rows.")
 
+    # math
     c1_sorted <- c1_data[do.call(order, c1_data[fit_meta_vars]), ]
     c2_sorted <- c2_data[do.call(order, c2_data[fit_meta_vars]), ]
-    if(method == "Diff"){
-      sleep_diff <- (c1_sorted[, param_cols] - c2_sorted[, param_cols])
-      df <- cbind(sleep_diff, c1_sorted[, setdiff(c(fit_meta_vars, "Batch"), match_col), drop = FALSE])
-      colnames(df)[1:3] <- c("Total_Sleep_Difference", "Daytime_Sleep_Difference", "Nighttime_Sleep_Difference")
 
-      if (is.null(ranking)) {
-        ranking_df <- df |>
-          dplyr::group_by(.data[[x]]) |>
-          dplyr::summarise(Total_Sleep_Difference = mean(Total_Sleep_Difference, na.rm = TRUE)) |>
-          dplyr::arrange(Total_Sleep_Difference)
-        ranking <- ranking_df[[x]]
-      }
+
+    # percent or difference method
+    sleep_diff <- (c1_sorted[, param_cols] - c2_sorted[, param_cols])
+    meta_cols_for_df <- setdiff(c(fit_meta_vars), match_col)
+    if (method == "Diff"){
+      df <- cbind(sleep_diff, c1_sorted[, meta_cols_for_df, drop = FALSE])
+
+      # Rename the columns for better clarity.
+      colnames(df)[1:3] <- final_param_cols <- c("Total_SleepDifference", "Daytime_Sleep_Difference", "Nighttime_Sleep_Difference")
+      title_text <- trimws(paste0(title_text, " ", condition1, "-", condition2))
+
       y_label <- "Change in Sleep (min)"
-      plot_cols <- c("Total_Sleep_Difference", "Daytime_Sleep_Difference", "Nighttime_Sleep_Difference")
-    }else{
-      sleep_diff <- (c1_sorted[, param_cols] - c2_sorted[, param_cols]) / c2_sorted[, param_cols]
-      sleep_diff <- sleep_diff*100 #get percentage
-      df <- cbind(sleep_diff, c1_sorted[, setdiff(c(fit_meta_vars, "Batch"), match_col), drop = FALSE])
-      colnames(df)[1:3] <- c("Total_Sleep_Change", "Daytime_Sleep_Change", "Nighttime_Sleep_Change")
+    } else { # calculate the percentage of sleep change following condition1 compared to condition2 (control)
+      if (method == "Perc.Change"){
+        perc.change <- sleep_diff *100 / c2_sorted[, param_cols]
+        df <- cbind(perc.change, c1_sorted[, meta_cols_for_df, drop = FALSE])
 
-      if (is.null(ranking)) {
-        ranking_df <- df |>
-          dplyr::group_by(.data[[x]]) |>
-          dplyr::summarise(Total_Sleep_Change = mean(Total_Sleep_Change, na.rm = TRUE)) |>
-          dplyr::arrange(Total_Sleep_Change)
-        ranking <- ranking_df[[x]]
+        # Rename the columns for better clarity.
+        colnames(df)[1:3] <- final_param_cols <- c("Total_Sleep_Change(%)", "Daytime_Sleep_Change(%)", "Nighttime_Sleep_Change(%)")
+        title_text <- trimws(paste0(title_text, " Percent ", condition1, " Sleep"))
+
+        y_label <- "Change in Sleep (%)"
+      } else {
+        stop("`Method` is undefined")
       }
-      y_label <- "Change in Sleep (%)"
-      plot_cols <- c("Total_Sleep_Change", "Daytime_Sleep_Change", "Nighttime_Sleep_Change")
     }
-
-    df[[x]] <- factor(df[[x]], levels = ranking)
 
   }else {
-    df <- dataset[, c(param_cols, fit_meta_vars, "Batch")]
-    colnames(df)[1:3] <- c("Total_Sleep", "Daytime_Sleep", "Nighttime_Sleep")
-    if (is.null(ranking)) {
-      ranking_df <- df |>
-        dplyr::group_by(.data[[x]]) |>
-        dplyr::summarise(Total_Sleep = mean(Total_Sleep, na.rm = TRUE)) |>
-        dplyr::arrange(Total_Sleep)
-      ranking <- ranking_df[[x]]
-    }
-    df[[x]] <- factor(df[[x]], levels = ranking)
+    df <- dataset[, c(param_cols, fit_meta_vars)]
+    colnames(df)[1:3] <- final_param_cols <- c("Total_Sleep", "Daytime_Sleep", "Nighttime_Sleep")
+
     y_label <- "Sleep (min)"
-    plot_cols <- c("Total_Sleep", "Daytime_Sleep", "Nighttime_Sleep")
   }
+  #-------------- Set ranking - rankedDisplay specific
+  if (is.null(ranking)) {
+
+    ranking_col_name <- final_param_cols[1]
+
+    ranking_df <- df |>
+      dplyr::group_by(.data[[x]]) |>
+      dplyr::summarise(temp_ranking_mean = mean(.data[[ranking_col_name]], na.rm = TRUE), .groups = "drop") |>
+      dplyr::arrange(temp_ranking_mean)
+    ranking <- ranking_df[[x]]
+  }
+
+  df[[x]] <- factor(df[[x]], levels = ranking)
+  #----------------- (End)
+
   plot_df <- function(data, yvar, x, title) {
     ggplot2::ggplot(data, ggplot2::aes(x = .data[[x]], y = .data[[yvar]])) +
       ggplot2::stat_summary(fun = mean, geom = "bar", fill = "grey50", width = 0.85) +
@@ -231,18 +242,18 @@ rankedDisplays <- function(
       ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5, hjust = 1))
   }
 
-  plots <- lapply(plot_cols, function(col) {
-    plot_df(df_predicted, col, x, paste(gsub("_", " ",col), title_text))
+  plots <- lapply(final_param_cols, function(col) {
+    plot_df(df, col, x, paste(gsub("_", " ",col), title_text))
   })
   combined_plot <- cowplot::plot_grid(plotlist = plots, ncol = 1)
   rel_widths <- length(unique(df[[x]]))/5
 
-  if (!is.null(control) && fitted == FALSE) {
+  if (!is.null(control) && is.null(formula)) {
     if (!any(df[[x]] == control)) {
       stop("Control value not found in grouping variable.")}
     control_df <- df[df[[x]] == control, ]
     Batch<- "Batch"
-    plots_con <- lapply(plot_cols, function(col) {
+    plots_con <- lapply(final_param_cols, function(col) {
       plot_df(control_df, col, Batch, paste0("Control: ", control))
     })
     rel_widths <- c(rel_widths, length(unique(control_df$Batch))/5 + 1.7)
@@ -255,10 +266,9 @@ rankedDisplays <- function(
   title_text <- gsub(":", ".", title_text)
   title_text <- gsub(" ", "_", title_text)
 
-  ggplot2::ggsave(paste0("Test_RankedSleep_",title_text, pdftitle, ".pdf"),
+  ggplot2::ggsave(paste0("RankedSleep_",title_text, pdftitle, ".pdf"),
                   combined_plot, width = sum(rel_widths), height = 9)
-  if(fitted){
+  if(!is.null(formula)){
     write.csv(dataset, paste0("PopulationSleep_",title_text, pdftitle, ".csv"))}
   return(ranking)
 }
-
