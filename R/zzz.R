@@ -26,7 +26,9 @@
 # r_files <- list.files(getwd(), pattern = "\\.R$", full.names = TRUE)
 # # Source each R file
 # for (r_file in r_files) {
+#   if(r_file == "corScatter"){}else{
 #   source(r_file) # should I take this out? and reformat it to remove source()?
+#   }
 # }
 # rm(r_file, r_files)
 

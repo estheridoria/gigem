@@ -2,7 +2,7 @@
 % Please edit documentation in R/runEachBatch.R
 \name{runEachBatch}
 \alias{runEachBatch}
-\title{Run the Each Batch Analysis (Internal)}
+\title{Run Complete Single Batch Analysis Workflow}
 \usage{
 runEachBatch(numDays, oneBatch, font, pref, divisions, pValues, incodeinfo)
 }
@@ -13,11 +13,13 @@ runEachBatch(numDays, oneBatch, font, pref, divisions, pValues, incodeinfo)
 
 \item{font}{A string variable determining the font style of the produced plots.}
 
-\item{pref}{A vector of preferences for generating specific plots (e.g., whether to generate concatenated plots).}
+\item{pref}{A numeric vector of plot preferences (e.g., pref\link{1} controls actograms, pref\link{6} controls combined plots).}
 
-\item{divisions}{A vector of meta variables to use the conditions within for fasceting plots}
+\item{divisions}{A character vector (length 3) containing the names of the meta-variables used for plot overlay and facetting (e.g., c("Treatment", "Genotype", "Environment")).}
 
 \item{pValues}{A TRUE/FALSE vector for if combined plots will display p values for 2-condition overlays.}
+
+\item{incodeinfo}{A data.table or data.frame containing the batch metadata (e.g., Sex, Genotype, Monitor ID) loaded from the "Main" R file.}
 }
 \value{
 This function does not return a value but performs a series of steps to process the data,

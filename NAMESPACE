@@ -2,6 +2,7 @@
 
 export(corMatrix)
 export(corScatter)
+export(create_sleeptime_plot)
 export(plotPreferences)
 export(processDays)
 export(rankedDisplay)

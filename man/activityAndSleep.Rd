@@ -7,16 +7,16 @@
 activityAndSleep(ExperimentData, loadinginfo_linked, pref)
 }
 \arguments{
-\item{ExperimentData}{An S4 object containing experiment metadata.
+\item{ExperimentData}{An S4 object of class ExperimentData.
 Must include a \code{monitorlist} (list of monitor IDs) and \code{Batch} (identifier for the batch being processed).}
 
-\item{loadinginfo_linked}{A file or data object linked with \code{behavr} metadata. Used to load Drosophila Activity Monitor (DAM) data.}
+\item{loadinginfo_linked}{A data object linked with \code{behavr} metadata. Used to load Drosophila Activity Monitor (DAM) data.}
 
 \item{pref}{A numeric vector specifying preferences for plot generation.
 If \code{pref[1] == 1}, both activity and sleep plots are generated.}
 }
 \value{
-A \code{data.table} object (\code{dt}) containing the loaded DAM data, with sleep annotations if applicable.
+A behavr table (\code{dt}) containing columns t, id, and asleep from the DAM system files.
 }
 \description{
 This internal helper function generates PDF plots of activity and sleep data for each monitor listed in \code{ExperimentData}.

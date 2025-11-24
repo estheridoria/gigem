@@ -266,7 +266,7 @@ rankedDisplay <- function(
   title_text <- gsub(":", ".", title_text)
   title_text <- gsub(" ", "_", title_text)
 
-  ggplot2::ggsave(paste0("RankedSleep_",title_text, pdftitle, ".pdf"),
+  ggplot2::ggsave(paste0("RankedSleep_",title_text, pdftitle, ".png"),
                   combined_plot, width = sum(rel_widths), height = 9)
   if(!is.null(formula)){
     write.csv(dataset, paste0("PopulationSleep_",title_text, pdftitle, ".csv"))}

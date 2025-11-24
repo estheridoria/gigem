@@ -18,14 +18,13 @@ concatCombinedPlots(
 
 \item{combined_sleepmeta}{A \code{data.table} summarized accross all batches containing the metadata associated with combined_sleepdata.}
 
-\item{summary_dt_final}{A \code{data.table} containing summary statistics with columns including \code{Light}, \code{Environment},
-\code{Genotype}, \code{Treatment}, \code{Sex} and various sleep metrics.}
+\item{summary_dt_final}{A \code{data.table} containing summary statistics with columns including \code{Light}, \code{Environment}, \code{Genotype}, \code{Treatment}, \code{Sex} and various sleep metrics.}
 
 \item{font}{A character string variable determining the font style of the produced plots.}
 
-\item{pValues}{A TRUE/FALSE vector for if combined plots will display p values for 2-condition overlays.}
+\item{divisions}{A character vector (length 3) containing the names of the meta-variables used for plot overlay and facetting (e.g., c("Treatment", "Genotype", "Environment")).}
 
-\item{control}{A character string specifying the control from \code{divisions[1]}.}
+\item{pValues}{A TRUE/FALSE vector for if combined plots will display p values for 2-condition overlays.}
 }
 \value{
 None. Plots are saved as PDF files.

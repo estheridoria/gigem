@@ -7,12 +7,14 @@
 corMatrix(
   condition1 = NULL,
   condition2 = NULL,
-  sex = NULL,
-  geno = NULL,
-  temp = NULL,
+  method = c("Diff", "Perc.Change"),
   treat = NULL,
+  temp = NULL,
   enviro = NULL,
-  Lights = NULL,
+  sex = NULL,
+  lights = NULL,
+  geno = NULL,
+  formula = NULL,
   font = c("plain", "bold", "italic", "bold.italic")
 )
 }
@@ -21,28 +23,31 @@ corMatrix(
 
 \item{condition2}{A string specifying a condition within the same experimental variable as \code{condition1} that is associated with the difference seen in sleep.}
 
-\item{sex}{A string specifying a Sex condition to subset the data by.}
-
-\item{geno}{A string specifying a Genotype condition to subset the data by.}
-
-\item{temp}{A string specifying a Temperature condition to subset the data by.}
+\item{method}{method is an argument for which calculation to use (Diff or Perc.Change). Diff computes \code{condition1}-\code{condition2}; Perc.Change computes (\code{condition1}-\code{condition2}) / \code{condition2}.}
 
 \item{treat}{A string specifying a Treatment to subset the data by.}
 
+\item{temp}{A string specifying a Temperature condition to subset the data by.}
+
 \item{enviro}{A string specifying a Environment condition to subset the data by.}
 
-\item{Lights}{A string specifying a Light condition to subset the data by.}
+\item{sex}{A string specifying a sex condition to subset the data by.}
 
-\item{font}{A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic")}
+\item{lights}{A string specifying a Light condition to subset the data by.}
+
+\item{geno}{A string specifying a Genotype condition to subset the data by.}
+
+\item{formula}{Independent variables & their interactions in predicting sleep.The specified formula is used in fitting a linear model to the data}
+
+\item{font}{A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic"). Default is "plain"}
 }
 \value{
-None. Plots are saved as PDF files, while p-values are saved as csv files.
+\code{NULL}. The function's primary output is saved to the working directory: a PDF file containing the correlation plot and a CSV file with the FDR-adjusted correlation p-values.
 }
 \description{
 Computes the relative sleep changes between two Treatments and generates a correlation matrix plot with significance annotations.
 }
 \details{
-Two \code{ggplot} objects containing the correlation matrix plot with significance annotations for percentage of sleep lost and raw number of minutes lost.
-The plots are saved as PDF files.
-A CSV file with correlation p-values is saved.
+The function reads data, optionally fits a linear model, and computes the correlation and FDR-adjusted p-values for the final sleep metrics. A single ggplot object (the correlation matrix plot with significance annotations) is saved as a PDF file, and the correlation p-values are saved as a CSV.
+Note: If 'Batch' is in your model, fix it at the first level to ensure a consistent baseline
 }

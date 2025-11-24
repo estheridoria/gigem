@@ -2,72 +2,70 @@
 % Please edit documentation in R/corScatter.R
 \name{corScatter}
 \alias{corScatter}
-\title{Perform K-Means Clustering on Sleep Data}
+\title{Display underlying data to the correlation plots}
 \usage{
 corScatter(
-  x = c("None", "mean_Bout_Length_D", "mean_Bout_Length_L", "n_Bouts_D", "n_Bouts_L",
-    "Sleep_Time_D", "Sleep_Time_L"),
-  y = c("None", "mean_Bout_Length_D", "mean_Bout_Length_L", "n_Bouts_D", "n_Bouts_L",
-    "Sleep_Time_D", "Sleep_Time_L"),
+  x = c(NULL, "Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D",
+    "mean_Bout_Length_L", "mean_Bout_Length_D"),
+  y = c(NULL, "Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D",
+    "mean_Bout_Length_L", "mean_Bout_Length_D"),
   condition1 = NULL,
   condition2 = NULL,
-  sex = NULL,
-  geno = NULL,
-  temp = NULL,
+  method = c("Diff", "Perc.Change"),
   treat = NULL,
+  temp = NULL,
   enviro = NULL,
-  Lights = NULL,
-  aPrioriConditions,
-  aPrioriVariable = c(c("Sex", "Genotype", "Temperature", "Treatment", "Environment",
-    "Light")),
+  sex = NULL,
+  lights = NULL,
+  geno = NULL,
+  aPrioriConditions = NULL,
+  aPrioriVariable = c(NULL, "Sex", "Genotype", "Temperature", "Treatment", "Environment",
+    "Light"),
   lbf = TRUE,
+  formula = NULL,
   font = c("plain", "bold", "italic", "bold.italic")
 )
 }
 \arguments{
-\item{x}{A string specifying the x-axis variable of the cluster plot as written in 'all_batches_norm_summary.csv' (e.g., "norm_Sleep_Time_All"). Default is None}
+\item{x}{A string specifying the x-axis variable of the cluster plot as written in 'all_batches_summary.csv' (e.g., "Sleep_Time_All").}
 
-\item{y}{A string specifying the y-axis variable of the cluster plot as written in 'all_batches_norm_summary.csv' (e.g., "norm_mean_Bout_length_L"). Default is None}
+\item{y}{A string specifying the y-axis variable of the cluster plot as written in 'all_batches_summary.csv' (e.g., "mean_Bout_length_L").}
 
-\item{condition1}{A string specifying a condition within one of the experimental variables. The difference is calculated as: \code{condition1}-\code{condition2}}
+\item{condition1}{A string specifying the condition used as the reference/numerator (e.g., "Iso") when calculating difference or percent change.}
 
-\item{condition2}{A string specifying a condition within the same experimental variable as \code{condition1} that is associated with the difference seen in sleep.}
+\item{condition2}{A string specifying the condition used as the comparison/denominator (e.g., "Grp") for difference or percent change.}
 
-\item{sex}{A string specifying a Sex condition to subset the data by.}
-
-\item{geno}{A string specifying a Genotype condition to subset the data by.}
-
-\item{temp}{A string specifying a Temperature condition to subset the data by.}
+\item{method}{The calculation method to use when 'condition1' and 'condition2' are specified. Must be "Diff" (calculates 'condition1\code{-}condition2\verb{) or "Perc.Change" (calculates (}condition1\code{-}condition2\verb{) / }condition2`).}
 
 \item{treat}{A string specifying a Treatment to subset the data by.}
 
+\item{temp}{A string specifying a Temperature condition to subset the data by.}
+
 \item{enviro}{A string specifying a Environment condition to subset the data by.}
 
-\item{Lights}{A string specifying a Light condition to subset the data by.}
+\item{sex}{A string specifying a sex condition to subset the data by.}
 
-\item{aPrioriConditions}{A vector of (partial spellings of the) conditions (e.g., c("L1", "L2", "S1", "S2", "CS")) in one of the experimental variables.}
+\item{lights}{A string specifying a Light condition to subset the data by.}
 
-\item{aPrioriVariable}{A string specifying the variable of the aPrioriConditions. Default is "Sex".}
+\item{geno}{A string specifying a Genotype condition to subset the data by.}
 
-\item{lbf}{Add the line of best fit onto the plot. Default is TRUE}
+\item{aPrioriConditions}{A vector of (partial spellings of the) conditions (e.g., c("L1", "L2", "S1", "S2", "CS")) in one of the experimental variables.These are primarily for visualization (coloring) and must exist as a group within the specified aPrioriVariable.}
 
-\item{font}{A character string determining the font style of the produced plots. Default is "plain".}
+\item{aPrioriVariable}{A string specifying the variable of the aPrioriConditions. This variable (e.g., "Genotype") provides the column where aPrioriConditions are looked up for plotting.}
+
+\item{lbf}{Add the line of best fit onto the plot.}
+
+\item{formula}{A string defining the independent variables (e.g., "Treatment * Sex") for a linear model (LM). If specified, the plot displays fitted values (residuals removed) instead of raw means. Should be NULL for raw data.}
+
+\item{font}{A character string determining the font style of the produced plots.}
 }
 \value{
-None. Saves the plot as a PDF file and outputs a CSV file with cluster assignments.
+Saves the plot as a PDF file and outputs a CSV file with cluster assignments.
 }
 \description{
-This function reads in a CSV file (\code{all_batches_stat.csv}) containing summarized and relativized data, performs K-means clustering to identify optimal clusters based on the Elbow Method, Silhouette Score, and Gap Statistic, and creates a plot of sleep trends with clustering information.
+This function reads in a CSV file (\code{all_batches_summary.csv})
 The user can provide a list of aPrioriConditions (e.g., Genotype categories) which visually differentiates them from each other in the plots.
-If the data does not have "Grp" and "Iso" Treatments, the 'all_batches_norm_summary.csv' will not be produced by 'runAllBatches' and this function will not run.
 }
 \details{
-This function performs K-means clustering on sleep data for two comparison Treatment groups (\code{x} and \code{y}). It automatically determines the optimal number of clusters using three methods:
-\itemize{
-\item Elbow Method
-\item Silhouette Score
-\item Gap Statistic
-The function generates and saves a series of plots showing the sleep trends, with points colored by cluster assignment and shaped by aPrioriConditions information.
-The clustering results are saved in a CSV file.
-}
+This plot best accompanies corMatrix, as it produces the same data, but with the actual points along the line of best fit. This can help with interpreting correlations.
 }

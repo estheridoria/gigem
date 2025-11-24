@@ -70,15 +70,8 @@ runOneBatch <- function(oneBatch, numDays = 2,
     temp_env <- new.env()
 
     # 2. Execute the script within that environment
-    source(r_file, local = temp_env)
-
-    # 3. Check if 'info' was created and extract it
-    if (exists("info", envir = temp_env, inherits = FALSE)) {
-      incodeinfo <- temp_env$info
-      Title <- temp_env$Title
-    } else {
-      warning(paste("Script did not define an 'info' object:", r_file))
-    }
+    source(r_file, local = TRUE)
+    incodeinfo<-info
   }
 
 
@@ -102,7 +95,7 @@ runOneBatch <- function(oneBatch, numDays = 2,
   }
 
   # Analyze the batch
-  runEachBatch(numDays, oneBatch, font, pref, divisions, pValues, incodeinfo, Title)
+  runEachBatch(numDays, oneBatch, font, pref, divisions, pValues, incodeinfo)
 
   setwd(original_wd)
 

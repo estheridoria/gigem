@@ -6,13 +6,13 @@
 \usage{
 runOneBatch(
   oneBatch,
-  numDays,
-  overlayVar = c("Treatment", "Sex", "Genotype", "Temperature", "Environment", "Light"),
-  rowVar = c("Genotype", "Sex", "Temperature", "Treatment", "Environment", "Light"),
-  columnVar = c("Environment", "Sex", "Genotype", "Temperature", "Treatment", "Light"),
-  plotSelection = c("All", "None", "Select"),
-  font = c("plain", "bold", "italic", "bold.italic"),
-  pValues = c(FALSE, TRUE)
+  numDays = 2,
+  overlayVar = "Treatment",
+  rowVar = "Genotype",
+  columnVar = "Environment",
+  plotSelection = "All",
+  font = "plain",
+  pValues = FALSE
 )
 }
 \arguments{

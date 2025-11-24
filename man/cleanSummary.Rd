@@ -7,6 +7,7 @@
 cleanSummary(
   ExperimentData,
   dt,
+  batchMeta,
   numDays,
   loadinginfo_linked,
   divisions,
@@ -22,7 +23,7 @@ Must include \code{Batch} (identifier for the batch being processed).}
 
 \item{numDays}{Number of days for displaying and calculating average metrics.}
 
-\item{loadinginfo_linked}{Linked metadata for the behavioral data.}
+\item{loadinginfo_linked}{A data object linked with \code{behavr} metadata. Used to load Drosophila Activity Monitor (DAM) data.}
 
 \item{divisions}{A list of grouping columns used for facetting plots.}
 

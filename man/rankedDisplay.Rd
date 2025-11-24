@@ -2,7 +2,7 @@
 % Please edit documentation in R/rankedDisplay.R
 \name{rankedDisplay}
 \alias{rankedDisplay}
-\title{Visualize Changes in Sleep Between}
+\title{Visualize Changes in Sleep Metrics (Ranked Bar Plots)}
 \usage{
 rankedDisplay(
   x = c("Temperature", "Sex", "Treatment", "Genotype", "Environment", "Light"),
@@ -14,56 +14,52 @@ rankedDisplay(
   temp = NULL,
   enviro = NULL,
   sex = NULL,
-  Lights = NULL,
+  lights = NULL,
   geno = NULL,
   ranking = NULL,
-  fitted = FALSE,
   formula = NULL,
   font = c("plain", "bold", "italic", "bold.italic")
 )
 }
 \arguments{
-\item{x}{The name of a variable in "all_batches_norm_summary.csv" to be used as the x-axis in the plot.}
+\item{x}{The name of a categorical variable (e.g., "Genotype", "Treatment") to be used as the x-axis for ranking and plotting.}
 
-\item{control}{The name of the control within the variable x.}
+\item{control}{The name of the control condition within the variable 'x'. If specified, a side-by-side comparison plot is generated showing the control's data broken down by Batch for context (only applicable when not using fitted values).}
 
-\item{condition1}{A string specifying a condition within one of the experimental variables. Default is NULL}
+\item{condition1}{A string specifying the condition used as the reference/numerator (e.g., "Iso") when calculating difference or percent change. Default is NULL.}
 
-\item{condition2}{A string specifying a condition within the same experimental variable as \code{condition1} that is associated with the percent difference seen in sleep. Default is NULL}
+\item{condition2}{A string specifying the condition used as the comparison/denominator (e.g., "Grp") for difference or percent change. Default is NULL.}
 
-\item{method}{The equation to be used either as the difference \code{condition1}-\code{condition2} or percent change, (\code{condition1}-\code{condition2}) / \code{condition2}}
+\item{method}{The calculation method to use when 'condition1' and 'condition2' are specified. Must be "Diff" (calculates \code{condition1} - \code{condition2}) or "Perc.Change" (calculates (\code{condition1} - \code{condition2}) / \code{condition2}).}
 
-\item{treat}{A string specifying a Treatment to subset the data by. Default is NULL}
+\item{treat}{A string specifying a Treatment to subset the data by. Default is NULL.}
 
-\item{temp}{A string specifying a Temperature condition to subset the data by. Default is NULL}
+\item{temp}{A string specifying a Temperature condition to subset the data by. Default is NULL.}
 
-\item{enviro}{A string specifying a Environment condition to subset the data by. Default is NULL}
+\item{enviro}{A string specifying a Environment condition to subset the data by. Default is NULL.}
 
-\item{sex}{A string specifying a sex condition to subset the data by. Default is NULL}
+\item{sex}{A string specifying a sex condition to subset the data by. Default is NULL.}
 
-\item{Lights}{A string specifying a Light condition to subset the data by. Default is NULL}
+\item{lights}{A string specifying a Light condition to subset the data by. Default is NULL.}
 
-\item{geno}{A string specifying a Genotype condition to subset the data by. Default is NULL}
+\item{geno}{A string specifying a Genotype condition to subset the data by. Default is NULL.}
 
-\item{ranking}{A tibble of one column containing the order of conditions displayed in the plot from variable x.}
+\item{ranking}{A vector of strings specifying the custom order of conditions for the x-axis. If NULL (default), the order is determined by the mean of the Total Sleep metric.}
 
-\item{fitted}{Use predicted values after controlling for variables and Batch effects. Default = FALSE}
+\item{formula}{Independent variables & their interactions in predicting sleep. If non-NULL, predicted values (fitted values) from the LM are used instead of raw means.}
 
-\item{formula}{Independent variables & their interactions in predicting sleep. Should be NULL if fitted = FALSE.}
-
-\item{font}{A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic"). Default is "plain"}
-
-\item{limits}{A list of two numerics to be the upper and lower limits of the plot. Default is c(-100, 1500)}
+\item{font}{A character string determining the font style of the produced plots. ("plain", "bold", "italic", or "bold.italic"). Default is "plain".}
 }
 \value{
-conditional. If the ranking is NULL (default), then the ranking used in the plots will be returned to be used as the ranking in subsequent rankedDisplay plots. Otherwise, no return. Saves the plots as a PDF file labeled \code{RankedSleep...}
+A vector of strings containing the final, calculated ranking (order) of conditions from the 'x' variable. Saves the plots as a PDF file labeled \code{RankedSleep...}.
 }
 \description{
-This function generates bar plots to visualize the changes in sleep across different Genotypes and Treatments.
-It reads a CSV file containing normalized sleep data, calculates the changes in sleep, and then creates plots
-for each of the sleep-related metrics (\code{TotalSleepChange}, \code{DayTimeSleepChange}, \code{NightTimeSleepChange}).
-Two plots are made showing the normalized sleeploss for the Treatment of interest (\code{treat}).
-One plot contains only the \code{control} entry in \code{x} while the other plot contains every entry except \code{control}.
-The plots are saved as PDFs labeled, "NormalizedSleepLoss...".
+This function generates ranked bar plots to visualize changes or absolute values of sleep metrics (Total, Day, Night).
+It reads the aggregated sleep data from \code{all_batches_summary.csv}, calculates the difference or percent change
+between two conditions if specified, and can optionally use fitted values derived from a linear model (LM)
+to control for nuisance variables. The plots are generated for each of the three sleep metrics.
 }
-\keyword{internal}
+\details{
+The primary output is a set of bar plots where the x-axis is ranked based on the Total Sleep metric (or Total Sleep Difference/Change).
+The data is summarized at the population mean level before plotting.
+}

@@ -19,8 +19,7 @@ statsSummary(ExperimentData, dt, groups, norm_factor)
 A data.table containing the summary statistics, which is also saved as a CSV file.
 }
 \description{
-This function calculates summary statistics for specified groups using the \code{GenerateSE} function and writes
-the results to a CSV file. The summary includes the raw data processed for each group based on the provided
-normalization factor.
+This function calculates summary statistics for specified groups using the \code{summarySE} function and writes
+the results to a CSV file.
 }
 \keyword{internal}

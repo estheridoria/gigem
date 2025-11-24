@@ -49,9 +49,9 @@
 #' 4. The final CSV files, \code{all_batches_norm_summary.csv} and \code{all_batches_summary.csv},
 #'    are saved in the parent directory, containing combined results for all batches.
 runAllBatches <- function(numDays = 2,
-                          overlayVar = "Treatment",
-                          rowVar = "Genotype",
-                          columnVar = "Environment",
+                          overlayVar,
+                          rowVar,
+                          columnVar,
                           plotSelection = "All",
                           font = "plain",
                           pValues = FALSE) {
@@ -81,9 +81,24 @@ runAllBatches <- function(numDays = 2,
   run_r_files_in_dir <- function(dir) {
     setwd(dir) # Change to the target directory
     r_files <- list.files(dir, pattern = "^Main[0-9_a-zA-Z]*\\.R$", full.names = TRUE) # Get the list of R files in the directory
+
     for (r_file in r_files) {
-      source(r_file) # Source each R file
+      # Create isolated environment
+      temp_env <- new.env()
+
+      # Source into that environment
+      sys.source(r_file, envir = temp_env)
+
+      # Extract `info` if present
+      if (exists("info", envir = temp_env)) {
+        incodeinfo <- get("info", envir = temp_env)
+      } else {
+        warning(paste("No 'info' object found in:", r_file))
+      }
     }
+
+
+    return(incodeinfo)
   }
   # Filter directories that match the "Batch" pattern.
   batch_dirs <- grep("Batch[0-9_a-zA-Z]*", all_dirs, value = TRUE)
@@ -140,8 +155,8 @@ runAllBatches <- function(numDays = 2,
 
   # Analyze each batch
   for (oneBatch in batch_dirs){
-    run_r_files_in_dir(oneBatch)
-    incodeinfo <- info
+    incodeinfo <- run_r_files_in_dir(oneBatch)
+    # incodeinfo <- info
     # add "monitor" to the info file
     incodeinfo[["monitor"]]<- paste0("M", gsub("\\D", "", incodeinfo$file))
     #change any NA values to "NA" to prevent errors
@@ -156,7 +171,7 @@ runAllBatches <- function(numDays = 2,
 # Concatenate files from batches------------------------------------------------
 
   # Summaries: relative, stat, summary, & possibly sleep, meta
-  concatList<- c("^stat_Batch[0-9_a-zA-Z]*\\.csv$", "^summary_Batch[0-9_a-zA-Z]*\\.csv$") #, "ks.results_L.csv$", "^relative_summary_Batch[0-9_a-zA-Z]*\\.csv$"
+  concatList<- c("^stat_Batch[0-9_a-zA-Z]*\\.csv$", "^summary[0-9_a-zA-Z]*\\.csv$") #, "ks.results_L.csv$", "^relative_summary_Batch[0-9_a-zA-Z]*\\.csv$"
   concatNames<- c("all_batches_stat.csv", "all_batches_summary.csv") #, "all_batches_ks.result_L.csv", "all_batches_relative_summary.csv"
 
   if (pref[7] == 1){ # concatenated sleepdata & metadata --> genotypePlots
@@ -194,5 +209,6 @@ runAllBatches <- function(numDays = 2,
 
   if(pref[7] ==1){
     concatCombinedPlots(combined_sleepdata, combined_sleepmeta, summary_dt_final, font, divisions, pValues)
+  }
   }
 }

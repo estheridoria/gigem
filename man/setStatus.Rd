@@ -12,7 +12,7 @@ setStatus(info, regionID_targ, file_targ)
 
 \item{regionID_targ}{The ID of the region for which the status should be updated.}
 
-\item{monitor_targ}{The target monitor for which the status should be updated.}
+\item{file_targ}{The target monitor for which the status should be updated.}
 }
 \value{
 A data.table with the updated status for the specified region and monitor.

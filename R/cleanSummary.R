@@ -93,7 +93,6 @@ cleanSummary <- function(ExperimentData, dt, batchMeta, numDays, loadinginfo_lin
   #summary_dt_final<- data.table::data.table(summary_dt_final[,1:13],
     # Batch = ExperimentData@Batch, summary_dt_final[,14:ncol(summary_dt_final)])
   # add batch column
-  summary_dt_final[, Batch := ExperimentData@Batch]
 
   # move Batch to before Sleep_Time_All
   target_index <- match("Sleep_Time_All", names(summary_dt_final))

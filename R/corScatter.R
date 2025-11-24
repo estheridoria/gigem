@@ -7,7 +7,7 @@
 #' @param y A string specifying the y-axis variable of the cluster plot as written in 'all_batches_summary.csv' (e.g., "mean_Bout_length_L").
 #' @param condition1 A string specifying the condition used as the reference/numerator (e.g., "Iso") when calculating difference or percent change.
 #' @param condition2 A string specifying the condition used as the comparison/denominator (e.g., "Grp") for difference or percent change.
-#' @param method The calculation method to use when 'condition1' and 'condition2' are specified. Must be "Diff" (calculates \condition1` - `condition2`) or "Perc.Change" (calculates (`condition1` - `condition2`) / `condition2`).
+#' @param method The calculation method to use when 'condition1' and 'condition2' are specified. Must be "Diff" (calculates 'condition1` - `condition2`) or "Perc.Change" (calculates (`condition1` - `condition2`) / `condition2`).
 #' @param treat A string specifying a Treatment to subset the data by.
 #' @param temp A string specifying a Temperature condition to subset the data by.
 #' @param enviro A string specifying a Environment condition to subset the data by.
@@ -22,7 +22,7 @@
 #'
 #' @details
 #' This plot best accompanies corMatrix, as it produces the same data, but with the actual points along the line of best fit. This can help with interpreting correlations.
-#' @return \code{NULL}. Saves the plot as a PDF file and outputs a CSV file with cluster assignments.
+#' @return Saves the plot as a PDF file and outputs a CSV file with cluster assignments.
 #' @export
 corScatter <- function(x = c(NULL, "Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L","mean_Bout_Length_D"),
                        y = c(NULL, "Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L", "n_Bouts_D", "mean_Bout_Length_L","mean_Bout_Length_D"),
@@ -34,8 +34,7 @@ corScatter <- function(x = c(NULL, "Sleep_Time_All", "Sleep_Time_L", "Sleep_Time
  param_cols<- c("Sleep_Time_All", "Sleep_Time_L", "Sleep_Time_D", "n_Bouts_L","n_Bouts_D", "mean_Bout_Length_L", "mean_Bout_Length_D")
  meta_vars <- c("Sex", "Genotype", "Temperature", "Treatment", "Environment", "Light")
 
- # Corrected argument validation section:
-
+ # Corrected argument validation section
  if (!is.null(x) && length(x) == 1) {
    X <- match.arg(x, param_cols)
  } else {
@@ -322,7 +321,7 @@ corScatter <- function(x = c(NULL, "Sleep_Time_All", "Sleep_Time_L", "Sleep_Time
 
     myplot <- clustered_plot(plot_data, font, ptsize = 2, title = title_text, x = names(df)[colx], y = names(df)[coly],lbf = lbf, color = colors, TRUE)
     title_text <- gsub(":", ".", title_text)
-    ggplot2::ggsave(paste0("CorrelationScatterplot_", title_text,Y,X, pdftitle,".pdf"), myplot, height = 5, width = 6.3)
+    ggplot2::ggsave(paste0("CorrelationScatterplot_", title_text,Y,X, pdftitle,".png"), myplot, height = 5, width = 6.3)
 
   } else {
     plots <- list()
@@ -414,6 +413,6 @@ corScatter <- function(x = c(NULL, "Sleep_Time_All", "Sleep_Time_L", "Sleep_Time
     title_text <- gsub(" ", "", title_text)
     title_text <- gsub(":", ".", title_text)
 
-    ggplot2::ggsave(paste0("CorrelationScatterplot_", title_text,pdftitle, ".pdf"), final_plot, height = 14, width = 16.5)
+    ggplot2::ggsave(paste0("CorrelationScatterplot_", title_text,pdftitle, ".png"), final_plot, height = 14, width = 16.5)
   }
 }

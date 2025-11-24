@@ -26,11 +26,11 @@
 #' 8. Writes relevant output files, including the final summary and normalized statistics.
 #'
 #' @keywords Internal
-runEachBatch <- function(numDays, oneBatch, font, pref, divisions, pValues, incodeinfo, Title) {
+runEachBatch <- function(numDays, oneBatch, font, pref, divisions, pValues, incodeinfo) {
 
   # Create an object that contains all of your inputs
   ExperimentData <- new("ExperimentData",
-                        Batch = Title,
+                        Batch = unique(incodeinfo$Batch)[1],
                         monitorlist = as.list(unique(incodeinfo$monitor)),
                         genotypelist = as.list(unique(incodeinfo$genotype)),
                         loadinginfo = incodeinfo)
@@ -69,7 +69,7 @@ runEachBatch <- function(numDays, oneBatch, font, pref, divisions, pValues, inco
   batchMeta <- behavr::meta(dt_final)
 
   # Write bout length pdf, and calculate bout and latency stats
-  dt_finalSummary <- cleanSummary(ExperimentData, dt = dt_final, batchMeta, numDays, loadinginfo_linked = loading_metadata, divisions, pref, font)
+  dt_finalSummary <- cleanSummary(ExperimentData, dt = dt_final, batchMeta, numDays, loadinginfo_linked, divisions, pref, font)
 
   if (pref[6] == 1){
     # Generate concatenated plots
