@@ -75,26 +75,23 @@ runAllBatches <- function(numDays = 2,
 
   # Save the current working directory
   original_wd <- getwd()
+
   # Get the list of all sub directories
   all_dirs <- list.dirs(original_wd, full.names = TRUE, recursive = FALSE)
+
   # Function to iterate through Meta.r files
   run_r_files_in_dir <- function(dir) {
     setwd(dir) # Change to the target directory
     r_files <- list.files(dir, pattern = "^Main[0-9_a-zA-Z]*\\.R$", full.names = TRUE) # Get the list of R files in the directory
 
+    # Execute each R file within a temporary local environment
     for (r_file in r_files) {
-      # Create isolated environment
+      # 1. Create a new, temporary environment for execution
       temp_env <- new.env()
 
-      # Source into that environment
-      sys.source(r_file, envir = temp_env)
-
-      # Extract `info` if present
-      if (exists("info", envir = temp_env)) {
-        incodeinfo <- get("info", envir = temp_env)
-      } else {
-        warning(paste("No 'info' object found in:", r_file))
-      }
+      # 2. Execute the script within that environment
+      source(r_file, local = TRUE)
+      incodeinfo<-info
     }
 
 
@@ -110,8 +107,8 @@ runAllBatches <- function(numDays = 2,
   # Warning: Iterate over each Main file and concatenate to make sure everything is formatted correctly
   all_tables <- list()
   for (batch_dir in batch_dirs) {
-    run_r_files_in_dir(batch_dir)
-    all_tables[[length(all_tables) + 1]] <- info
+    incodeinfo <- run_r_files_in_dir(batch_dir)
+    all_tables[[length(all_tables) + 1]] <- incodeinfo
   }
   # Warning: Custom function to stop on specific warning if columns are not aligned with each batch's main files
   combine_with_warning_check <- function(dt_list) {
@@ -134,6 +131,7 @@ runAllBatches <- function(numDays = 2,
     })
     return()
   }
+  combine_with_warning_check(all_tables)
 
   # Set the stage---------------------------------------------------------------
 
@@ -156,7 +154,6 @@ runAllBatches <- function(numDays = 2,
   # Analyze each batch
   for (oneBatch in batch_dirs){
     incodeinfo <- run_r_files_in_dir(oneBatch)
-    # incodeinfo <- info
     # add "monitor" to the info file
     incodeinfo[["monitor"]]<- paste0("M", gsub("\\D", "", incodeinfo$file))
     #change any NA values to "NA" to prevent errors
