@@ -24,7 +24,7 @@ Install the `devtools` package and then use it to install `gigem` directly from 
 ```main
 install.packages("devtools")
 library(devtools)
-install_github('Wanhelilab/gigem')
+install_github('estheridoria/gigem')
 library(gigem)
 ```
 

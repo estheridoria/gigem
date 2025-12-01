@@ -1,7 +1,0 @@
-"","Statistic","P_value","Method","Data","Batch"
-"D",0.093866541052669,1.55937570633924e-08,"Asymptotic two-sample Kolmogorov-Smirnov test","Iso-Grp_M_SIP-S2-8L","Batch9_2Days"
-"D1",0.0944476123602124,4.04460025245079e-05,"Asymptotic two-sample Kolmogorov-Smirnov test","Iso-Grp_M_SIP-S2-1L","Batch9_2Days"
-"D2",0.0471207165080313,0.0371384352717506,"Asymptotic two-sample Kolmogorov-Smirnov test","Iso-Grp_M_SIP-S2-10L","Batch9_2Days"
-"D3",0.0694234808646808,0.000546126694511484,"Asymptotic two-sample Kolmogorov-Smirnov test","Iso-Grp_M_SIP-L2-1L","Batch9_2Days"
-"D4",0.0504731445015569,0.00734273675050368,"Asymptotic two-sample Kolmogorov-Smirnov test","Iso-Grp_M_SIP-L2-2L","Batch9_2Days"
-"D5",0.0207433302559385,0.599575839324697,"Asymptotic two-sample Kolmogorov-Smirnov test","Iso-Grp_M_CSL","Batch9_2Days"
