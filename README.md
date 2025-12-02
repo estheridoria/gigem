@@ -19,7 +19,7 @@ The `gigem` package provides a comprehensive pipeline for processing raw **Droso
 
 ### 0.1 Install gigem
 
-Install the `devtools` package and then use it to install `gigem` directly from GitHub:
+Install the `devtools` package in your R terminal then use it to install `gigem` directly from GitHub:
 
 ```main
 install.packages("devtools")
@@ -27,6 +27,7 @@ library(devtools)
 install_github('estheridoria/gigem')
 library(gigem)
 ```
+* note: if you encounter an error, install Rtools from https://cran.r-project.org/bin/windows/Rtools/
 
 ### 0.2 Download the template files
 
@@ -37,7 +38,7 @@ separate files.
 
 ``` main
 # Download "HitRun.R"
-auth_url <- paste0("https://raw.githubusercontent.com/estheridoria/gigem/main/HitRun.R")
+auth_url <- paste0("https://raw.githubusercontent.com/estheridoria/gigem.Example/main/HitRun.R")
 download.file(auth_url, destfile = "HitRun.R", method = "libcurl")
 
 # Download "Main1.R"
