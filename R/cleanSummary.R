@@ -48,7 +48,8 @@ cleanSummary <- function(ExperimentData, dt, batchMeta, numDays, loadinginfo_lin
       plot<- ggetho::ggetho(bout_dt, ggplot2::aes(x = t, y = duration / 60, colour = .data[[divisions[1]]]), time_wrap = behavr::hours(24)) +
         ggetho::stat_pop_etho() +
         ggetho::stat_ld_annotations() +
-        ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
+        ggplot2::scale_color_manual(values = scales::alpha(c("#0000FF", "#FF0000", "#008B8B", "#808080", "#ADD8E6", "#FFA500","#FFD700", "#32CD32","#800080", "#000080"), alpha = .7)) +
+        ggplot2::scale_fill_manual(values = scales::alpha(c("#0000FF", "#FF0000", "#008B8B", "#808080", "#ADD8E6", "#FFA500","#FFD700", "#32CD32","#800080", "#000080"), alpha = .6)) +
         ggprism::theme_prism(base_fontface = font) +
         ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[2])),
                             cols = ggplot2::vars(!!rlang::sym(divisions[3]))) +

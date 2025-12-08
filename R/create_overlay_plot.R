@@ -5,8 +5,8 @@ create_overlay_plot <- function(filename, batchMeta, plot_data, divisions, numb_
   pop_sleep_plot <- ggetho::ggetho(plot_data, ggplot2::aes(x = t, y = asleep, colour = .data[[divisions[1]]]), time_wrap = wrap_time) +
     ggetho::stat_pop_etho() +
     ggetho::stat_ld_annotations() +
-    ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
-    ggprism::theme_prism(base_fontface = font, base_line_size = 0.7) +
+    ggplot2::scale_color_manual(values = scales::alpha(c("#0000FF", "#FF0000", "#008B8B", "#808080", "#ADD8E6", "#FFA500","#FFD700", "#32CD32","#800080", "#000080"), alpha = .7)) +
+    ggplot2::scale_fill_manual(values = scales::alpha(c("#0000FF", "#FF0000", "#008B8B", "#808080", "#ADD8E6", "#FFA500","#FFD700", "#32CD32","#800080", "#000080"), alpha = .6)) +    ggprism::theme_prism(base_fontface = font, base_line_size = 0.7) +
     ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[2])),
                         cols = ggplot2::vars(!!rlang::sym(divisions[3])))+
     ggplot2::labs(y = "Sleep (%)") +

@@ -14,42 +14,34 @@
 render_sleep_profile_plot <- function(plot_data, divisions, batchMeta, numb_days, font,
                                       overlay_mode = FALSE, wrap_time = behavr::hours(24), p1title = NULL) {
 
-  # 1. Define Facet Structure and Height based on Mode
-  group_col <- divisions[1]
-
-  if (overlay_mode) {
-    # Overlay mode: divisions[2] in the rows (for general use) or NULL (for combinedPlots)
-    # For combinedPlots, we ignore divisions[2] and [3] facets, and only use the aesthetic.
-    facet_rows <- NULL
-    plot_height <- 4 # A fixed small height is appropriate when not using facets for combination
-  } else {
-    # Population mode: divisions[1] and divisions[2] in the rows
-    facet_rows <- ggplot2::vars(!!rlang::sym(group_col), !!rlang::sym(divisions[2]))
-    plot_height <- 3 * length(unique(batchMeta[[divisions[2]]])) * length(unique(batchMeta[[group_col]])) + 2
+  if (is.null(wrap_time)){
+    wrap_time<- behavr::days(numb_days)
   }
-
-  # Calculate Plot Width
+  # 1. Define width and height
   plot_width <- 5 * numb_days * length(unique(batchMeta[[divisions[3]]])) + 2
 
+  if (overlay_mode) {
+    row_fascets <- ggplot2::vars(!!rlang::sym(divisions[2]))
+    plot_height <- 4 * length(unique(batchMeta[[divisions[2]]]))
+    } else {
+    plot_height <- 4 * length(unique(batchMeta[[divisions[2]]])) * length(unique(batchMeta[[divisions[1]]]))
+    row_fascets <- ggplot2::vars(!!rlang::sym(divisions[1]), !!rlang::sym(divisions[2]))
+}
+
   # --- Plot Generation ---
-  pop_sleep_plot <- ggetho::ggetho(plot_data, ggplot2::aes(x = t, y = asleep, colour = .data[[group_col]]),
-                                   time_wrap = wrap_time) +
+    pop_sleep_plot <- ggetho::ggetho(plot_data, ggplot2::aes(x = t, y = asleep, colour = .data[[divisions[1]]]), time_wrap = wrap_time) +
     ggetho::stat_pop_etho() +
     ggetho::stat_ld_annotations() +
-    ggplot2::scale_color_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
-    ggplot2::scale_fill_manual(values = c("#0000FF", "#FF0000", "#008B8B", "#808080", "#FFA500","#ADD8E6")) +
-    # Facet (only if not in overlay_mode, or if using a simple row facet)
-    # Note: If overlay_mode is TRUE, the 'facet_rows' logic above must handle the simple overlay case.
-    { if (!is.null(facet_rows)) {
-      ggplot2::facet_grid(rows = facet_rows, cols = ggplot2::vars(!!rlang::sym(divisions[3])))
-    } else {
-      # If overlay_mode is for combinedPlots, use labs for title and theme to position legend
-      ggplot2::labs(title = p1title)
-    }
-    } +
-
+    ggplot2::scale_color_manual(values = scales::alpha(c("#0000FF", "#FF0000",
+                                "#008B8B", "#808080", "#ADD8E6", "#FFA500","#FFD700", "#32CD32","#800080", "#000080"), alpha = .7)) +
+    ggplot2::scale_fill_manual(values = scales::alpha(c("#0000FF", "#FF0000",
+                               "#008B8B", "#808080", "#ADD8E6", "#FFA500","#FFD700", "#32CD32","#800080", "#000080"), alpha = .6)) +
+    # Facet
+      ggplot2::facet_grid(rows = row_fascets, cols = ggplot2::vars(!!rlang::sym(divisions[3])))+
+      # Only combinedPlots has a p1title. If overlay_mode is for combinedPlots, use labs for title and theme to position legend
+      ggplot2::labs(title = p1title) +
     # Aesthetics
-    ggplot2::labs(y = "Sleep (%)") +
+    #ggplot2::labs(y = "Sleep (%)") +
     ggplot2::scale_y_continuous(limits = c(0,1), labels = scales::percent) +
     ggprism::theme_prism(base_fontface = font, base_line_size = 0.7) +
     ggplot2::theme(axis.title.x = ggplot2::element_text(size = 20),
