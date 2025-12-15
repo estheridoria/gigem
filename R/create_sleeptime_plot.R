@@ -40,7 +40,7 @@ create_sleeptime_plot <- function(plot_data, yParam, Yname, divisions, limits, g
   # 3. Add individual data points and stats (using the wider color palette)
   pointplot <- pointplot +
     ggbeeswarm::geom_beeswarm(ggplot2::aes(fill = .data[[divisions[1]]], color = .data[[divisions[1]]]),
-                              dodge.width = 0.9, shape = 21, cex = 3.5) +
+                              dodge.width = 0.5, shape = 21, cex = 3.5) +
     ggplot2::scale_color_manual(values = scales::alpha(c("#0000FF", "#FF0000", "#008B8B", "#808080", "#ADD8E6", "#FFA500","#FFD700", "#32CD32","#800080", "#000080"), alpha = .7)) +
     ggplot2::scale_fill_manual(values = scales::alpha(c("#0000FF", "#FF0000", "#008B8B", "#808080", "#ADD8E6", "#FFA500","#FFD700", "#32CD32","#800080", "#000080"), alpha = .6)) +
     ggplot2::geom_errorbar(stat = "summary", fun.data = ggplot2::mean_cl_boot, width = 0.2, color = "black") +

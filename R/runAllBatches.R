@@ -175,7 +175,6 @@ runAllBatches <- function(numDays = 2,
   concatList <- c(concatList, "^sleepdata_Batch[0-9_a-zA-Z]*\\.csv$", "^sleepmeta_Batch[0-9_a-zA-Z]*\\.csv$")
   concatNames <- c(concatNames, "all_sleepdata.csv", "all_sleepmeta.csv")
   }
-print(concatList)
   for (i in seq_along(concatList)){
 
     # Get all file paths matching the pattern across all batch directories

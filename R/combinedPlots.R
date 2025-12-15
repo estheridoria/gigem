@@ -134,10 +134,11 @@ combinedPlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
       # Combine plots
         rel_width <- 1 + (u / 2) + ((u - 1) * 0.1)
 suppressWarnings(
-          combined_plot <- cowplot::plot_grid(p1, p2, p3, p4, p5, p6, p7, p8, ncol = 8, align = "h", axis = "tb",
-                                              rel_widths = c(addedspace, rep(rel_width, 7)))
+          combined_plot <- cowplot::plot_grid(p1, p2, p3, p4, p5, p6, p7, p8,
+                                              ncol = 8, align = "h", axis = "tb",
+                                              rel_widths = c(2, rep(1, 7)))
 )
-total_width <- addedspace + 7 * rel_width
+#total_width <- addedspace + 7 * rel_width
 
 p1titlee <- gsub(" ", "_", p1title)
 p1titlee <- gsub(":", ".", p1titlee)
@@ -145,7 +146,7 @@ p1titlee <- gsub("/", ".", p1titlee)
 
         # Save combined plot
         ggplot2::ggsave(paste0("CombinedPlots", p1titlee, ExperimentData@Batch, ".pdf"),
-                        combined_plot, width = total_width, height = 4)
+                        combined_plot, width = 14, height = 4)
 }, by = 1:nrow(condition_combinations)]
 
   #-------------

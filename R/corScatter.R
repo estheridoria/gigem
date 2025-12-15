@@ -321,7 +321,7 @@ corScatter <- function(x = c(NULL, "Sleep_Time_All", "Sleep_Time_L", "Sleep_Time
 
     myplot <- clustered_plot(plot_data, font, ptsize = 2, title = title_text, x = names(df)[colx], y = names(df)[coly],lbf = lbf, color = colors, TRUE)
     title_text <- gsub(":", ".", title_text)
-    ggplot2::ggsave(paste0("CorrelationScatterplot_", title_text,Y,X, pdftitle,".png"), myplot, height = 5, width = 6.3)
+    ggplot2::ggsave(paste0("CorrelationScatterplot_", title_text,Y,X, pdftitle,".pdf"), myplot, height = 5, width = 6.3)
 
   } else {
     plots <- list()
@@ -413,6 +413,6 @@ corScatter <- function(x = c(NULL, "Sleep_Time_All", "Sleep_Time_L", "Sleep_Time
     title_text <- gsub(" ", "", title_text)
     title_text <- gsub(":", ".", title_text)
 
-    ggplot2::ggsave(paste0("CorrelationScatterplot_", title_text,pdftitle, ".png"), final_plot, height = 14, width = 16.5)
+    ggplot2::ggsave(paste0("CorrelationScatterplot_", title_text,pdftitle, ".pdf"), final_plot, height = 14, width = 16.5)
   }
 }

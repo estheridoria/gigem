@@ -6,9 +6,9 @@ README
 
 [Li Lab Page](https://wanheli2022.wixsite.com/wanheli)
 
-Created by Esther Doria, Wanhe Li, & Daniel Nguyen August 2025
+Created by Esther Doria & Wanhe Li December 2025
 
-Copyright (C) 2025-Present Esther Doria, Wanhe Li, & Daniel Nguyen
+Copyright (C) 2025-Present Esther Doria & Wanhe Li
 
 Contact: <estheridoria@gmail.com>
 ## gigem: Group Isolation Gauge Effect Metrics
@@ -29,7 +29,7 @@ library(gigem)
 ```
 * note: if you encounter an error, install Rtools from https://cran.r-project.org/bin/windows/Rtools/
 
-### 0.2 Download the template files
+### 0.2 Download the template files (optional if downloading example data)
 
 Run the code below to copy the necessary template files (HitRun.R and Main.R) into your current working directory:
 
@@ -37,22 +37,23 @@ Alternatively, manually copy and paste the code from section 5 into two
 separate files.
 
 ``` main
-# Download "HitRun.R"
-auth_url <- paste0("https://raw.githubusercontent.com/estheridoria/gigem.Example/main/HitRun.R")
-download.file(auth_url, destfile = "HitRun.R", method = "libcurl")
-
-# Download "Main1.R"
-auth_url <- paste0("https://raw.githubusercontent.com/estheridoria/gigem.Example/main/Main.R")
-download.file(auth_url, destfile = "Main.R", method = "libcurl")
+# Download "HitRun.R" & "Main.r" template files
+download.file("https://github.com/estheridoria/gigem/releases/download/v1.0.0/gigem_templates.zip",
+  destfile = "gigem_templates.zip")
 ```
 
-### 0.3 Download example analysis
+### 0.3 Download example or full SIP analysis (optional)
 
 To explore the package capabilities with example data, download the repository into a subdirectory named "ExampleAnalysis" (optional).
 
 ``` main
-dest_dir <- paste0(getwd(),"/ExampleAnalysis")
-system(paste("git clone", "https://github.com/WanheLiLab/gigem.Example.git", dest_dir))
+# Download example analysis
+download.file("https://github.com/estheridoria/gigem/releases/download/v1.0.0/ExampleAnalysis.zip",
+  destfile = "ExampleAnalysis.zip")
+  
+# Download full SIP analysis
+download.file("https://github.com/estheridoria/gigem/releases/download/v1.0.0/FullSIPAnalysis.zip",
+  destfile = "FullSIPAnalysis.zip")
 ```
 
 ## 1. Experimental Parameters: Creating a ‘Main.R’ File
