@@ -64,10 +64,28 @@ rankedDisplay <- function(
   }
   title_text <- paste(title_parts, collapse = "_")
 
-  # Summarize sleep data by temp, Sex, Treatment, and Genotype, enviro calculating means for sleep-related variables.
+  # flag outliers
+  combined_data <- combined_data |>
+    dplyr::group_by(across(all_of(meta_vars))) |>
+    dplyr::mutate(
+      SD_Distance = (Sleep_Time_All - mean(Sleep_Time_All, na.rm = TRUE)) / sd(Sleep_Time_All, na.rm = TRUE),
+      Is_Outlier = !is.na(SD_Distance) & abs(SD_Distance) > 3
+    ) |>
+    dplyr::ungroup()
+  
+  #export list of outliers
+  outlier_report <- combined_data |>
+    dplyr::filter(Is_Outlier == TRUE) |>
+    dplyr::select(id, Genotype, Batch, Sleep_Time_All, SD_Distance)
+  
+  write.csv(outlier_report, "outlierFlies.csv", row.names = FALSE)
+  
+  # rm outliers & summarize sleep data by temp, Sex, Treatment, and Genotype, Enviro calculating means for sleep-related variables.
   dataset <- combined_data |>
+    dplyr::filter(Is_Outlier == FALSE)|>
     dplyr::group_by(across(all_of(c(meta_vars, "Batch")))) |>
     dplyr::summarise(across(all_of(param_cols), ~ mean(.x, na.rm = TRUE)), .groups = "keep")
+  
   # Use fitted values if fitted = TRUE
   if (!is.null(formula)){#predicted values when controlling for the effects of stuffs
 
@@ -93,18 +111,7 @@ rankedDisplay <- function(
           matched_vars <- c(matched_vars, var) # Add to our results if matched
         }
       }
-      # vars_to_factorize <- matched_vars#[matched_vars != "Batch"]
-      # # Loop through the column names to factorize
-      # for (var_name in vars_to_factorize) {
-      #   # Check if the column exists in your data frame to prevent errors
-      #   if (var_name %in% colnames(dataset)) {
-      #     dataset[[var_name]] <- as.factor(dataset[[var_name]])
-      #     message(paste0("Converted '", var_name, "' to factor."))
-      #   } else {
-      #     message(paste0("Warning: Column '", var_name, "' not found in data frame. Skipping factorization."))
-      #   }
-      # }
-      # print(new_formula)
+
       fit <- lm(new_formula, data = dataset)
       saved.fit<-rbind(saved.fit, summary(fit)$r.squared)
       # Create new_data for predictions
@@ -266,7 +273,7 @@ rankedDisplay <- function(
   title_text <- gsub(":", ".", title_text)
   title_text <- gsub(" ", "_", title_text)
 
-  ggplot2::ggsave(paste0("RankedSleep_",title_text, pdftitle, ".png"),
+  ggplot2::ggsave(paste0("RankedSleep_",title_text, pdftitle, ".pdf"),
                   combined_plot, width = sum(rel_widths), height = 9)
   if(!is.null(formula)){
     write.csv(dataset, paste0("PopulationSleep_",title_text, pdftitle, ".csv"))}

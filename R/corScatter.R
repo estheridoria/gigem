@@ -99,8 +99,25 @@ corScatter <- function(x = c(NULL, "Sleep_Time_All", "Sleep_Time_L", "Sleep_Time
   }
   title_text <- paste(title_parts, collapse = "_")
 
-  # Summarize sleep data by temp, Sex, Treatment, and Genotype, enviro calculating means for sleep-related variables.
+  # flag outliers
+  combined_data <- combined_data |>
+    dplyr::group_by(across(all_of(meta_vars))) |>
+    dplyr::mutate(
+      SD_Distance = (Sleep_Time_All - mean(Sleep_Time_All, na.rm = TRUE)) / sd(Sleep_Time_All, na.rm = TRUE),
+      Is_Outlier = !is.na(SD_Distance) & abs(SD_Distance) > 3
+    ) |>
+    dplyr::ungroup()
+  
+  #export list of outliers
+  outlier_report <- combined_data |>
+    dplyr::filter(Is_Outlier == TRUE) |>
+    dplyr::select(id, Genotype, Batch, Sleep_Time_All, SD_Distance)
+  
+  write.csv(outlier_report, "outlierFlies.csv", row.names = FALSE)
+  
+  # rm outliers & summarize sleep data by temp, Sex, Treatment, and Genotype, Enviro calculating means for sleep-related variables.
   dataset <- combined_data |>
+    dplyr::filter(Is_Outlier == FALSE)|>
     dplyr::group_by(across(all_of(c(meta_vars, "Batch")))) |>
     dplyr::summarise(across(all_of(param_cols), ~ mean(.x, na.rm = TRUE)), .groups = "keep")
 

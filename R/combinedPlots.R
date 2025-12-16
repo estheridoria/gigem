@@ -26,12 +26,12 @@
 #' @return None. Plots are saved as PDF files.
 #' @keywords internal
 
-combinedPlots <- function(ExperimentData, dt_curated_final, summary_dt_final, font, divisions, pValues) {
+combinedPlots <- function(ExperimentData, dt_final, dt_finalSummary, font, divisions, pValues) {
   # Dynamically exclude columns where the value is equal to divisions[1] &
   columns_to_consider <- c("Sex", "Genotype", "Temperature", "Treatment", "Environment", "Light")
   # Exclude the first division and get unique combinations
   cols <- columns_to_consider[columns_to_consider != divisions[1]]
-  condition_combinations <- unique(summary_dt_final[, ..cols])
+  condition_combinations <- unique(dt_finalSummary[, ..cols])
 
   condition_combinations[, p1title := trimws(paste0(
     if (divisions[1] != "Genotype" && length(unique(Genotype)) > 1) paste0(Genotype, " ") else "",
@@ -43,7 +43,7 @@ combinedPlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
   ))]
 
   # find out if there is a control for each combination of conditions
-  all_conditions <- unique(summary_dt_final[,.SD,.SDcols = columns_to_consider])
+  all_conditions <- unique(dt_finalSummary[,.SD,.SDcols = columns_to_consider])
 
     p_values <- data.table::data.table()
 
@@ -51,7 +51,7 @@ combinedPlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
 
   # Apply the logic for subsetting and plotting using data.table------------
   condition_combinations[, {
-    plot_subdata2 <- summary_dt_final[
+    plot_subdata2 <- dt_finalSummary[
       Reduce(`&`, lapply(c("Light", "Environment", "Genotype", "Treatment", "Temperature", "Sex"), function(col) {
         if (divisions[1] == col) {
           return(TRUE)  # Skip this condition if divisions[1] matches the column name
@@ -59,7 +59,7 @@ combinedPlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
           }}))]
 
     # Curate data for plotting
-    plot_subdata <- dt_curated_final[id %in% plot_subdata2$id]
+    plot_subdata <- dt_final[id %in% plot_subdata2$id]
     u <- length(unique(plot_subdata2[[divisions[1]]]))
 
     # Count samples per group
@@ -132,7 +132,6 @@ combinedPlots <- function(ExperimentData, dt_curated_final, summary_dt_final, fo
       p8 <- create_sleeptime_plot(plot_subdata2, yParams[7], "Nighttime Bout Length", divisions, ceiling(max(plot_subdata2[,get(yParams[7])], na.rm = TRUE)/50)*50, "violin", font, p_value[1, 7], is_faceted = FALSE)
 
       # Combine plots
-        rel_width <- 1 + (u / 2) + ((u - 1) * 0.1)
 suppressWarnings(
           combined_plot <- cowplot::plot_grid(p1, p2, p3, p4, p5, p6, p7, p8,
                                               ncol = 8, align = "h", axis = "tb",
@@ -146,7 +145,7 @@ p1titlee <- gsub("/", ".", p1titlee)
 
         # Save combined plot
         ggplot2::ggsave(paste0("CombinedPlots", p1titlee, ExperimentData@Batch, ".pdf"),
-                        combined_plot, width = 14, height = 4)
+                        combined_plot, width = 22, height = 4)
 }, by = 1:nrow(condition_combinations)]
 
   #-------------

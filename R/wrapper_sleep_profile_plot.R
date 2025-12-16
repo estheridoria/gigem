@@ -17,7 +17,7 @@
 #'
 #' @return \code{NULL}. Saves a PDF plot file.
 #' @keywords internal
-create_sleep_profile_plot <- function(filename, batchMeta, plot_data, divisions, numb_days, font, overlay_mode = FALSE, wrap_time = NULL) {
+wrapper_sleep_profile_plot <- function(filename, batchMeta, plot_data, divisions, numb_days, font, overlay_mode = FALSE, wrap_time = NULL) {
   
   # Call the new helper function to get the plot object and sizing
   plot_result <- render_sleep_profile_plot(

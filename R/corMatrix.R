@@ -27,37 +27,6 @@ corMatrix <- function(condition1 = NULL, condition2 = NULL, method = c("Diff", "
                    treat = NULL, temp = NULL, enviro = NULL, sex = NULL, lights = NULL, geno = NULL,
                    formula = NULL, font = c("plain", "bold", "italic", "bold.italic")){
 
-  # # test 1: raw values no conditions
-  # condition1 = NULL
-  # condition2 = NULL
-  # method = "Diff"
-  # treat = NULL
-  # temp = NULL
-  # enviro = "5D"
-  # sex = NULL
-  # lights = NULL
-  # geno = NULL
-  # formula = NULL
-  # font = "plain"
-  # # test 2: raw values yes conditions diff
-  # condition1 = "Iso"
-  # condition2 = "Grp"
-  # # test 3: raw values yes conditions perc
-  # method = "Perc.Change"
-  # # test 4: fitted values no conditions
-  # condition1 = NULL
-  # condition2 = NULL
-  # formula = "Genotype*Treatment + Batch"
-  # # test 5: fitted values yes conditions diff
-  # condition1 = "Iso"
-  # condition2 = "Grp"
-  # formula = "Genotype*Treatment + Batch"
-  #   method = "Diff"
-  # # test 6: fitted values yes conditions perc
-  #   formula = "Genotype*Treatment + Batch"
-  #   method = "Perc.Change"
-
-
   # Read the data from CSV file
   # Check if 'all_batches_summary.csv' exists in the current directory, and if not, stop execution.
   if (!file.exists("all_batches_summary.csv")) {
@@ -88,9 +57,25 @@ corMatrix <- function(condition1 = NULL, condition2 = NULL, method = c("Diff", "
   }
   title_text <- paste(title_parts, collapse = "_")
 
-
-  # Summarize sleep data by temp, Sex, Treatment, and Genotype, enviro calculating means for sleep-related variables.
+  # flag outliers
+  combined_data <- combined_data |>
+    dplyr::group_by(across(all_of(meta_vars))) |>
+    dplyr::mutate(
+      SD_Distance = (Sleep_Time_All - mean(Sleep_Time_All, na.rm = TRUE)) / sd(Sleep_Time_All, na.rm = TRUE),
+      Is_Outlier = !is.na(SD_Distance) & abs(SD_Distance) > 3
+    ) |>
+    dplyr::ungroup()
+  
+  #export list of outliers
+  outlier_report <- combined_data |>
+    dplyr::filter(Is_Outlier == TRUE) |>
+    dplyr::select(id, Genotype, Batch, Sleep_Time_All, SD_Distance)
+  
+  write.csv(outlier_report, "outlierFlies.csv", row.names = FALSE)
+  
+  # rm outliers & summarize sleep data by temp, Sex, Treatment, and Genotype, Enviro calculating means for sleep-related variables.
   dataset <- combined_data |>
+    dplyr::filter(Is_Outlier == FALSE)|>
     dplyr::group_by(across(all_of(c(meta_vars, "Batch")))) |>
     dplyr::summarise(across(all_of(param_cols), ~ mean(.x, na.rm = TRUE)), .groups = "keep")
 
@@ -111,19 +96,10 @@ corMatrix <- function(condition1 = NULL, condition2 = NULL, method = c("Diff", "
       # # Initialize an empty vector to store the matched variables
       matched_vars <- c()
 
-
       # Get all variable names from the right-hand side of the formula
       independent_vars <- all.vars(new_formula)
       # Filter for the categorical variables included in the model
       matched_vars <- intersect(categorical_vars, independent_vars)
-      # # Loop through each element in meta_vars to find which vars are in the formula --> matched_vars
-      # for (var in categorical_vars) {
-      #   # Check if the current meta_var is found within formula
-      #   # grepl returns TRUE if a match is found, FALSE otherwise
-      #   if (any(grepl(var, new_formula, fixed = TRUE))) {
-      #     matched_vars <- c(matched_vars, var) # Add to our results if matched
-      #   }
-      # }
 
       fit <- lm(new_formula, data = dataset)
       saved.fit<-rbind(saved.fit, summary(fit)$r.squared)
@@ -134,7 +110,7 @@ corMatrix <- function(condition1 = NULL, condition2 = NULL, method = c("Diff", "
         new_data_list[[var]] <- unique(dataset[[var]])
       }
 
-      # If 'Batch' is in your model, fix it at the first level to ensure a consistent baseline
+      # If 'Batch' is in model, fix it at the first level to ensure a consistent baseline
       if ("Batch" %in% matched_vars) {
         new_data_list[["Batch"]] <- levels(as.factor(dataset$Batch))[1]
       }

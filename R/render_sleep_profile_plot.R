@@ -24,8 +24,8 @@ render_sleep_profile_plot <- function(plot_data, divisions, batchMeta, numb_days
     row_fascets <- ggplot2::vars(!!rlang::sym(divisions[2]))
     plot_height <- 4 * length(unique(batchMeta[[divisions[2]]]))
     } else {
-    plot_height <- 4 * length(unique(batchMeta[[divisions[2]]])) * length(unique(batchMeta[[divisions[1]]]))
     row_fascets <- ggplot2::vars(!!rlang::sym(divisions[1]), !!rlang::sym(divisions[2]))
+    plot_height <- 4 * length(unique(batchMeta[[divisions[2]]])) * length(unique(batchMeta[[divisions[1]]]))
 }
 
   # --- Plot Generation ---
@@ -49,7 +49,11 @@ render_sleep_profile_plot <- function(plot_data, divisions, batchMeta, numb_days
                    axis.text.x = ggplot2::element_text(size = 16),
                    axis.text.y = ggplot2::element_text(size = 16),
                    legend.text = ggplot2::element_text(size = 16, face = font),
-                   strip.text = ggplot2::element_text(size = 20))
+                   strip.text = if (overlay_mode) {
+                     ggplot2::element_blank()
+                   } else {
+                     ggplot2::element_text(size = 20)
+                   }
 
   return(list(plot = pop_sleep_plot, plot_width = plot_width, plot_height = plot_height))
 }

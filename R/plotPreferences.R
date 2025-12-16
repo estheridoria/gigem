@@ -12,22 +12,7 @@
 #' @keywords internal
 #'
 plotPreferences <- function(run = "all"){
-
-  # r0 <- menu(c("All plots", "No plots", "Select plots"), title="Do you want to generate all, none, or some plots?")
-  #
-  # if(r0 == 1){
-  #   results <- rbind("1","1","1","1","1","1")
-  # if(run == "one"){
-  #   results <- rbind(results, "2")
-  # }
-  # else{
-  #   results <- rbind(results, "1")
-  #   }
-  # }else{
-  #   if(r0 == 2){
-  #     results <- rbind("2","2","2","2","2","2","2")
-  #   } else{
-
+  
     # activityAndSleep.R #17-34 & #40-57
   r1 <- menu(c("Yes", "No"), title="Do you want to generate each monitor's 'Activity and Sleep Actograms'?")
 

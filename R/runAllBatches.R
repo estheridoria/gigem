@@ -165,45 +165,52 @@ runAllBatches <- function(numDays = 2,
   # Restore the original working directory
   setwd(original_wd)
 
-# Concatenate files from batches------------------------------------------------
-
+  # Concatenate files from batches------------------------------------------------
+  
   # Summaries: relative, stat, summary, & possibly sleep, meta
   concatList<- c("^stat_Batch[0-9_a-zA-Z]*\\.csv$", "^summary[0-9_a-zA-Z]*\\.csv$") #, "ks.results_L.csv$", "^relative_summary_Batch[0-9_a-zA-Z]*\\.csv$"
   concatNames<- c("all_batches_stat.csv", "all_batches_summary.csv") #, "all_batches_ks.result_L.csv", "all_batches_relative_summary.csv"
-
+  
+  
+  
   if (pref[7] == 1){ # concatenated sleepdata & metadata --> genotypePlots
-  concatList <- c(concatList, "^sleepdata_Batch[0-9_a-zA-Z]*\\.csv$", "^sleepmeta_Batch[0-9_a-zA-Z]*\\.csv$")
-  concatNames <- c(concatNames, "all_sleepdata.csv", "all_sleepmeta.csv")
+    concatList <- c(concatList, "^sleepdata_Batch[0-9_a-zA-Z]*\\.csv$", "^sleepmeta_Batch[0-9_a-zA-Z]*\\.csv$")
+    concatNames <- c(concatNames, "all_batches_sleepdata.csv", "all_batches_sleepmeta.csv")
   }
+  
+  # Define a mapping for output filenames to variable names
+  output_map <- list(
+    "all_batches_summary.csv" = "summary_dt_final",
+    "all_batches_sleepdata.csv" = "combined_sleepdata",
+    "all_batches_sleepmeta.csv" = "combined_sleepmeta"
+    # Add other mappings for concatNames[i] as needed
+  )    
   for (i in seq_along(concatList)){
-
-    # Get all file paths matching the pattern across all batch directories
+    
+    # File paths
     all_file_paths <- unlist(sapply(batch_dirs, function(dir) {
       list.files(dir, pattern = concatList[i], full.names = TRUE)
     }))
-
+    
     if (length(all_file_paths) > 0) {
-      # OPTIMIZATION: Read all files into a single data.table using data.table::fread list input
-      # This is significantly faster than reading/binding one by one
+      
+      #Read and Combine
       combined_data <- data.table::rbindlist(lapply(all_file_paths, data.table::fread), fill = TRUE)
-
-      # Save the combined data frame to a CSV file in the parent directory
-      output_file <- file.path(original_wd, concatNames[i])
+      
+      #Save
+      output_file_name <- concatNames[i]
+      output_file <- file.path(original_wd, output_file_name)
       data.table::fwrite(combined_data, output_file, row.names = FALSE)
-
-    if(i == 2){
-      summary_dt_final<-combined_data
+      
+      # Outputs
+      if (output_file_name %in% names(output_map)) {
+        var_name <- output_map[[output_file_name]]
+        # assign the 'combined_data' data.table to the variable named by the string 'var_name' in the current environment.
+        assign(var_name, combined_data, envir = parent.frame())
+      }
     }
-    if(i == 3){
-      combined_sleepdata <-combined_data
-    }
-    if(i == 4){
-      combined_sleepmeta<-combined_data
-    }
-
   }
-  }
-
+  
   if(pref[7] ==1){
     concatCombinedPlots(combined_sleepdata, combined_sleepmeta, summary_dt_final, font, divisions, pValues)
   }

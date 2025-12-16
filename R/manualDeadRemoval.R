@@ -56,12 +56,12 @@ manualDeadRemoval <- function(ExperimentData, dt, numDays, divisions, pref, font
   # Population Plots
   if(pref[2]==1){
   suppressWarnings(
-    create_sleep_profile_plot(
+    wrapper_sleep_profile_plot(
       paste0(ExperimentData@Batch, '_Population_Sleep_Profiles.pdf'),
       batchMeta, dt_curated_final, divisions, numb_days = numDays, font, overlay_mode = FALSE)
   )
   suppressWarnings(
-    create_sleep_profile_plot(
+    wrapper_sleep_profile_plot(
       paste0(ExperimentData@Batch, '_Population_Sleep_Profiles_Wrap.pdf'),
       batchMeta,dt_curated_final, divisions, numb_days = 1, wrap_time = behavr::hours(24), font, overlay_mode = FALSE))
   }
@@ -69,12 +69,12 @@ manualDeadRemoval <- function(ExperimentData, dt, numDays, divisions, pref, font
   # Overlay Plots
   if(pref[3]==1){
     suppressWarnings(
-      create_sleep_profile_plot(
+      wrapper_sleep_profile_plot(
         paste0(ExperimentData@Batch, '_Overlaid_Sleep_Profile.pdf'),
         batchMeta, dt_curated_final, divisions, numb_days = numDays, font, overlay_mode = TRUE)
     )
     suppressWarnings(
-      create_sleep_profile_plot(
+      wrapper_sleep_profile_plot(
         paste0(ExperimentData@Batch, '_Overlaid_Sleep_Profile_Wrap.pdf'),
         batchMeta, dt_curated_final, divisions, numb_days = 1, wrap_time = behavr::hours(24), font, overlay_mode = TRUE))
   }

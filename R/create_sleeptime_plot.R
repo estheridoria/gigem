@@ -25,8 +25,6 @@ create_sleeptime_plot <- function(plot_data, yParam, Yname, divisions, limits, g
     pointplot <- pointplot +
       ggplot2::facet_grid(rows = ggplot2::vars(!!rlang::sym(divisions[2])),
                           cols = ggplot2::vars(!!rlang::sym(divisions[3])))
-  } else {
-    pointplot <- pointplot + ggplot2::theme(legend.position = "none")
   }
 
   # 2. Add background geometry
@@ -77,6 +75,8 @@ create_sleeptime_plot <- function(plot_data, yParam, Yname, divisions, limits, g
                                color = "black", linewidth = 1)
     }
   }
-
+  if(!is_faceted){
+    pointplot <- pointplot + ggplot2::theme(legend.position = "none")
+  }
   return(pointplot)
 }
