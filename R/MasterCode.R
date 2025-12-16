@@ -1146,7 +1146,7 @@ combinedPlots <- function(ExperimentData, dt_final, dt_finalSummary, font, divis
     suppressWarnings(
       combined_plot <- cowplot::plot_grid(p1, p2, p3, p4, p5, p6, p7, p8,
                                           ncol = 8, align = "h", axis = "tb",
-                                          rel_widths = c(8, rep(4, 7)),
+                                          rel_widths = c(2, rep(1, 7)),
                                           labels = "")
     )
     #total_width <- addedspace + 7 * rel_width
