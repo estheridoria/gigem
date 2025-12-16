@@ -38,7 +38,7 @@ separate files.
 
 ``` main
 # Download "HitRun.R" & "Main.r" template files
-download.file("https://github.com/estheridoria/gigem/releases/download/v1.0.0/gigem_templates.zip",
+download.file("https://github.com/estheridoria/gigem/releases/download/v0.9.0/gigem_templates.zip",
   destfile = "gigem_templates.zip")
 ```
 
@@ -48,11 +48,12 @@ To explore the package capabilities with example data, download the repository i
 
 ``` main
 # Download example analysis
-download.file("https://github.com/estheridoria/gigem/releases/download/v1.0.0/ExampleAnalysis.zip",
+download.file("https://github.com/estheridoria/gigem/releases/download/v0.9.0/ExampleAnalysis.zip",
   destfile = "ExampleAnalysis.zip")
-  
+```
+``` main
 # Download full SIP analysis
-download.file("https://github.com/estheridoria/gigem/releases/download/v1.0.0/FullSIPAnalysis.zip",
+download.file("https://github.com/estheridoria/gigem/releases/download/v0.9.0/FullSIPAnalysis.zip",
   destfile = "FullSIPAnalysis.zip")
 ```
 
