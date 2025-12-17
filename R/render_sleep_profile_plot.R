@@ -54,6 +54,6 @@ render_sleep_profile_plot <- function(plot_data, divisions, batchMeta, numb_days
                    } else {
                      ggplot2::element_text(size = 20)
                    }
-
+      )
   return(list(plot = pop_sleep_plot, plot_width = plot_width, plot_height = plot_height))
 }

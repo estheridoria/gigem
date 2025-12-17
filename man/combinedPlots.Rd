@@ -6,8 +6,8 @@
 \usage{
 combinedPlots(
   ExperimentData,
-  dt_curated_final,
-  summary_dt_final,
+  dt_final,
+  dt_finalSummary,
   font,
   divisions,
   pValues
@@ -16,16 +16,16 @@ combinedPlots(
 \arguments{
 \item{ExperimentData}{An S4 object containing experiment metadata.}
 
-\item{dt_curated_final}{A \code{data.table} containing curated sleep data with columns such as \code{id} and \code{asleep}.}
-
-\item{summary_dt_final}{A \code{data.table} containing summary statistics with columns including \code{Light}, \code{Environment},
-\code{Genotype}, \code{Treatment}, \code{Sex} and various sleep metrics.}
-
 \item{font}{A character string variable determining the font style of the produced plots.}
 
 \item{divisions}{A list of grouping columns used for facetting plots.}
 
 \item{pValues}{A TRUE/FALSE vector for if combined plots will display p values for 2-condition overlays.}
+
+\item{dt_curated_final}{A \code{data.table} containing curated sleep data with columns such as \code{id} and \code{asleep}.}
+
+\item{summary_dt_final}{A \code{data.table} containing summary statistics with columns including \code{Light}, \code{Environment},
+\code{Genotype}, \code{Treatment}, \code{Sex} and various sleep metrics.}
 }
 \value{
 None. Plots are saved as PDF files.

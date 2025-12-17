@@ -6,7 +6,7 @@
 \usage{
 cleanSummary(
   ExperimentData,
-  dt,
+  dt_final,
   batchMeta,
   numDays,
   loadinginfo_linked,
@@ -19,8 +19,6 @@ cleanSummary(
 \item{ExperimentData}{An S4 object containing experiment metadata.
 Must include \code{Batch} (identifier for the batch being processed).}
 
-\item{dt}{A \code{behavr} table containing sleep and activity data.}
-
 \item{numDays}{Number of days for displaying and calculating average metrics.}
 
 \item{loadinginfo_linked}{A data object linked with \code{behavr} metadata. Used to load Drosophila Activity Monitor (DAM) data.}
@@ -30,6 +28,8 @@ Must include \code{Batch} (identifier for the batch being processed).}
 \item{pref}{A preference vector to control plot generation.}
 
 \item{font}{A string variable determining the font style of the produced plots.}
+
+\item{dt}{A \code{behavr} table containing sleep and activity data.}
 }
 \value{
 A summarized \code{data.table} (\verb{summary_<Batch>.csv}) containing sleep metrics and bout data for each ID.
