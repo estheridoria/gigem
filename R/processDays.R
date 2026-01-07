@@ -6,7 +6,7 @@
 #'
 #' @param numDays An integer specifying the number of days for which to process the bout data.
 #' @param bout_dt A data.table containing bout data, including time (`t`) and bout duration (`duration`).
-#' @param dt data table with raw sleep data
+#' @param dt_final data table with raw sleep data
 #' @param summary_dt_final A data.table containing the final summary data, which will be updated with the computed
 #'                         latency and bout lengths for each day.
 #'
@@ -20,7 +20,7 @@
 #' The function processes bout data for each day within the specified range, calculating the latency to the first bout,
 #' the first bout length, and the latency to the longest bout. The results for each day are added to a summary table,
 #' which is then returned after processing all specified days.
-processDays <- function(numDays, bout_dt, dt, summary_dt_final) {
+processDays <- function(numDays, bout_dt, dt_final, summary_dt_final) {
 
   #dt[,light]figure out number of minutes and hours lights on/off
 
@@ -33,8 +33,8 @@ processDays <- function(numDays, bout_dt, dt, summary_dt_final) {
     # Extract bouts for the current daytime
     bout_dt_current_day <- bout_dt[bout_dt$t >= start_time & bout_dt$t <= end_sleep_time]
     bout_dt_current_day[, t := t - start_time]  # Adjust time for the current day
-    dt_current_day <- dt[dt$t >= start_time &
-                           dt$t <= end_sleep_time]
+    dt_current_day <- dt_final[dt_final$t >= start_time &
+                                 dt_final$t <= end_sleep_time]
     dt_current_day[, t := t - start_time]  # Adjust time for the current day
 
 

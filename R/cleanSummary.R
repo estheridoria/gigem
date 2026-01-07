@@ -4,7 +4,7 @@
 #'
 #' @param ExperimentData An S4 object containing experiment metadata.
 #'   Must include `Batch` (identifier for the batch being processed).
-#' @param dt A `behavr` table containing sleep and activity data.
+#' @param dt_final A `behavr` table containing sleep and activity data.
 #' @param numDays Number of days for displaying and calculating average metrics.
 #' @param loadinginfo_linked A data object linked with `behavr` metadata. Used to load Drosophila Activity Monitor (DAM) data.
 #' @param divisions A list of grouping columns used for facetting plots.
@@ -65,7 +65,7 @@ cleanSummary <- function(ExperimentData, dt_final, batchMeta, numDays, loadingin
   dev.off()
 }
   # Process daily bout length and latency by Light/dark phase
-  summary_dt_final <- processDays(numDays, bout_dt, dt, summary_dt_final)
+  summary_dt_final <- processDays(numDays, bout_dt, dt_final, summary_dt_final)
 
   # Calculate bout lengths during Light (L) and dark (D) phases, filtering by duration
   bout_dt_min <- sleepr::bout_analysis(asleep, dt_final)[, .(
