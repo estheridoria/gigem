@@ -69,11 +69,11 @@ runEachBatch <- function(numDays, oneBatch, font, pref, divisions, pValues, inco
   batchMeta <- behavr::meta(dt_final)
 
   # Write bout length pdf, and calculate bout and latency stats
-  dt_finalSummary <- cleanSummary(ExperimentData, dt = dt_final, batchMeta, numDays, loadinginfo_linked, divisions, pref, font)
+  dt_finalSummary <- cleanSummary(ExperimentData, dt_final, batchMeta, numDays, loadinginfo_linked, divisions, pref, font)
 
   if (pref[6] == 1){
     # Generate concatenated plots
-    combinedPlots(ExperimentData, dt_curated_final = dt_final, summary_dt_final = dt_finalSummary, font, divisions, pValues)
+    combinedPlots(ExperimentData, dt_final, dt_finalSummary, font, divisions, pValues)
   } # dt_curated_final <- dt_final; summary_dt_final <- dt_finalSummary
 
   # Define input column names for normalized statistics
