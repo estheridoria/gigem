@@ -4,14 +4,14 @@
 \alias{processDays}
 \title{Process Latency and Bout Lengths for Each Day (Internal)}
 \usage{
-processDays(numDays, bout_dt, dt, summary_dt_final)
+processDays(numDays, bout_dt, dt_final, summary_dt_final)
 }
 \arguments{
 \item{numDays}{An integer specifying the number of days for which to process the bout data.}
 
 \item{bout_dt}{A data.table containing bout data, including time (\code{t}) and bout duration (\code{duration}).}
 
-\item{dt}{data table with raw sleep data}
+\item{dt_final}{data table with raw sleep data}
 
 \item{summary_dt_final}{A data.table containing the final summary data, which will be updated with the computed
 latency and bout lengths for each day.}
