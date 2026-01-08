@@ -251,7 +251,7 @@ oneBatch = "Batch9_2Days"
 
 Decide the number of days you wish to analyze from the experiment. This
 should be equal to or less than the number of days between `start_datetime` and
-`stop_datetime`.
+`stop_datetime`. For the most accurate results, leave the monitors running for 1 day longer than you plan to analyze as defined by `numDays`.
 ``` main
 numDays = 2
 ```

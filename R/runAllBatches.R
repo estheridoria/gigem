@@ -168,7 +168,7 @@ runAllBatches <- function(numDays = 2,
   # Concatenate files from batches------------------------------------------------
   
   # Summaries: relative, stat, summary, & possibly sleep, meta
-  concatList<- c("^stat_Batch[0-9_a-zA-Z]*\\.csv$", "^summary[0-9_a-zA-Z]*\\.csv$") #, "ks.results_L.csv$", "^relative_summary_Batch[0-9_a-zA-Z]*\\.csv$"
+  concatList<- c("^stat_summary[0-9_a-zA-Z]*\\.csv$", "^summary[0-9_a-zA-Z]*\\.csv$") #, "ks.results_L.csv$", "^relative_summary_Batch[0-9_a-zA-Z]*\\.csv$"
   concatNames<- c("all_batches_stat.csv", "all_batches_summary.csv") #, "all_batches_ks.result_L.csv", "all_batches_relative_summary.csv"
   
   

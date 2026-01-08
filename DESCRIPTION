@@ -1,6 +1,6 @@
 Package: gigem
 Title: Group-Isolation Gauge Effect Metrics
-Version: 0.5.1
+Version: 0.5.2
 Authors@R: c(person("Esther", "Doria", role = c("aut", "cre"), email = "edoria@tamu.edu", comment = c(ORCID = "0009-0008-0687-0214")), 
 	person("Wanhe", "Li", role = c("ctb"), email = "whli01@tamu.edu"), 
 	person("Daniel", "Nguyen", role = "ctb"))
